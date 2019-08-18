@@ -2,6 +2,74 @@
 #include <stdlib.h>
 #include <string.h>
 
+//Função que recebe uma string e quebra ela em pedaços separados pelo splitter. Retorno: vetor de palavras
+
+char ** split(char * str, char splitter) {
+    int contSplitters = 0, contLetras = 0, contAux = 0, iSplitted = 0;
+    char * aux = (char *) malloc(strlen(str) * sizeof (char));
+    memset(aux, '\0', sizeof (aux));
+    for (int i = 0; i < strlen(str); i++) { //Retira splitters repetidos
+        if (str[i] != splitter ||
+                (str[i] == splitter && str[i + 1] != splitter)) {
+            aux[contAux++] = str[i];
+        }
+        if (str[i] == splitter && str[i + 1] != splitter) contSplitters;
+    }
+    char ** splitted = (char **) malloc((contSplitters + 1) * sizeof (char *));
+    for (int i = 0; i < strlen(aux); i++) {
+        if (aux[i] == splitter) {
+            splitted[iSplitted++] = (char *) malloc((contLetras + 1) * sizeof (char));
+            contLetras = 0;
+        }
+        contLetras++;
+    }
+    splitted[iSplitted] = (char *) malloc((contLetras + 1) * sizeof (char));
+    iSplitted = 0;
+    int cont = 0;
+    for (int i = 0; i < strlen(aux); i++) {
+        if (aux[i] == splitter) {
+            splitted[iSplitted][cont] = '\0';
+            iSplitted++;
+            cont = 0;
+        } else {
+            splitted[iSplitted][cont++] = aux[i];
+        }
+    }
+    return splitted;
+}
+
+//Função para transformar as letras de uma string em letras maíusculas
+
+void toUpperCase(char * str) {
+    int i = -1;
+    while (str[++i] != '\0') {
+        if (str[i] >= 'a' && str[i] <= 'z') str[i] = str[i] - 32;
+    }
+}
+
+//Lista os nomes das tabelas presentes na base
+
+void listTable() {
+    printf("Lista das tabelas presentes na base de dados: \n\n");
+    printf("%s\n", p->name);
+}
+
+void readFile(table *p) {
+    FILE *descritor;
+
+    //abre o arquivo
+    descritor = fopen("arquivo.bin", "rb");
+
+    //verificacao de erro
+    if (!descritor) {
+        printf("Erro ao abrir o arquivo\n");
+    } else {
+        while (fread(p, sizeof (table), 1, descritor) > 0)
+            listTable(p);
+        fclose(descritor);
+    }
+}
+
 void menu() {
 
     printf("Escolha uma das opções abaixo:\n");
@@ -21,22 +89,22 @@ void menu() {
     printf("Digite 'S' para encerrar.\n");
 }
 
-int main() {
-
+void start() {
     char option[2],
             stop = '',
-            nomeTabela[100]; /* modificar para alocacao dinamica do tamanho da string */
+            nomeTabela[100]; //modificar para alocacao dinamica do tamanho da string 
 
     menu();
     scanf("%s", &option);
+
+    toUpperCase(option); //Não diferenciação de letras maiúsculas e minúsculas
 
     switch (option) {
         case 'CT':
             printf("Criando arquivo...\n");
             do {
-                newTable(&p);
-                saveTable(&p);
-
+                //newTable(&p);
+                //saveTable(&p);
                 printf("Continuar: 1 | Parar: 0\n");
             } while (stop != 0 && stop == 1)
                 break;
@@ -53,40 +121,19 @@ int main() {
             readFile(&p);
             break;
 
-        case 'S' || 's':
-            return 1;
-            break
+        case 'S':
+            break;
 
         default:
             printf("Opção inválida!\n");
             break;
     }
 
-    return 0;
-}
-
-void readFile(table *p) {
-    FILE *descritor;
-
-    //abre o arquivo
-    descritor = fopen("arquivo.bin", "rb");
-
-    //verificacao de erro
-    if (!descritor) {
-        printf("Erro ao abrir o arquivo\n");
-    } else {
-        while (fread(p, sizeof (table), 1, descritor) > 0)
-            listTable(p);
-        fclose(descritor);
+    int main() {
+        start();
+        return 0;
     }
-}
 
-//lista os nomes das tabelas presentes na base
-
-void listTable() {
-    printf("Lista das tabelas presentes na base de dados: \n\n");
-    printf("%s\n", p->name);
-}
 
 
 
