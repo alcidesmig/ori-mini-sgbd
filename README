@@ -1,2 +1,7 @@
-gcc -o main main.c menu.c aux.c commands.c parser.c
+make
+
+Linha de comando
 ./main
+
+Arquivo
+./main file.txt
