@@ -12,9 +12,8 @@ void commandLine() {
     char comando[CMD_MAX];
 
     fgets(comando, CMD_MAX, stdin); // Lê o comando
-    toUpperCase(comando); // Não diferenciação de letras maiúsculas e minúsculas
 
-    // Identifica o comando
+    // Lê os comandos
     if (parser(comando)) {
         return;
     }
@@ -36,8 +35,6 @@ int fromFile(char *file) {
 
     // Lê os comandos
     while (fgets(comando, CMD_MAX, fp)) {
-        toUpperCase(comando); //Não diferenciação de letras maiúsculas e minúsculas
-        
         parser(comando); // Identifica o comando
     }
 }

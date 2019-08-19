@@ -10,7 +10,7 @@ void removeTable(char *table_name);
 void apTable(char *table_name);
 
 // Lista as tabetas
-void listTable();
+void listTables();
 
 // Apresenta a pesquisa da tabela
 void apReg(char *table_name);

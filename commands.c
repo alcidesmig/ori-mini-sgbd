@@ -18,7 +18,7 @@ void apTable(char *table_name) {
 }
 
 // Lista as tabetas
-void listTable() {
+void listTables() {
     printf("Listando tabelas.\n");
     printf("TODO\n");
 }

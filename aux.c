@@ -57,7 +57,7 @@ char *findl(char *haystack, const char *needle, int limit) {
     for (i = 0; needle[i]; i++);
 
     while (haystack[j] != '\0' && k < i && ((j-k) <= limit || limit == -1)) {
-        if (haystack[j] == needle[k])
+        if (haystack[j] == needle[k] || haystack[j] == (needle[k] + 32))
             k++;
         j++;
     }
