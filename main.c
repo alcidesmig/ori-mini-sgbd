@@ -37,6 +37,9 @@
 #define VALUE_MAX 32
 #define N_COLUMNS 32
 
+// Arquivos
+#define TABLES_FILE "tables.bin"
+
 //Função que recebe uma string e quebra ela em pedaços separados pelo splitter. Retorno: vetor de palavras
 char ** split(char * str, char splitter) {
     int contSplitters = 0, contLetras = 0, contAux = 0, iSplitted = 0;
@@ -396,21 +399,25 @@ void commandLine() {
     commandLine();
 }
 
-// int fromFile(char *file) {
-//     printf("Executando %s\n", file);
+int fromFile(char *file) {
+    printf("Executando %s\n", file);
 
-//     File *file = fopen(file, "rb");
+    FILE *fp = fopen(file, "r");
 
-//     char comando[CMD_MAX];
+    if (fp == NULL) {
+        printf("Erro ao abrir arquivo.\n");
+        return 1;
+    }
 
-//     fgets(comando, CMD_MAX, file); // Lê o comando
-//     toUpperCase(comando); //Não diferenciação de letras maiúsculas e minúsculas
+    char comando[CMD_MAX];
 
-//     // Identifica o comando
-//     parser(comando);
-
-//     printf("TODO\n");
-// }
+    // Lê os comandos
+    while (fgets(comando, CMD_MAX, fp)) {
+        toUpperCase(comando); //Não diferenciação de letras maiúsculas e minúsculas
+        
+        parser(comando); // Identifica o comando
+    }
+}
 
 int main(int argc, char *argv[]) {
     if (argc == 1) {
@@ -419,7 +426,9 @@ int main(int argc, char *argv[]) {
 
         printf("Saindo.\n");
     } else {
-        // fromFile(argv[1]);
+        fromFile(argv[1]);
+
+        printf("Saindo.\n");
     }
 
     return 0;
