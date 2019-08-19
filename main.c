@@ -18,12 +18,13 @@ char ** split(char * str, char splitter) {
     char ** splitted = (char **) malloc((contSplitters + 1) * sizeof (char *));
     for (int i = 0; i < strlen(aux); i++) {
         if (aux[i] == splitter) {
-            splitted[iSplitted++] = (char *) malloc((contLetras + 1) * sizeof (char));
+            splitted[iSplitted++] = (char *) malloc((contLetras + 2) * sizeof (char));
             contLetras = 0;
         }
         contLetras++;
     }
-    splitted[iSplitted] = (char *) malloc((contLetras + 1) * sizeof (char));
+    splitted[iSplitted++] = (char *) malloc((contLetras + 1) * sizeof (char));
+    splitted[iSplitted] = NULL;
     iSplitted = 0;
     int cont = 0;
     for (int i = 0; i < strlen(aux); i++) {
