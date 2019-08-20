@@ -6,7 +6,7 @@
 #include "menu.h"
 #include "parser.h"
 #include "commands.h"
-#include "aux.h"
+#include "tools.h"
 
 void commandLine() {
     char comando[CMD_MAX];

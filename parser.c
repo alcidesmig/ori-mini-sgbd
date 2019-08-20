@@ -4,7 +4,7 @@
 
 #include "parser.h"
 #include "defines.h"
-#include "aux.h"
+#include "tools.h"
 #include "commands.h"
 
 // Reconhece o comando
