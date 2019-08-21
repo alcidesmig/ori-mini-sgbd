@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "menu.h"
-#include "defines.h"
 
 // Printa os comandos
 void menu() {

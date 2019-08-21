@@ -1,9 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "tools.h"
-#include "defines.h"
 
 // Separa uma string usando os separadores.
 // str: String

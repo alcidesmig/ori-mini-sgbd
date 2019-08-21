@@ -1,6 +1,12 @@
 #ifndef TOOLS_H
 #define TOOLS_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "defines.h"
+
 // Separa uma string usando os separadores.
 // str: String
 // splitter: separador

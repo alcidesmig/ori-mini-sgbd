@@ -29,14 +29,18 @@
 
 // Tamanho máximo
 #define CMD_MAX   256 // Tamanho máximo da linha de comando
-#define TBLNM_MAX 32  // Tamanho máximo do nome da tabela
+#define TABLE_NAME_MAX 32  // Tamanho máximo do nome da tabela
 #define TYPE_MAX  4   // Tamanho máximo dos tipos de dados
 #define FIELD_MAX 32  // Tamanho máximo do nome de um campo(chave)
 #define VALUE_MAX 32  // Tamanho máximo de um valor
-#define N_COLUMNS 32  // Número máximo de colunas
+#define NUMBER_COLUMNS 32  // Número máximo de colunas
+
+// Marcadores
+#define TABLE_NAME 0x10
 
 // Arquivos
-#define TABLES_FILE "tables.bin" // Arquivo de indexação das colunas
+#define TABLES_INDEX "table_index.tbli" // Arquivo de indexação das colunas
+#define TABLE_FILE_EX ".tbl" // Extenção de arquivo um arquivo de tabela
 
 // Erros
 // WS  0x01 Wrong Sintax

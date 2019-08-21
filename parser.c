@@ -1,26 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "parser.h"
-#include "defines.h"
-#include "tools.h"
-#include "commands.h"
+
+// Erro global de interpretação de comandos
+int CMD_ERROR_CODE = NONE;
 
 // Marca a posição corrente no buffer de comando
 char *parsing;
 
 // Buffers: Nome da tabela, nome do campo(chave) e valor
 // Usados em comando com único parâmetro
-char table_name[TBLNM_MAX];
+char table_name[TABLE_NAME_MAX];
 char field_name[FIELD_MAX];
 char value[VALUE_MAX];
 
 // Buffers: Tipos, nomes do campo(chave) e valores
 // Usados em comando com mutiplos parâmetros
-char type_name_arr[N_COLUMNS][TYPE_MAX];
-char field_name_arr[N_COLUMNS][FIELD_MAX];
-char value_arr[N_COLUMNS][VALUE_MAX];
+char type_name_arr[NUMBER_COLUMNS][TYPE_MAX];
+char field_name_arr[NUMBER_COLUMNS][FIELD_MAX];
+char value_arr[NUMBER_COLUMNS][VALUE_MAX];
 
 // Index dos vetores a cima
 int index_arr = 0;
