@@ -62,14 +62,26 @@
 #define GI_WS     0xd1
 #define EXIT      0xe0
 
-// Tipos
-typedef char TableName[TABLE_NAME_MAX];
-typedef char Type[TYPE_MAX];
-typedef char Field[FIELD_MAX];
-typedef char Value[VALUE_MAX];
+//Typedefs
 
+typedef char TableName[TABLE_NAME_MAX];
+
+typedef char Type[TYPE_MAX];
 typedef Type TypeArr[NUMBER_COLUMNS];
+
+typedef char Field[FIELD_MAX];
 typedef Field FieldArr[NUMBER_COLUMNS];
+
+typedef char Value[VALUE_MAX];
 typedef Value ValueArr[NUMBER_COLUMNS];
+
+struct structTable {
+	TableName table_name;
+	TypeArr types;
+	FieldArr fields;
+	int qt_fields;
+};
+typedef struct structTable Table;
+
 
 #endif /* DEFINES_H */

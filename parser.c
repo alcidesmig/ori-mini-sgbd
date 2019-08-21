@@ -31,8 +31,8 @@ void parser(char *command) {
         if(sscanf(parsing, "%s %[^:^;]%*c%[^;^\n]", table_name, type_name_arr[index_arr], field_name_arr[index_arr]) == 3) {
             toUpperCase(table_name);
             toUpperCase(type_name_arr[index_arr]);
+            
             index_arr++;
-
             while (parsing = find(parsing, ";")) {
                 if(sscanf(parsing, "%[^:^;]%*c%[^;^\n]", type_name_arr[index_arr], field_name_arr[index_arr]) == 2) {
                     toUpperCase(type_name_arr[index_arr]);
@@ -41,7 +41,6 @@ void parser(char *command) {
                     CMD_ERROR_CODE = CT_WS_USC; return;
                 }
             }
-
             createTable(table_name, type_name_arr, field_name_arr, index_arr);
         } else {
             CMD_ERROR_CODE = CT_WS; return;

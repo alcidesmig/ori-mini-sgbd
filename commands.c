@@ -2,6 +2,8 @@
 
 // Erro global de execução de comandos
 int EXEC_ERROR_CODE = NONE;
+// Variável global utilizada para manipular arquivos
+FILE * fp;
 
 // Cria tabela
 // table_name: Nome da tabela
@@ -11,20 +13,49 @@ int EXEC_ERROR_CODE = NONE;
 void createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_arr, int size_arr) {
     printf("Criando tabela %s.\n", table_name);
 
+    Table data;
+    data.qt_fields = size_arr;
+    strcpy(data.table_name, table_name);
+    
     for (int i = 0; i < size_arr; i++) {
         for (int j = 0; j < TYPE_MAX && type_name_arr[i][j] != '\0'; j++) {
             printf("%c", type_name_arr[i][j]);
         }
+        strcpy(data.types[i], type_name_arr[i]);
+        strcat(data.types[i], "\0");
         printf(" ");
         for (int j = 0; j < FIELD_MAX && field_name_arr[i][j] != '\0'; j++) {
             printf("%c", field_name_arr[i][j]);
         }
+        strcpy(data.fields[i], field_name_arr[i]);
+        strcat(data.fields[i], "\0");
         printf("\n");
     }
 
-    printf("TODO\n");
-}
+    
+    // Abre arquivo com os metadados das tabelas
+    fp = fopen("tables.bin", "ab+");
 
+    // Coloca o ponteiro no início e tenta ler o número que representa a quantidade de tabelas, para acrescentar 1
+    fseek(fp, 0, SEEK_SET);
+    int qt_tables = 0;
+    if (fread(&qt_tables, sizeof(int), 1, fp) != 0){
+        fseek(fp, 0, SEEK_SET);
+        qt_tables++;
+        fwrite(&qt_tables, sizeof(int), 1, fp);
+    } else {
+        fseek(fp, 0, SEEK_SET);
+        qt_tables = 1;
+        fwrite(&qt_tables, sizeof(int), 1, fp); 
+    }
+    fseek(fp, 0, SEEK_END);
+
+    // Grava os metadados da nova tabela
+    fwrite(&data, sizeof(Table), 1, fp);
+    fclose(fp);
+
+    printf("Tabela criada!\n");
+}
 // Remove tabela
 // table_name: Nome da tabela
 void removeTable(char *table_name) {
@@ -42,7 +73,27 @@ void apTable(char *table_name) {
 // Lista tabela
 void listTables() {
     printf("Listando tabelas.\n");
-    printf("TODO\n");
+
+    Table data;
+    int qt_tables;
+    // Abre arquivo que guarda os metadados das tabelas
+    fp = fopen("tables.bin", "rb");
+    // Lê a quantidade de tabelas existentes
+    fread(&qt_tables, sizeof(int), 1, fp);
+    printf("Quantidade de tabelas: %d\n", qt_tables);
+    // Lê os metadados de todas as tabelas
+    fread(&data, sizeof(Table), qt_tables, fp);
+    fclose(fp);
+    // Imprime para o usuário
+    for (int i = 0; i < qt_tables; i++) {
+        printf("%s ", data.table_name);
+
+        for(int j = 0; j < data.qt_fields; j++) {
+            printf("%s:%s ", data.types[i], data.fields[i]);
+        }
+        printf("\n");
+    }
+
 }
 
 // Inclui registro na tabela
