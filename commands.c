@@ -21,7 +21,6 @@ void createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_ar
         for (int j = 0; j < TYPE_MAX && type_name_arr[i][j] != '\0'; j++) {
             printf("%c", type_name_arr[i][j]);
         }
-        printf("aqui: <%s> %d", type_name_arr[i], type_name_arr[i] == "INT");
         if(strcmp(type_name_arr[i], STR) == 0) {
             data.types[i] = 'S';
         } else if(strcmp(type_name_arr[i], INT) == 0) {
