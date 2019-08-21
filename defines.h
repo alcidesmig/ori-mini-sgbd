@@ -35,9 +35,6 @@
 #define VALUE_MAX 32  // Tamanho máximo de um valor
 #define NUMBER_COLUMNS 32  // Número máximo de colunas
 
-// Marcadores
-#define TABLE_NAME 0x10
-
 // Arquivos
 #define TABLES_INDEX "table_index.tbli" // Arquivo de indexação das colunas
 #define TABLE_FILE_EX ".tbl" // Extenção de arquivo um arquivo de tabela
