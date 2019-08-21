@@ -72,7 +72,7 @@ void createTable(char *table_name, char type_name_arr[N_COLUMNS][TYPE_MAX], char
 void includeReg(char *table_name, char value_arr[N_COLUMNS][VALUE_MAX], int size_arr) {
     printf("Novo registro na tabela %s.\n", table_name);
 
-    for (int i = 0; i < iValue; i++) {
+    for (int i = 0; i < size_arr; i++) {
         printf("%s\n", value_arr[i]);
     }
 
