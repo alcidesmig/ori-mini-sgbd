@@ -146,7 +146,7 @@ void errorHandler(int error) {
 }
 
 int prepline() {
-    printf("SGDB> ");
+    printf("SGDB>");
 
     return 1;
 }
