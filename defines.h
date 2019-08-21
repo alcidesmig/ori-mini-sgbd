@@ -77,11 +77,12 @@ typedef Value ValueArr[NUMBER_COLUMNS];
 
 struct structTable {
 	TableName table_name;
-	TypeArr types;
+	Type types;
 	FieldArr fields;
 	int qt_fields;
 };
 typedef struct structTable Table;
+
 
 
 #endif /* DEFINES_H */

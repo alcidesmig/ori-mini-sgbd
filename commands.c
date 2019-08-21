@@ -21,8 +21,17 @@ void createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_ar
         for (int j = 0; j < TYPE_MAX && type_name_arr[i][j] != '\0'; j++) {
             printf("%c", type_name_arr[i][j]);
         }
-        strcpy(data.types[i], type_name_arr[i]);
-        strcat(data.types[i], "\0");
+        printf("aqui: <%s> %d", type_name_arr[i], type_name_arr[i] == "INT");
+        if(strcmp(type_name_arr[i], STR) == 0) {
+            data.types[i] = 'S';
+        } else if(strcmp(type_name_arr[i], INT) == 0) {
+            data.types[i] = 'I';
+        } else if(strcmp(type_name_arr[i], FLT) == 0) {
+            data.types[i] = 'F';
+        } else if(strcmp(type_name_arr[i], BIN) == 0) {
+            data.types[i] = 'B';
+        }
+        
         printf(" ");
         for (int j = 0; j < FIELD_MAX && field_name_arr[i][j] != '\0'; j++) {
             printf("%c", field_name_arr[i][j]);
@@ -87,9 +96,13 @@ void listTables() {
     // Imprime para o usuário
     for (int i = 0; i < qt_tables; i++) {
         printf("%s ", data.table_name);
-
         for(int j = 0; j < data.qt_fields; j++) {
-            printf("%s:%s ", data.types[i], data.fields[i]);
+            //printf("%s", data.types);
+            printf("%s:%s ", data.types[i] == 'S' ? 
+                                            STR : data.types[i] == 'F' ? 
+                                            FLT : data.types[i] == 'B' ? 
+                                            BIN : data.types[i] == 'I' ? 
+                                            INT : "?", data.fields[i]);
         }
         printf("\n");
     }
