@@ -7,174 +7,167 @@
 #include "tools.h"
 #include "commands.h"
 
-// Reconhece o comando
+// Marca a posição corrente no buffer de comando
+char *parsing;
+
+// Buffers: Nome da tabela, nome do campo(chave) e valor
+// Usados em comando com único parâmetro
+char table_name[TBLNM_MAX];
+char field_name[FIELD_MAX];
+char value[VALUE_MAX];
+
+// Buffers: Tipos, nomes do campo(chave) e valores
+// Usados em comando com mutiplos parâmetros
+char type_name_arr[N_COLUMNS][TYPE_MAX];
+char field_name_arr[N_COLUMNS][FIELD_MAX];
+char value_arr[N_COLUMNS][VALUE_MAX];
+
+// Index dos vetores a cima
+int index_arr = 0;
+
+// Identifica o comando
+// command: String com a linha de comando em questão
+// Lógica básica: Procura o comando e pula o ponteiro para após o mesmo, lê o nome da tabela, outro parâmetro até o ':' e outro até o ';' ou fim, repete
 int parser(char *command) {
-    char *parsing;
-
-    char table_name[TBLNM_MAX];
-    char field_name[FIELD_MAX];
-    char value[VALUE_MAX];
-
-    char type_name_arr[N_COLUMNS][TYPE_MAX];
-    char field_name_arr[N_COLUMNS][FIELD_MAX];
-    int iTypeField = 0;
-
-    char value_arr[N_COLUMNS][VALUE_MAX];
-    int iValue = 0;
+    index_arr = 0;
 
     if (parsing = findl(command, CT, 0)) {
-        if(sscanf(parsing, "%s %[^:]%*c%[^;]", table_name, type_name_arr[iTypeField], field_name_arr[iTypeField]) != 3) {
-            printf("Erro ao criar tabela.\n");
-            return 0;
-        }
+        if(sscanf(parsing, "%s %[^:]%*c%[^;]", table_name, type_name_arr[index_arr], field_name_arr[index_arr]) == 3) {
+            toUpperCase(table_name);
+            toUpperCase(type_name_arr[index_arr]);
+            index_arr++;
 
-        toUpperCase(table_name);
-        toUpperCase(type_name_arr[iTypeField]);
-
-        iTypeField++;
-
-        while (parsing = find(parsing, ";")) {
-            if(sscanf(parsing, "%[^:]%*c%[^;]", type_name_arr[iTypeField], field_name_arr[iTypeField]) != 2) {
-                printf("Erro ao criar tabela.\n");
-
-                return 0;
+            while (parsing = find(parsing, ";")) {
+                if(sscanf(parsing, "%[^:]%*c%[^;]", type_name_arr[index_arr], field_name_arr[index_arr]) == 2) {
+                    toUpperCase(type_name_arr[index_arr]);
+                    index_arr++;
+                } else {
+                    return CT_WS_USC;
+                }
             }
-    
-            toUpperCase(type_name_arr[iTypeField]);
 
-            iTypeField++;
+            createTable(table_name, type_name_arr, field_name_arr, index_arr);
+        } else {
+            return CT_WS;
         }
-
-        createTable(table_name, type_name_arr, field_name_arr, iTypeField);
     } else if (parsing = findl(command, RT, 0)) {
-        if (sscanf(parsing, "%s", table_name) != 1) {
-            printf("Erro ao remover tabela.\n");
-            return 0;
+        if (sscanf(parsing, "%s", table_name) == 1) {
+            toUpperCase(table_name);
+            removeTable(table_name);
+        } else {
+            return RT_WS;
         }
-
-        toUpperCase(table_name);
-
-        removeTable(table_name);
     } else if (parsing = findl(command, AT, 0)) {
-        if (sscanf(parsing, "%s", table_name) != 1) {
-            printf("Erro ao apresentar tabela.\n");
-            return 0;
+        if (sscanf(parsing, "%s", table_name) == 1) {
+            toUpperCase(table_name);
+            apTable(table_name);
+        } else {
+            return AT_WS;
         }
-
-        toUpperCase(table_name);
-
-        apTable(table_name);
     } else if (parsing = findl(command, LT, 0)) {
         listTables();
     } else if (parsing = findl(command, IR, 0)) {
-        if (sscanf(parsing, "%s %[^;]", table_name, value_arr[iValue]) != 2) {
-            printf("Erro ao incluir registro.\n");
-    
-            return 0;
-        }
+        if (sscanf(parsing, "%s %[^;]", table_name, value_arr[index_arr]) == 2) {
+            toUpperCase(table_name);
 
-        toUpperCase(table_name);
+            index_arr++;
 
-        iValue++;
-
-        while (parsing = find(parsing, ";")) {
-            if (sscanf(parsing, "%[^;]", value_arr[iValue]) != 1) {
-                printf("Erro ao incluir registro.\n");
-                
-                return 0;
+            while (parsing = find(parsing, ";")) {
+                if (sscanf(parsing, "%[^;]", value_arr[index_arr]) == 1) {
+                    index_arr++;
+                } else {
+                    return IR_USC;
+                }
             }
 
-            iValue++;
+            includeReg(table_name, value_arr, index_arr);
+        } else {
+            return IR_WS;
         }
-
-        includeReg(table_name, value_arr, iValue);
     } else if (parsing = findl(command, BR, 0)) {
         char *temp = parsing;
+        char *aux_type = 0;
+
         if (temp = findl(parsing, U, 1)) {
-            if (sscanf(temp, "%s %[^:]%*c%s", table_name, field_name, value) != 3) {
-                printf("Erro ao buscar registro.\n");
-                return 0;
-            }
-
-            toUpperCase(table_name);
-
-            busRegU(table_name, field_name, value);
+            aux_type = U;
         } else if (temp = findl(parsing, N, 1)) {
-            if (sscanf(temp, "%s %[^:]%*c%s", table_name, field_name, value) != 3) {
-                printf("Erro ao buscar registro.\n");
-                return 0;
-            }
-
-            toUpperCase(table_name);
-
-            busRegN(table_name, field_name, value);
+            aux_type = N;
         } else {
-            printf("Parâmetro não reconhecido.\n");
-            return 0;
+            return BR_MP;
+        }
+
+        if (sscanf(temp, "%s %[^:]%*c%s", table_name, field_name, value) == 3) {
+            toUpperCase(table_name);
+            
+            if (aux_type == U) {
+                busRegU(table_name, field_name, value);
+            } else if (aux_type == N) {
+                busRegN(table_name, field_name, value);
+            } else {
+                return IN_ERROR; 
+            }
+        } else {
+            return BR_WS;
         }
     } else if (parsing = findl(command, AR, 0)) {
-        if (sscanf(parsing, "%s", table_name) != 1) {
-            printf("Erro ao mostrar busca.\n");
-            return 0;
+        if (sscanf(parsing, "%s", table_name) == 1) {
+            toUpperCase(table_name);
+            apReg(table_name);
+        } else {
+            return AR_WS;
         }
-
-        toUpperCase(table_name);
-
-        apReg(table_name);
     } else if (parsing = findl(command, RR, 0)) {
-        if (sscanf(parsing, "%s", table_name) != 1) {
-            printf("Erro ao deletar registros.\n");
-            return 0;
+        if (sscanf(parsing, "%s", table_name) == 1) {
+            toUpperCase(table_name);
+
+            removeReg(table_name);
+        } else {
+            return RR_WS;
         }
-
-        toUpperCase(table_name);
-
-        removeReg(table_name);
     } else if (parsing = findl(command, CI, 0)) {
         char *temp = parsing;
+        char *aux_type = 0;
+
         if (temp = findl(parsing, A, 1)) {
-            if (sscanf(temp, "%s %s", table_name, field_name) != 2) {
-                printf("Erro ao criar índice.\n");
-                return 0;
-            }
-
-            toUpperCase(table_name);
-
-            createIndexA(table_name, field_name);
+            aux_type = A;
         } else if (temp = findl(parsing, H, 1)) {
-            if (sscanf(temp, "%s %s", table_name, field_name) != 2) {
-                printf("Erro ao criar índice.\n");
-                return 0;
-            }
-
-            toUpperCase(table_name);
-
-            createIndexH(table_name, field_name);
+            aux_type = H;
         } else {
-            printf("Parâmetro não reconhecido.\n");
-            return 0;
+            return CI_MP;
+        }
+
+        if (sscanf(temp, "%s %s", table_name, field_name) == 2) {
+            toUpperCase(table_name);
+            
+            if (aux_type == A) {
+                createIndexA(table_name, field_name);
+            } else if (aux_type == H) {
+                createIndexH(table_name, field_name);
+            } else {
+                return IN_ERROR; 
+            }
+        } else {
+            return CI_WS;               
         }
     } else if (parsing = findl(command, RI, 0)) {
-        if (sscanf(parsing, "%s %s", table_name, field_name) != 2) {
-            printf("Erro ao remover índice.\n");
-            return 0;
+        if (sscanf(parsing, "%s %s", table_name, field_name) == 2) {
+            toUpperCase(table_name);
+            removeIndex(table_name, field_name);
+        } else {
+            return RI_WS;
         }
-
-        toUpperCase(table_name);
-
-        removeIndex(table_name, field_name);
     } else if (parsing = findl(command, GI, 0)) {
-        if (sscanf(parsing, "%s %s", table_name, field_name) != 2) {
-            printf("Erro ao gerar índice.\n");
-            return 0;
+        if (sscanf(parsing, "%s %s", table_name, field_name) == 2) {
+            toUpperCase(table_name);
+            genIndex(table_name, field_name);
+        } else {
+            return GI_WS;
         }
-
-        toUpperCase(table_name);
-        
-        genIndex(table_name, field_name);
     } else if (parsing = findl(command, EB, 0)) {
-        return 1;
+        return EXIT;
     } else {
-        printf("Nenhum comando encontrado!\n");
+        return NO_CMD;
     }
+
+    return NONE;
 }

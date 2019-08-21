@@ -28,14 +28,37 @@
 #define FLT "FLT"
 
 // Tamanho máximo
-#define CMD_MAX 256
-#define TBLNM_MAX 32
-#define TYPE_MAX 4
-#define FIELD_MAX 32
-#define VALUE_MAX 32
-#define N_COLUMNS 32
+#define CMD_MAX   256 // Tamanho máximo da linha de comando
+#define TBLNM_MAX 32  // Tamanho máximo do nome da tabela
+#define TYPE_MAX  4   // Tamanho máximo dos tipos de dados
+#define FIELD_MAX 32  // Tamanho máximo do nome de um campo(chave)
+#define VALUE_MAX 32  // Tamanho máximo de um valor
+#define N_COLUMNS 32  // Número máximo de colunas
 
 // Arquivos
-#define TABLES_FILE "tables.bin"
+#define TABLES_FILE "tables.bin" // Arquivo de indexação das colunas
+
+// Erros
+// WS  0x01 Wrong Sintax
+// USC 0x02 Useless Semicolon
+// MP  0x04 Missing Parameter
+#define NONE      0x00
+#define IN_ERROR  0x10
+#define NO_CMD    0x20
+#define CT_WS     0x31
+#define CT_WS_USC 0x33
+#define RT_WS     0x41
+#define AT_WS     0x51
+#define IR_WS     0x61
+#define IR_USC    0x62
+#define BR_WS     0x71
+#define BR_MP     0x74
+#define AR_WS     0x81
+#define RR_WS     0x91
+#define CI_WS     0xb1
+#define CI_MP     0xa4
+#define RI_WS     0xc1
+#define GI_WS     0xd1
+#define EXIT      0xe0
 
 #endif /* DEFINES_H */

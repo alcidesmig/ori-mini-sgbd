@@ -8,34 +8,30 @@
 #include "commands.h"
 #include "tools.h"
 
+// Erro global
+int CMD_ERROR_CODE = 0;
+
+// Buffer da linha de comando
+char comando[CMD_MAX];
+
+// Arquivo de índice
+FILE *index_file = NULL;
+
+// Executa comandos a partir da linha de comando
 void commandLine() {
-    char comando[CMD_MAX];
+    CMD_ERROR_CODE = 0;
 
-    fgets(comando, CMD_MAX, stdin); // Lê o comando
-
-    // Lê os comandos
-    if (parser(comando)) {
-        return;
+    while (fgets(comando, CMD_MAX, stdin) && !CMD_ERROR_CODE) {
+        CMD_ERROR_CODE = parser(stripStart(comando));
     }
-
-    commandLine();
 }
 
-int fromFile(char *file) {
-    printf("Executando %s\n", file);
+// Executa comandos a partir de um arquivo
+int fromFile() {
+    CMD_ERROR_CODE = 0;
 
-    FILE *fp = fopen(file, "r");
-
-    if (fp == NULL) {
-        printf("Erro ao abrir arquivo.\n");
-        return 1;
-    }
-
-    char comando[CMD_MAX];
-
-    // Lê os comandos
-    while (fgets(comando, CMD_MAX, fp)) {
-        parser(comando); // Identifica o comando
+    while (fgets(comando, CMD_MAX, index_file) && !CMD_ERROR_CODE) {
+        CMD_ERROR_CODE = parser(stripStart(comando));
     }
 }
 
@@ -43,13 +39,20 @@ int main(int argc, char *argv[]) {
     if (argc == 1) {
         menu();
         commandLine();
-
-        printf("Saindo.\n");
     } else {
-        fromFile(argv[1]);
+        char *file = argv[1];
+        index_file = fopen(file, "r");
 
-        printf("Saindo.\n");
+        printf("Executando %s.\n", file);
+
+        if (index_file != NULL) {
+            fromFile(index_file);
+        } else {
+            printf("Erro ao abrir o arquivo.\n");
+        }
     }
+
+    errorHandler(CMD_ERROR_CODE);
 
     return 0;
 }
