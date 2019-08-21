@@ -3,51 +3,6 @@
 // Erro global de execução de comandos
 int EXEC_ERROR_CODE = NONE;
 
-// Remove tabela
-// table_name: Nome da tabela
-void removeTable(char *table_name) {
-    printf("Removendo a tabela %s.\n", table_name);
-    printf("TODO\n");
-}
-
-// Apresenta tabela tabela
-// table_name: Nome da tabela
-void apTable(char *table_name) {
-    printf("Mostrando a tabela %s.\n", table_name);
-    printf("TODO\n");
-}
-
-// Lista tabela
-void listTables() {
-    printf("Listando tabelas.\n");
-    printf("TODO\n");
-}
-
-// Apresenta registros pesquisados da tabela
-// table_name: Nome da tabela
-void apReg(char *table_name) {
-    printf("Mostrando a pesquisa de %s.\n", table_name);
-    printf("TODO\n");
-}
-
-// Busca registros na tabela, único
-// table_name: Nome da tabela
-// field_name: Nome do campo(chave)
-// value: Nome do valor
-void busRegU(char *table_name, char *field_name, char *value) {
-    printf("Buscando %s igual à %s em %s.\n", table_name, field_name, value);
-    printf("TODO\n");
-}
-
-// Busca registros na tabela, todos
-// table_name: Nome da tabela
-// field_name: Nome do campo(chave)
-// value: Nome do valor
-void busRegN(char *table_name, char *field_name, char *value) {
-    printf("Buscando todos os %s igual à %s em %s.\n", table_name, field_name, value);
-    printf("TODO\n");
-}
-
 // Cria tabela
 // table_name: Nome da tabela
 // type_name_arr: Vetor de tipos
@@ -70,6 +25,26 @@ void createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_ar
     printf("TODO\n");
 }
 
+// Remove tabela
+// table_name: Nome da tabela
+void removeTable(char *table_name) {
+    printf("Removendo a tabela %s.\n", table_name);
+    printf("TODO\n");
+}
+
+// Apresenta tabela tabela
+// table_name: Nome da tabela
+void apTable(char *table_name) {
+    printf("Mostrando a tabela %s.\n", table_name);
+    printf("TODO\n");
+}
+
+// Lista tabela
+void listTables() {
+    printf("Listando tabelas.\n");
+    printf("TODO\n");
+}
+
 // Inclui registro na tabela
 // table_name: Nome da tabela
 // value_arr: Vetor de valores
@@ -81,6 +56,31 @@ void includeReg(char *table_name, ValueArr value_arr, int size_arr) {
         printf("%s\n", value_arr[i]);
     }
 
+    printf("TODO\n");
+}
+
+// Busca registros na tabela, único
+// table_name: Nome da tabela
+// field_name: Nome do campo(chave)
+// value: Nome do valor
+void busRegU(char *table_name, char *field_name, char *value) {
+    printf("Buscando %s igual à %s em %s.\n", table_name, field_name, value);
+    printf("TODO\n");
+}
+
+// Busca registros na tabela, todos
+// table_name: Nome da tabela
+// field_name: Nome do campo(chave)
+// value: Nome do valor
+void busRegN(char *table_name, char *field_name, char *value) {
+    printf("Buscando todos os %s igual à %s em %s.\n", table_name, field_name, value);
+    printf("TODO\n");
+}
+
+// Apresenta registros pesquisados da tabela
+// table_name: Nome da tabela
+void apReg(char *table_name) {
+    printf("Mostrando a pesquisa de %s.\n", table_name);
     printf("TODO\n");
 }
 

@@ -10,6 +10,13 @@
 // Erro global de execução de comandos
 extern int EXEC_ERROR_CODE;
 
+// Cria tabela
+// table_name: Nome da tabela
+// type_name_arr: Vetor de tipos
+// field_name_arr: Vetor de campos(chave)
+// size_arr: Tamanho dos vetores
+void createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_arr, int size_arr);
+
 // Remove tabela
 // table_name: Nome da tabela
 void removeTable(char *table_name);
@@ -20,9 +27,12 @@ void apTable(char *table_name);
 
 // Lista tabela
 void listTables();
-// Apresenta registros pesquisados da tabela
+
+// Inclui registro na tabela
 // table_name: Nome da tabela
-void apReg(char *table_name);
+// value_arr: Vetor de valores
+// size_arr: Tamanho do vetores
+void includeReg(char *table_name, ValueArr value_arr, int size_arr);
 
 // Busca registros na tabela, único
 // table_name: Nome da tabela
@@ -36,18 +46,9 @@ void busRegU(char *table_name, char *field_name, char *value);
 // value: Nome do valor
 void busRegN(char *table_name, char *field_name, char *value);
 
-// Cria tabela
+// Apresenta registros pesquisados da tabela
 // table_name: Nome da tabela
-// type_name_arr: Vetor de tipos
-// field_name_arr: Vetor de campos(chave)
-// size_arr: Tamanho dos vetores
-void createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_arr, int index_arr);
-
-// Inclui registro na tabela
-// table_name: Nome da tabela
-// value_arr: Vetor de valores
-// size_arr: Tamanho do vetores
-void includeReg(char *table_name, ValueArr value_arr, int index_arr);
+void apReg(char *table_name);
 
 // Remove registro da tabela
 // table_name: Nome da tabela
