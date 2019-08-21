@@ -57,7 +57,7 @@ void createTable(char *table_name, char type_name_arr[NUMBER_COLUMNS][TYPE_MAX],
     printf("Criando tabela %s.\n", table_name);
 
     for (int i = 0; i < size_arr; i++) {
-        printf("%s %s\n", type_name_arr[i], field_name_arr[i]);
+        printf("(%s) (%s)\n", type_name_arr[i], field_name_arr[i]);
     }
 
     printf("TODO\n");

@@ -18,7 +18,7 @@ FILE *cmd_file = NULL;
 void commandLine() {
     CMD_ERROR_CODE = 0;
 
-    while (fgets(comando, CMD_MAX, stdin) && !CMD_ERROR_CODE) {
+    while (!CMD_ERROR_CODE && fgets(comando, CMD_MAX, stdin)) {
         parser(stripStart(comando));
     }
 }
@@ -27,7 +27,7 @@ void commandLine() {
 int fromFile() {
     CMD_ERROR_CODE = 0;
 
-    while (fgets(comando, CMD_MAX, cmd_file) && !CMD_ERROR_CODE) {
+    while (!CMD_ERROR_CODE && fgets(comando, CMD_MAX, cmd_file)) {
         parser(stripStart(comando));
     }
 }

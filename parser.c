@@ -24,61 +24,61 @@ int index_arr = 0;
 // Identifica o comando
 // command: String com a linha de comando em questão
 // Lógica básica: Procura o comando e pula o ponteiro para após o mesmo, lê o nome da tabela, outro parâmetro até o ':' e outro até o ';' ou fim, repete
-int parser(char *command) {
+void parser(char *command) {
     index_arr = 0;
 
     if (parsing = findl(command, CT, 0)) {
-        if(sscanf(parsing, "%s %[^:]%*c%[^;]", table_name, type_name_arr[index_arr], field_name_arr[index_arr]) == 3) {
+        if(sscanf(parsing, "%s %[^:]%*c%[^;^\n]", table_name, type_name_arr[index_arr], field_name_arr[index_arr]) == 3) {
             toUpperCase(table_name);
             toUpperCase(type_name_arr[index_arr]);
             index_arr++;
 
             while (parsing = find(parsing, ";")) {
-                if(sscanf(parsing, "%[^:]%*c%[^;]", type_name_arr[index_arr], field_name_arr[index_arr]) == 2) {
+                if(sscanf(parsing, "%[^:]%*c%[^;^\n]", type_name_arr[index_arr], field_name_arr[index_arr]) == 2) {
                     toUpperCase(type_name_arr[index_arr]);
                     index_arr++;
                 } else {
-                    return CT_WS_USC;
+                    CMD_ERROR_CODE = CT_WS_USC; return;
                 }
             }
 
             createTable(table_name, type_name_arr, field_name_arr, index_arr);
         } else {
-            return CT_WS;
+            CMD_ERROR_CODE = CT_WS; return;
         }
     } else if (parsing = findl(command, RT, 0)) {
         if (sscanf(parsing, "%s", table_name) == 1) {
             toUpperCase(table_name);
             removeTable(table_name);
         } else {
-            return RT_WS;
+            CMD_ERROR_CODE = RT_WS; return;
         }
     } else if (parsing = findl(command, AT, 0)) {
         if (sscanf(parsing, "%s", table_name) == 1) {
             toUpperCase(table_name);
             apTable(table_name);
         } else {
-            return AT_WS;
+            CMD_ERROR_CODE = AT_WS; return;
         }
     } else if (parsing = findl(command, LT, 0)) {
         listTables();
     } else if (parsing = findl(command, IR, 0)) {
-        if (sscanf(parsing, "%s %[^;]", table_name, value_arr[index_arr]) == 2) {
+        if (sscanf(parsing, "%s %[^;^\n]", table_name, value_arr[index_arr]) == 2) {
             toUpperCase(table_name);
 
             index_arr++;
 
             while (parsing = find(parsing, ";")) {
-                if (sscanf(parsing, "%[^;]", value_arr[index_arr]) == 1) {
+                if (sscanf(parsing, "%[^;^\n]", value_arr[index_arr]) == 1) {
                     index_arr++;
                 } else {
-                    return IR_USC;
+                    CMD_ERROR_CODE = IR_USC; return;
                 }
             }
 
             includeReg(table_name, value_arr, index_arr);
         } else {
-            return IR_WS;
+            CMD_ERROR_CODE = IR_WS; return;
         }
     } else if (parsing = findl(command, BR, 0)) {
         char *temp = parsing;
@@ -89,7 +89,7 @@ int parser(char *command) {
         } else if (temp = findl(parsing, N, 1)) {
             aux_type = N;
         } else {
-            return BR_MP;
+            CMD_ERROR_CODE = BR_MP; return;
         }
 
         if (sscanf(temp, "%s %[^:]%*c%s", table_name, field_name, value) == 3) {
@@ -100,17 +100,17 @@ int parser(char *command) {
             } else if (aux_type == N) {
                 busRegN(table_name, field_name, value);
             } else {
-                return IN_ERROR; 
+                CMD_ERROR_CODE = IN_ERROR;  return;
             }
         } else {
-            return BR_WS;
+            CMD_ERROR_CODE = BR_WS; return;
         }
     } else if (parsing = findl(command, AR, 0)) {
         if (sscanf(parsing, "%s", table_name) == 1) {
             toUpperCase(table_name);
             apReg(table_name);
         } else {
-            return AR_WS;
+            CMD_ERROR_CODE = AR_WS; return;
         }
     } else if (parsing = findl(command, RR, 0)) {
         if (sscanf(parsing, "%s", table_name) == 1) {
@@ -118,7 +118,7 @@ int parser(char *command) {
 
             removeReg(table_name);
         } else {
-            return RR_WS;
+            CMD_ERROR_CODE = RR_WS; return;
         }
     } else if (parsing = findl(command, CI, 0)) {
         char *temp = parsing;
@@ -129,7 +129,7 @@ int parser(char *command) {
         } else if (temp = findl(parsing, H, 1)) {
             aux_type = H;
         } else {
-            return CI_MP;
+            CMD_ERROR_CODE = CI_MP; return;
         }
 
         if (sscanf(temp, "%s %s", table_name, field_name) == 2) {
@@ -140,30 +140,30 @@ int parser(char *command) {
             } else if (aux_type == H) {
                 createIndexH(table_name, field_name);
             } else {
-                return IN_ERROR; 
+                CMD_ERROR_CODE = IN_ERROR;  return;
             }
         } else {
-            return CI_WS;               
+            CMD_ERROR_CODE = CI_WS;  return;              
         }
     } else if (parsing = findl(command, RI, 0)) {
         if (sscanf(parsing, "%s %s", table_name, field_name) == 2) {
             toUpperCase(table_name);
             removeIndex(table_name, field_name);
         } else {
-            return RI_WS;
+            CMD_ERROR_CODE = RI_WS; return;
         }
     } else if (parsing = findl(command, GI, 0)) {
         if (sscanf(parsing, "%s %s", table_name, field_name) == 2) {
             toUpperCase(table_name);
             genIndex(table_name, field_name);
         } else {
-            return GI_WS;
+            CMD_ERROR_CODE = GI_WS; return;
         }
     } else if (parsing = findl(command, EB, 0)) {
-        return EXIT;
+        CMD_ERROR_CODE = EXIT;
     } else {
-        return NO_CMD;
+        CMD_ERROR_CODE = NO_CMD; return;
     }
 
-    return NONE;
+    CMD_ERROR_CODE = NONE; return;
 }
