@@ -53,11 +53,18 @@ void busRegN(char *table_name, char *field_name, char *value) {
 // type_name_arr: Vetor de tipos
 // field_name_arr: Vetor de campos(chave)
 // size_arr: Tamanho dos vetores
-void createTable(char *table_name, char type_name_arr[NUMBER_COLUMNS][TYPE_MAX], char field_name_arr[NUMBER_COLUMNS][FIELD_MAX], int size_arr) {
+void createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_arr, int size_arr) {
     printf("Criando tabela %s.\n", table_name);
 
     for (int i = 0; i < size_arr; i++) {
-        printf("(%s) (%s)\n", type_name_arr[i], field_name_arr[i]);
+        for (int j = 0; j < TYPE_MAX && type_name_arr[i][j] != '\0'; j++) {
+            printf("%c", type_name_arr[i][j]);
+        }
+        printf(" ");
+        for (int j = 0; j < FIELD_MAX && field_name_arr[i][j] != '\0'; j++) {
+            printf("%c", field_name_arr[i][j]);
+        }
+        printf("\n");
     }
 
     printf("TODO\n");
@@ -67,7 +74,7 @@ void createTable(char *table_name, char type_name_arr[NUMBER_COLUMNS][TYPE_MAX],
 // table_name: Nome da tabela
 // value_arr: Vetor de valores
 // size_arr: Tamanho do vetores
-void includeReg(char *table_name, char value_arr[NUMBER_COLUMNS][VALUE_MAX], int size_arr) {
+void includeReg(char *table_name, ValueArr value_arr, int size_arr) {
     printf("Novo registro na tabela %s.\n", table_name);
 
     for (int i = 0; i < size_arr; i++) {

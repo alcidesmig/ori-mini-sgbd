@@ -18,7 +18,7 @@ FILE *cmd_file = NULL;
 void commandLine() {
     CMD_ERROR_CODE = 0;
 
-    while (!CMD_ERROR_CODE && fgets(comando, CMD_MAX, stdin)) {
+    while (!CMD_ERROR_CODE && prepline() && fgets(comando, CMD_MAX, stdin)) {
         parser(stripStart(comando));
     }
 }

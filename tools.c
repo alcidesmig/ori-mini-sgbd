@@ -144,3 +144,9 @@ void errorHandler(int error) {
             break;
     }
 }
+
+int prepline() {
+    printf("SGDB> ");
+
+    return 1;
+}

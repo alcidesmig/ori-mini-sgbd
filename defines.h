@@ -65,4 +65,14 @@
 #define GI_WS     0xd1
 #define EXIT      0xe0
 
+// Tipos
+typedef char TableName[TABLE_NAME_MAX];
+typedef char Type[TYPE_MAX];
+typedef char Field[FIELD_MAX];
+typedef char Value[VALUE_MAX];
+
+typedef Type TypeArr[NUMBER_COLUMNS];
+typedef Field FieldArr[NUMBER_COLUMNS];
+typedef Value ValueArr[NUMBER_COLUMNS];
+
 #endif /* DEFINES_H */

@@ -33,4 +33,6 @@ char *stripStart(char *command);
 // Printa mensagens de acordo com o erro
 void errorHandler(int error);
 
+int prepline();
+
 #endif /* TOOLS_H */

@@ -8,15 +8,15 @@ char *parsing;
 
 // Buffers: Nome da tabela, nome do campo(chave) e valor
 // Usados em comando com único parâmetro
-char table_name[TABLE_NAME_MAX];
-char field_name[FIELD_MAX];
-char value[VALUE_MAX];
+TableName table_name;
+Field field_name;
+Value value;
 
 // Buffers: Tipos, nomes do campo(chave) e valores
 // Usados em comando com mutiplos parâmetros
-char type_name_arr[NUMBER_COLUMNS][TYPE_MAX];
-char field_name_arr[NUMBER_COLUMNS][FIELD_MAX];
-char value_arr[NUMBER_COLUMNS][VALUE_MAX];
+TypeArr type_name_arr;
+FieldArr field_name_arr;
+ValueArr value_arr;
 
 // Index dos vetores a cima
 int index_arr = 0;
@@ -28,13 +28,13 @@ void parser(char *command) {
     index_arr = 0;
 
     if (parsing = findl(command, CT, 0)) {
-        if(sscanf(parsing, "%s %[^:]%*c%[^;^\n]", table_name, type_name_arr[index_arr], field_name_arr[index_arr]) == 3) {
+        if(sscanf(parsing, "%s %[^:^;]%*c%[^;^\n]", table_name, type_name_arr[index_arr], field_name_arr[index_arr]) == 3) {
             toUpperCase(table_name);
             toUpperCase(type_name_arr[index_arr]);
             index_arr++;
 
             while (parsing = find(parsing, ";")) {
-                if(sscanf(parsing, "%[^:]%*c%[^;^\n]", type_name_arr[index_arr], field_name_arr[index_arr]) == 2) {
+                if(sscanf(parsing, "%[^:^;]%*c%[^;^\n]", type_name_arr[index_arr], field_name_arr[index_arr]) == 2) {
                     toUpperCase(type_name_arr[index_arr]);
                     index_arr++;
                 } else {
@@ -84,9 +84,9 @@ void parser(char *command) {
         char *temp = parsing;
         char *aux_type = 0;
 
-        if (temp = findl(parsing, U, 1)) {
+        if (temp = findl(stripStart(parsing), U, 1)) {
             aux_type = U;
-        } else if (temp = findl(parsing, N, 1)) {
+        } else if (temp = findl(stripStart(parsing), N, 1)) {
             aux_type = N;
         } else {
             CMD_ERROR_CODE = BR_MP; return;
@@ -124,9 +124,9 @@ void parser(char *command) {
         char *temp = parsing;
         char *aux_type = 0;
 
-        if (temp = findl(parsing, A, 1)) {
+        if (temp = findl(stripStart(parsing), A, 1)) {
             aux_type = A;
-        } else if (temp = findl(parsing, H, 1)) {
+        } else if (temp = findl(stripStart(parsing), H, 1)) {
             aux_type = H;
         } else {
             CMD_ERROR_CODE = CI_MP; return;
@@ -160,7 +160,7 @@ void parser(char *command) {
             CMD_ERROR_CODE = GI_WS; return;
         }
     } else if (parsing = findl(command, EB, 0)) {
-        CMD_ERROR_CODE = EXIT;
+        CMD_ERROR_CODE = EXIT; return;
     } else {
         CMD_ERROR_CODE = NO_CMD; return;
     }
