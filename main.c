@@ -9,7 +9,8 @@
 #include "tools.h"
 
 // Buffer da linha de comando
-char comando[CMD_MAX];
+char *comando;
+ssize_t tam_comando;
 
 // Arquivo de comandos
 FILE *cmd_file = NULL;
@@ -18,7 +19,7 @@ FILE *cmd_file = NULL;
 void commandLine() {
     CMD_ERROR_CODE = 0;
 
-    while (!CMD_ERROR_CODE && prepline() && fgets(comando, CMD_MAX, stdin)) {
+    while (!CMD_ERROR_CODE && prepline() && getline(&comando, &tam_comando, stdin)) {
         parser(stripStart(comando));
     }
 }
@@ -27,7 +28,7 @@ void commandLine() {
 int fromFile() {
     CMD_ERROR_CODE = 0;
 
-    while (!CMD_ERROR_CODE && fgets(comando, CMD_MAX, cmd_file)) {
+    while (!CMD_ERROR_CODE && getline(&comando, &tam_comando, cmd_file)) {
         parser(stripStart(comando));
     }
 }

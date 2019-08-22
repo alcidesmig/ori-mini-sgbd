@@ -28,7 +28,6 @@
 #define FLT "FLT"
 
 // Tamanho máximo
-#define CMD_MAX   256 // Tamanho máximo da linha de comando
 #define TABLE_NAME_MAX 32  // Tamanho máximo do nome da tabela
 #define TYPE_MAX  4   // Tamanho máximo dos tipos de dados
 #define FIELD_MAX 32  // Tamanho máximo do nome de um campo(chave)
