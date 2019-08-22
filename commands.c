@@ -13,7 +13,7 @@ FILE * fp;
 int createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_arr, int size_arr) {
     // Verificando se o nome da tabela já não existe
     int qt_tables;
-    fp = fopen("tables.bin", "rb");
+    fp = fopen(TABLES_INDEX, "rb");
     if(fp != NULL) {
         fread(&qt_tables, sizeof(int), 1, fp);
         Table data_existent[qt_tables];
@@ -44,9 +44,9 @@ int createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_arr
 
     
     // Abre arquivo com os metadados das tabelas
-    fp = fopen("tables.bin", "rb+");
+    fp = fopen(TABLES_INDEX, "rb+");
     if(fp == NULL) {
-        fp = fopen("tables.bin", "wb+");
+        fp = fopen(TABLES_INDEX, "wb+");
     }
     // Coloca o ponteiro no início e tenta ler o número que representa a quantidade de tabelas, para acrescentar 1
     fseek(fp, 0, SEEK_SET);
