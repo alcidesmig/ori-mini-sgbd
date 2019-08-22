@@ -87,7 +87,7 @@ void listTables() {
     printf("Listando tabelas.\n");
     int qt_tables;
     // Abre arquivo que guarda os metadados das tabelas
-    fp = fopen("tables.bin", "rb");
+    fp = fopen(TABLES_INDEX, "rb");
     // Lê a quantidade de tabelas existentes
     fread(&qt_tables, sizeof(int), 1, fp);
     printf("Quantidade de tabelas: %d\n", qt_tables);
