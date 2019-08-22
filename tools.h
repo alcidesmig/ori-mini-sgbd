@@ -30,6 +30,9 @@ char *find(char *haystack, const char *needle);
 // Retorna ponteiro para a nova posição
 char *stripStart(char *command);
 
+// Retira espaços indesejados no meio dos tipos e substitui os espaços dos atributos por '_'
+void fixingCommand(char * command);
+
 // Printa mensagens de acordo com o erro
 void errorHandler(int error);
 

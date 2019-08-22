@@ -85,6 +85,28 @@ char *stripStart(char *command) {
     return command + i;
 }
 
+// Retira espaços indesejados no meio dos tipos e substitui os espaços dos atributos por '_'
+void fixingCommand(char * command) {
+    char * beginStruct = strstr((strstr(command, " ") + 1), " ") + 1;
+    void bringBack(char * str, int qt) {
+        for(int i = 0; i < strlen(str); i++) {
+            str[i] = str[i+qt];
+        }
+    }
+    int inType = 0;
+    for(int i = 0; beginStruct[i] != '\0'; i++){
+        if(beginStruct[i] == ':') inType = 1;
+        else if(beginStruct[i] == ';') inType = 0;
+        if(beginStruct[i] == ' '){
+            if(!inType) {
+                bringBack(&beginStruct[i], 1);
+            } else {
+                beginStruct[i] = '_';
+            }
+        }
+    }
+}
+
 // Printa mensagens de acordo com o erro
 void errorHandler(int error) {
     switch (error) {

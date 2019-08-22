@@ -24,10 +24,13 @@ int index_arr = 0;
 // Identifica o comando
 // command: String com a linha de comando em questão
 // Lógica básica: Procura o comando e pula o ponteiro para após o mesmo, lê o nome da tabela, outro parâmetro até o ':' e outro até o ';' ou fim, repete
-void parser(char *command) {
+void parser(char * command) {
     index_arr = 0;
 
+    // Começa o parsing
     if (parsing = findl(command, CT, 0)) {
+        // Chama função para tratar dos espaços indesejados
+        fixingCommand(command);
         if(sscanf(parsing, "%s %[^:^;]%*c%[^;^\n]", table_name, type_name_arr[index_arr], field_name_arr[index_arr]) == 3) {
             toUpperCase(table_name);
             toUpperCase(type_name_arr[index_arr]);
