@@ -10,17 +10,26 @@ FILE * fp;
 // type_name_arr: Vetor de tipos
 // field_name_arr: Vetor de campos(chave)
 // size_arr: Tamanho dos vetores
-void createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_arr, int size_arr) {
-    printf("Criando tabela %s.\n", table_name);
+int createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_arr, int size_arr) {
+    // Verificando se o nome da tabela já não existe
+    int qt_tables;
+    fp = fopen("tables.bin", "rb");
+    if(fp != NULL) {
+        fread(&qt_tables, sizeof(int), 1, fp);
+        Table data_existent[qt_tables];
+        fread(&data_existent, sizeof(Table), qt_tables, fp);
+        fclose(fp);
+        for (int i = 0; i < qt_tables; i++) {
+            if(strcmp(data_existent[i].table_name, table_name) == 0) return CT_FAILED_TB_EXISTENT;
+        }
+    }
 
+    // Criação da tabela
     Table data;
     data.qt_fields = size_arr;
     strcpy(data.table_name, table_name);
     
     for (int i = 0; i < size_arr; i++) {
-        for (int j = 0; j < TYPE_MAX && type_name_arr[i][j] != '\0'; j++) {
-            printf("%c", type_name_arr[i][j]);
-        }
         if(strcmp(type_name_arr[i], STR) == 0) {
             data.types[i] = 'S';
         } else if(strcmp(type_name_arr[i], INT) == 0) {
@@ -30,13 +39,7 @@ void createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_ar
         } else if(strcmp(type_name_arr[i], BIN) == 0) {
             data.types[i] = 'B';
         }
-        
-        printf(" ");
-        for (int j = 0; j < FIELD_MAX && field_name_arr[i][j] != '\0'; j++) {
-            printf("%c", field_name_arr[i][j]);
-        }
         strcpy(data.fields[i], field_name_arr[i]);
-        printf("\n");
     }
 
     
@@ -47,7 +50,7 @@ void createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_ar
     }
     // Coloca o ponteiro no início e tenta ler o número que representa a quantidade de tabelas, para acrescentar 1
     fseek(fp, 0, SEEK_SET);
-    int qt_tables = 0;
+    qt_tables = 0;
     if (fread(&qt_tables, sizeof(int), 1, fp) != 0){
         fseek(fp, 0, SEEK_SET);
         qt_tables++;
@@ -63,7 +66,7 @@ void createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_ar
     fwrite(&data, sizeof(Table), 1, fp);
     fclose(fp);
 
-    printf("Tabela criada!\n");
+    return CT_SUCCESS;
 }
 // Remove tabela
 // table_name: Nome da tabela
@@ -79,17 +82,16 @@ void apTable(char *table_name) {
     printf("TODO\n");
 }
 
-// Lista tabela
+// Lista tabelas
 void listTables() {
     printf("Listando tabelas.\n");
-
-    
     int qt_tables;
     // Abre arquivo que guarda os metadados das tabelas
     fp = fopen("tables.bin", "rb");
     // Lê a quantidade de tabelas existentes
     fread(&qt_tables, sizeof(int), 1, fp);
     printf("Quantidade de tabelas: %d\n", qt_tables);
+    // Alocação dinâmica para armazenar os dados das tabelas
     Table data[qt_tables];
     // Lê os metadados de todas as tabelas
     fread(&data, sizeof(Table), qt_tables, fp);

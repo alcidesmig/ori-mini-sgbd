@@ -15,7 +15,7 @@ extern int EXEC_ERROR_CODE;
 // type_name_arr: Vetor de tipos
 // field_name_arr: Vetor de campos(chave)
 // size_arr: Tamanho dos vetores
-void createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_arr, int size_arr);
+int createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_arr, int size_arr);
 
 // Remove tabela
 // table_name: Nome da tabela

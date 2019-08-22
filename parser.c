@@ -44,7 +44,17 @@ void parser(char * command) {
                     CMD_ERROR_CODE = CT_WS_USC; return;
                 }
             }
-            createTable(table_name, type_name_arr, field_name_arr, index_arr);
+            switch (createTable(table_name, type_name_arr, field_name_arr, index_arr)) {
+                case CT_SUCCESS:
+                    printf("Tabela criada.\n");
+                break;
+                case CT_FAILED_TB_EXISTENT:
+                    printf("Uma tabela com o mesmo nome já existe.\n");
+                break;
+                case CT_FAILED:
+                    printf("Erro ao criar a tabela.\n");
+                break;
+            }
         } else {
             CMD_ERROR_CODE = CT_WS; return;
         }

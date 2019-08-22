@@ -62,6 +62,11 @@
 #define GI_WS     0xd1
 #define EXIT      0xe0
 
+// Retorno de funções
+#define CT_SUCCESS 0
+#define CT_FAILED_TB_EXISTENT 1
+#define CT_FAILED 2
+
 //Typedefs
 
 typedef char TableName[TABLE_NAME_MAX];
@@ -82,7 +87,5 @@ struct structTable {
 	int qt_fields;
 };
 typedef struct structTable Table;
-
-
 
 #endif /* DEFINES_H */
