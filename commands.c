@@ -36,14 +36,15 @@ void createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_ar
             printf("%c", field_name_arr[i][j]);
         }
         strcpy(data.fields[i], field_name_arr[i]);
-        strcat(data.fields[i], "\0");
         printf("\n");
     }
 
     
     // Abre arquivo com os metadados das tabelas
-    fp = fopen("tables.bin", "ab+");
-
+    fp = fopen("tables.bin", "rb+");
+    if(fp == NULL) {
+        fp = fopen("tables.bin", "wb+");
+    }
     // Coloca o ponteiro no início e tenta ler o número que representa a quantidade de tabelas, para acrescentar 1
     fseek(fp, 0, SEEK_SET);
     int qt_tables = 0;
@@ -82,26 +83,26 @@ void apTable(char *table_name) {
 void listTables() {
     printf("Listando tabelas.\n");
 
-    Table data;
+    
     int qt_tables;
     // Abre arquivo que guarda os metadados das tabelas
     fp = fopen("tables.bin", "rb");
     // Lê a quantidade de tabelas existentes
     fread(&qt_tables, sizeof(int), 1, fp);
     printf("Quantidade de tabelas: %d\n", qt_tables);
+    Table data[qt_tables];
     // Lê os metadados de todas as tabelas
     fread(&data, sizeof(Table), qt_tables, fp);
     fclose(fp);
     // Imprime para o usuário
     for (int i = 0; i < qt_tables; i++) {
-        printf("%s ", data.table_name);
-        for(int j = 0; j < data.qt_fields; j++) {
-            //printf("%s", data.types);
-            printf("%s:%s ", data.types[i] == 'S' ? 
-                                            STR : data.types[i] == 'F' ? 
-                                            FLT : data.types[i] == 'B' ? 
-                                            BIN : data.types[i] == 'I' ? 
-                                            INT : "?", data.fields[i]);
+        printf("%s ", data[i].table_name);
+        for(int j = 0; j < data[i].qt_fields; j++) {
+            printf("%s:%s ", data[i].types[j] == 'S' ? 
+                                            STR : data[i].types[j] == 'F' ? 
+                                            FLT : data[i].types[j] == 'B' ? 
+                                            BIN : data[i].types[j] == 'I' ? 
+                                            INT : "?", data[i].fields[j]);
         }
         printf("\n");
     }
