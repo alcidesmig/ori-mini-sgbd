@@ -31,13 +31,13 @@ int createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_arr
     
     for (int i = 0; i < size_arr; i++) {
         if(strcmp(type_name_arr[i], STR) == 0) {
-            data.types[i] = 'S';
+            data.types[i] = STR_REP;
         } else if(strcmp(type_name_arr[i], INT) == 0) {
-            data.types[i] = 'I';
+            data.types[i] = INT_REP;
         } else if(strcmp(type_name_arr[i], FLT) == 0) {
-            data.types[i] = 'F';
+            data.types[i] = FLT_REP;
         } else if(strcmp(type_name_arr[i], BIN) == 0) {
-            data.types[i] = 'B';
+            data.types[i] = BIN_REP;
         }
         strcpy(data.fields[i], field_name_arr[i]);
     }
@@ -100,10 +100,10 @@ void listTables() {
     for (int i = 0; i < qt_tables; i++) {
         printf("%s ", data[i].table_name);
         for(int j = 0; j < data[i].qt_fields; j++) {
-            printf("%s:%s ", data[i].types[j] == 'S' ? 
-                                            STR : data[i].types[j] == 'F' ? 
-                                            FLT : data[i].types[j] == 'B' ? 
-                                            BIN : data[i].types[j] == 'I' ? 
+            printf("%s:%s ", data[i].types[j] == STR_REP ? 
+                                            STR : data[i].types[j] == FLT_REP ? 
+                                            FLT : data[i].types[j] == BIN_REP ? 
+                                            BIN : data[i].types[j] == INT_REP ? 
                                             INT : "?", data[i].fields[j]);
         }
         printf("\n");

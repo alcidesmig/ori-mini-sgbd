@@ -27,6 +27,11 @@
 #define INT "INT"
 #define FLT "FLT"
 
+#define STR_REP "S"
+#define BIN_REP "B"
+#define INT_REP "I"
+#define FLT_REP "F"
+
 // Tamanho máximo
 #define TABLE_NAME_MAX 32  // Tamanho máximo do nome da tabela
 #define TYPE_MAX  4   // Tamanho máximo dos tipos de dados
@@ -67,7 +72,6 @@
 #define CT_FAILED 2
 
 //Typedefs
-
 typedef char TableName[TABLE_NAME_MAX];
 
 typedef char Type[TYPE_MAX];
