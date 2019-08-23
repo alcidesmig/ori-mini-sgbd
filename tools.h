@@ -44,6 +44,9 @@ char *find(char *haystack, const char *needle);
 // Retorna ponteiro para a nova posição
 char *stripStart(char *command);
 
+// Conta a quantidade de espaços em uma string
+int countSpaces(char * str);
+
 // Retira espaços indesejados no meio dos tipos e substitui os espaços dos atributos por '_'
 int fixingCommandCT(char * command);
 

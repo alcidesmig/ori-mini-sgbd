@@ -152,6 +152,7 @@ char *stripStart(char *command) {
     return command + i;
 }
 
+// Conta a quantidade de espaços em uma string
 int countSpaces(char * str){
     int cont = 0;
     for (int i = 0; i < strlen(str); i++) {
