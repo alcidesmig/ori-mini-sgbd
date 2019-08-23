@@ -9,7 +9,7 @@ int qt_tables = 0;      // Quantidade de tabelas
 // Cria tabela
 // table: Struct com as informações para crira uma tabela
 void createTable(TableWType table) {
-    printf("Criando tabela.\n");
+    printf("Criando tabela.\n\n");
 
     tables_index = fopen(TABLES_INDEX, "rb+");
 
@@ -73,8 +73,6 @@ void apTable(TableName table_name) {
 
 // Lista tabelas
 void listTables() {
-    printf("Listando tabelas.\n");
-
     tables_index = fopen(TABLES_INDEX, "rb+");
 
     if (!tables_index) {
@@ -85,6 +83,8 @@ void listTables() {
         qt_tables = 0;
         fwrite(&qt_tables, sizeof(int), 1, tables_index);
     }
+
+    printf("Listando %d tabelas.\n\n", qt_tables);
 
     if (qt_tables) {
         TableWRep *tablesData = malloc(qt_tables * sizeof(TableWRep));
@@ -107,10 +107,10 @@ void listTables() {
         for (int i = 0; i < qt_tables; i++) {
             printf("%s\n", tables[i].name);
 
-            printf("\n");
             for (int j = 0; j < tables[i].cols; j++) {
-                printf("\t%s:%s\n", tables[i].types[j], tables[i].fields[j]);
+                printf("- %s:%s\n", tables[i].types[j], tables[i].fields[j]);
             }
+            printf("\n");
         }
     }
 
