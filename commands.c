@@ -1,6 +1,6 @@
 #include "commands.h"
 
-int EXEC_ERROR_CODE = NONE; // Erro global de execução de comandos
+Error EXEC_ERROR_CODE = NONE; // Erro global de execução de comandos
 
 FILE *tables_index = NULL; // Variável global utilizada para manipular arquivos
 

@@ -15,7 +15,7 @@ ssize_t tam_comando;
 // Arquivo de comandos
 FILE *cmd_file = NULL;
 
-int PRE_ERROR_CODE = NONE; // Erro global
+Error PRE_ERROR_CODE = NONE; // Erro global
 
 // Executa comandos a partir da linha de comando
 void commandLine() {

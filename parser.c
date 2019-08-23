@@ -1,7 +1,7 @@
 #include "parser.h"
 
 // Erro global de interpretação de comandos
-int CMD_ERROR_CODE = NONE;
+Error CMD_ERROR_CODE = NONE;
 
 // Marca a posição corrente no buffer de comando
 char *parsing;

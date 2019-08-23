@@ -10,7 +10,7 @@
 #include "commands.h"
 
 // Erro global de interpretação de comandos
-extern int CMD_ERROR_CODE;
+extern Error CMD_ERROR_CODE;
 
 // Marca a posição corrente no buffer de comando
 extern char *parsing;

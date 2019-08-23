@@ -8,7 +8,7 @@
 #include "defines.h"
 #include "tools.h"
 
-extern int EXEC_ERROR_CODE; // Erro global de execução de comandos
+extern Error EXEC_ERROR_CODE; // Erro global de execução de comandos
 
 extern FILE *tables_index; // Variável global utilizada para manipular arquivos
 
