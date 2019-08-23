@@ -5,7 +5,8 @@
 ### Como usar
 - make
 - Linha de comando: ./main
-- Arquivo: ./main file.txt
+- Arquivo: ./main -f file.txt
+- Arquivo: ./main --file file.txt
 
 ## Organização
 
