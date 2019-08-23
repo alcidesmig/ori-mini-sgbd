@@ -15,6 +15,8 @@ ssize_t tam_comando;
 // Arquivo de comandos
 FILE *cmd_file = NULL;
 
+int PRE_ERROR_CODE = NONE; // Erro global
+
 // Executa comandos a partir da linha de comando
 void commandLine() {
     CMD_ERROR_CODE = 0;
@@ -31,7 +33,7 @@ int fromFile() {
 
     while (!CMD_ERROR_CODE && getline(&comando, &tam_comando, cmd_file)) {
         parser(stripStart(comando));
-        errorHandlerExec(EXEC_ERROR_CODE);
+        ExecErrorHandler(EXEC_ERROR_CODE);
     }
 }
 
@@ -42,20 +44,55 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    if (argc == 1) {
-        //menu();
-        commandLine();
-    } else {
-        char *file = argv[1];
+    int needFile = 0;
+
+    // Arquivo de comandos
+    char *file = NULL;
+
+    // Interpretação dos parâmetros
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], HELP) || strcmp(argv[i], HELPX)) {
+            if (!needFile) {
+                menu();
+            } else {
+                PRE_ERROR_CODE = PRE_MISS_FL;
+            }
+        } else if (strcmp(argv[i], FILE) || strcmp(argv[i], FILEX)) {
+            if (!needFile) {
+                if (!file) {
+                    needFile = 1;
+                } else {
+                    PRE_ERROR_CODE = PRE_MANY_FL;
+                }
+            } else {
+                PRE_ERROR_CODE = PRE_MISS_FL;
+            }
+        } else {
+            if (!needFile) {
+                PRE_ERROR_CODE = PRE_WRG_PRM;
+            } else {
+                file = argv[i];
+                needFile = 0;
+            }
+        }
+
+        if (!preErrorHandler()) {
+            return 0;
+        }
+    }
+
+    if (file) {
         cmd_file = fopen(file, "r");
 
         printf("Executando %s.\n", file);
 
-        if (cmd_file != NULL) {
+        if (cmd_file) {
             fromFile(cmd_file);
         } else {
             printf("Erro ao abrir o arquivo.\n");
         }
+    } else {
+        commandLine();
     }
 
     errorHandler(CMD_ERROR_CODE);

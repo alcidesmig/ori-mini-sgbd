@@ -185,113 +185,117 @@ int fixingCommandCT(char * command) {
     return 1;
 }
 
-// Substitui espaços dos campos por underline
-void underlinaizer(Field field) {
-    int i = 0;
-    while(field[i] != '\0') {
-        if (field[i] == ' ') {
-            field[i] = '_';
-        }
-        i++;
-    }
-}
-
 // Printa mensagens de acordo com o erro
-void errorHandler(int error) {
+int errorHandler(Error error) {
     switch (error) {
         case NONE:
-            break;
+            return 1;
         case IN_ERROR:
             printf("Erro interno.\n");
-            break;
+            return 0;
         case TODO:
             printf("\tTODO.\n");
-            break;
+            return 1;
         case NO_CMD:
             printf("Nenhum comando encontrado.\n");
-            break;
+            return 0;
         case CT_WS:
             printf("Sintax do comando \'%s\' errada.\n", CT);
-            break;
+            return 0;
         case CT_WS_USC:
             printf("Sintax do comando \'%s\' errada ou último \';\' sobrando.\n", CT);
-            break;
+            return 0;
         case RT_WS:
             printf("Sintax do comando \'%s\' errada.\n", RT);
-            break;
+            return 0;
         case AT_WS:
             printf("Sintax do comando \'%s\' errada.\n", AT);
-            break;
+            return 0;
         case IR_WS:
             printf("Sintax do comando \'%s\' errada.\n", IR);
-            break;
+            return 0;
         case IR_USC:
             printf("Último \';\' sobrando.\n");
-            break;
+            return 0;
         case BR_WS:
             printf("Sintax do comando \'%s\' errada.\n", BR);
-            break;
+            return 0;
         case BR_MP:
             printf("Parâmetro não encontrado.\n");
-            break;
+            return 0;
         case AR_WS:
             printf("Sintax do comando \'%s\' errada.\n", AR);
-            break;
+            return 0;
         case RR_WS:
             printf("Sintax do comando \'%s\' errada.\n", RR);
-            break;
+            return 0;
         case CI_WS:
             printf("Sintax do comando \'%s\' errada.\n", CI);
-            break;
+            return 0;
         case CI_MP:
             printf("Parâmetro não encontrado.\n");
-            break;
+            return 0;
         case RI_WS:
             printf("Sintax do comando \'%s\' errada.\n", RI);
-            break;
+            return 0;
         case GI_WS:
             printf("Sintax do comando \'%s\' errada.\n", GI);
-            break;
+            return 0;
         case EXIT:
             printf("Saindo.\n");
-            break;
+            return 0;
         default:
             printf("DEFAULT %x\n", error);
-            break;
+            return 0;
     }
 }
 
-// Printa mensagens de acordo com o erro
-void errorHandlerExec(int error) {
+int ExecErrorHandler(Error error) {
     switch (error) {
         case NONE:
-            break;
+            return 1;
         case IN_ERROR:
             printf("Erro interno.\n");
-            break;
+            return 0;
         case TODO:
             printf("\tTODO.\n");
-            break;
+            return 1;
         case CT_SUCCESS:
             printf("Tabela criada.\n");
-            break;
+            return 0;
         case CT_WRG_TYPE:
             printf("Tipo de dado não suportado.\n");
-            break;
+            return 0;
         case CT_TBL_EXT:
             printf("Uma tabela com o mesmo nome já existe.\n");
-            break;
+            return 0;
         case CT_FAILED:
             printf("Erro ao criar a tabela.\n");
-            break;
+            return 0;
         case LT_SUCCESS:
-            break;
+            return 0;
         case LT_FAILED:
             printf("Erro ao listar tabelas.\n");
-            break;
+            return 0;
         default:
             printf("DEFAULT %x\n", error);
-            break;
+            return 0;
+    }
+}
+
+int PreErrorHandler(Error error) {
+    switch (error) {
+        case NONE:
+            return 1;
+        case IN_ERROR:
+            printf("Erro interno.\n");
+            return 0;
+        case TODO:
+            printf("\tTODO.\n");
+            return 1;
+        default:
+            printf("DEFAULT %x\n", error);
+            return 0;
     }
 }
 

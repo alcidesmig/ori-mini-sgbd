@@ -32,6 +32,10 @@ extern const char BIN_REP;
 extern const char INT_REP;
 extern const char FLT_REP;
 
+// Parâmetros do programa
+extern const char FILE;
+extern const char HELP;
+
 // Tamanho máximo
 #define TABLE_NAME_MAX 32  // Tamanho máximo do nome da tabela
 #define TYPE_MAX  4   // Tamanho máximo dos tipos de dados
@@ -44,13 +48,17 @@ extern const char FLT_REP;
 #define TABLE_FILE_EX ".tbl" // Extenção de arquivo um arquivo de tabela
 
 // Erros
-#define NONE      0x00
+#define NONE        0x00
 
-#define IN_ERROR  0x01
-#define NO_CMD    0x02
+#define IN_ERROR    0x01 // Erro interno
+#define NO_CMD      0x02 // Comando não encontrado
 
-#define EXIT      0x03
-#define TODO      0x0F
+#define PRE_MISS_FL 0x02 // Nenhum arquivo especificado
+#define PRE_WRG_PRM 0x02 // Parâmetro não reconhecido
+#define PRE_MANY_FL 0x02 // Muitos arquivos
+
+#define EXIT        0x03
+#define TODO        0x0F
 
 // SUCCESS      0x0
 // WS           0x1 Wrong Sintax
@@ -93,6 +101,8 @@ typedef Field FieldArr[NUMBER_COLUMNS];
 
 typedef char Value[VALUE_MAX];
 typedef Value ValueArr[NUMBER_COLUMNS];
+
+typedef int Error;
 
 typedef struct {
 	TableName name;

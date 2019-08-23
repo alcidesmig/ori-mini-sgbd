@@ -26,14 +26,12 @@ void parser(char * command) {
     if (parsing = findl(command, CT, 0)) {
         // Chama função para tratar dos espaços indesejados
         if(fixingCommandCT(command) && sscanf(parsing, "%s %[^:^;]%*c%[^;^\n]", table.name, table.types[table.cols], table.fields[table.cols]) == 3) {
-            //underlinaizer(table.fields[table.cols]); -> Já é feito no fixingCommand
             toUpperCase(table.name);
             toUpperCase(table.types[table.cols]);
             table.cols++;
 
             while (parsing = find(parsing, ";")) {
                 if(sscanf(parsing, "%[^:^;]%*c%[^;^\n]", table.types[table.cols], table.fields[table.cols]) == 2) {
-                    // underlinaizer(table.fields[table.cols]); -> Já é feito no fixingCommand
                     toUpperCase(table.types[table.cols]);
                     table.cols++;
                 } else {

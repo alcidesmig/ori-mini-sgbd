@@ -50,14 +50,12 @@ int countSpaces(char * str);
 // Retira espaços indesejados no meio dos tipos e substitui os espaços dos atributos por '_'
 int fixingCommandCT(char * command);
 
-// Substitui espaços dos campos por underline
-void underlinaizer(Field field);
-
 // Printa mensagens de acordo com o erro
-void errorHandler(int error);
+int errorHandler(Error error);
 
-// Printa mensagens de acordo com o erro
-void errorHandlerExec(int error);
+int ExecErrorHandler(Error error);
+
+int PreErrorHandler(Error error);
 
 int prepline();
 
