@@ -23,7 +23,7 @@ void commandLine() {
 
     while (!CMD_ERROR_CODE && prepline() && getline(&comando, &tam_comando, stdin)) {
         parser(stripStart(comando));
-        errorHandlerExec(EXEC_ERROR_CODE);
+        ExecErrorHandler(EXEC_ERROR_CODE);
     }
 }
 
@@ -36,7 +36,6 @@ int fromFile() {
         ExecErrorHandler(EXEC_ERROR_CODE);
     }
 }
-
 
 int main(int argc, char *argv[]) {
     if (!init()) {
@@ -51,13 +50,13 @@ int main(int argc, char *argv[]) {
 
     // Interpretação dos parâmetros
     for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], HELP) || strcmp(argv[i], HELPX)) {
+        if (strcmp(argv[i], &PHELP) || strcmp(argv[i], &PHELPX)) {
             if (!needFile) {
                 menu();
             } else {
                 PRE_ERROR_CODE = PRE_MISS_FL;
             }
-        } else if (strcmp(argv[i], FILE) || strcmp(argv[i], FILEX)) {
+        } else if (strcmp(argv[i], &PFILE) || strcmp(argv[i], &PFILEX)) {
             if (!needFile) {
                 if (!file) {
                     needFile = 1;
@@ -76,7 +75,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if (!preErrorHandler()) {
+        if (!preErrorHandler(PRE_ERROR_CODE)) {
             return 0;
         }
     }

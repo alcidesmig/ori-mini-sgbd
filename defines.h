@@ -33,8 +33,10 @@ extern const char INT_REP;
 extern const char FLT_REP;
 
 // Parâmetros do programa
-extern const char FILE;
-extern const char HELP;
+extern const char PFILE;
+extern const char PFILEX;
+extern const char PHELP;
+extern const char PHELPX;
 
 // Tamanho máximo
 #define TABLE_NAME_MAX 32  // Tamanho máximo do nome da tabela

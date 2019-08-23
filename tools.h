@@ -55,7 +55,7 @@ int errorHandler(Error error);
 
 int ExecErrorHandler(Error error);
 
-int PreErrorHandler(Error error);
+int preErrorHandler(Error error);
 
 int prepline();
 

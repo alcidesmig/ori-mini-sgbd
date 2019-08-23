@@ -184,8 +184,12 @@ int fixingCommandCT(char * command) {
             }
         }
     }
-    if(cont_) printf("%d espaços nos nomes dos campos foram substituídos por "_" para melhor representação dos dados.\n", cont_);
-    if(contSpace) printf("%d espaços nos tipos dos campos foram removidos para obedecer a tipação disponível.\n", contSpace);
+    if(cont_) {
+        printf("%d espaços nos nomes dos campos foram substituídos por \"_\" para melhor representação dos dados.\n", cont_);
+    }
+    if(contSpace) {
+        printf("%d espaços nos tipos dos campos foram removidos para obedecer a tipação disponível.\n", contSpace);
+    }
     return 1;
 }
 
@@ -287,7 +291,7 @@ int ExecErrorHandler(Error error) {
     }
 }
 
-int PreErrorHandler(Error error) {
+int preErrorHandler(Error error) {
     switch (error) {
         case NONE:
             return 1;
