@@ -1,12 +1,8 @@
-### Repositório para o projeto semestral da disciplina de Organização e Recuperação de Informação. UFSCar - 2019.2 ###
+# Mini SGBD
+- Repositório para o projeto semestral da disciplina de Organização e Recuperação de Informação. UFSCar - 2019.2 ###
 
 
-# Como usar #
-
-make
-
-Linha de comando
-./main
-
-Arquivo
-./main file.txt
+### Como usar
+- make
+- Linha de comando: ./main
+- Arquivo: ./main file.txt
