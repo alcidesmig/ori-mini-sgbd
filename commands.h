@@ -22,7 +22,7 @@ void createTable(TableWType table);
 // table_name: Nome da tabela
 void removeTable(TableName table_name);
 
-// Apresenta tabela tabela
+// Apresenta tabela
 // table_name: Nome da tabela
 void apTable(TableName table_name);
 
