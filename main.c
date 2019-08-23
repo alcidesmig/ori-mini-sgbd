@@ -50,13 +50,13 @@ int main(int argc, char *argv[]) {
 
     // Interpretação dos parâmetros
     for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], &PHELP) || strcmp(argv[i], &PHELPX)) {
+        if (!strcmp(argv[i], PHELP) || !strcmp(argv[i], PHELPX)) {
             if (!needFile) {
                 menu();
             } else {
                 PRE_ERROR_CODE = PRE_MISS_FL;
             }
-        } else if (strcmp(argv[i], &PFILE) || strcmp(argv[i], &PFILEX)) {
+        } else if (!strcmp(argv[i], PFILE) || !strcmp(argv[i], PFILEX)) {
             if (!needFile) {
                 if (!file) {
                     needFile = 1;
