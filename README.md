@@ -1,99 +1,86 @@
-# SGBD ORI
+# Mini SGBD
+- Repositório para o projeto semestral da disciplina de Organização e Recuperação de Informação. UFSCar - 2019.2 ###
 
-Projeto de ORI, Sistema de Gerenciamento de Banco de Dados.
 
-## Para compilar
+### Como usar
+- make
+- Linha de comando: ./main
+- Arquivo: ./main file.txt
 
-```bash
-make
-```
+## Organização
 
-## Para usar
-
-```bash
-./main
-```
-
-ou
-
-```bash
-./main file.txt
-```
-
-# Organização
-
-## Defines
+### Defines
 
 Contém defines e constantes de comandos, erros, arquivos e limites.
 
-## Commands
+### Commands
 
 Contém funções relativas aos comandos suportados pelo SGBD.
 
-## Parser
+### Parser
 
 Não é um parser, mas identifica o comando e os parâmetros de uma entrada, executando a respectiva função.
 
-## Menu
+### Menu
 
 Mostra os comandos e uma descrição.
 
-## Tools
+### Tools
 
 Funções auxiliares. Provavelmente será separado em Tools e Error.
 
-# Lógica do Código
+## Lógica do Código
 
-## init()
+### init()
 
 Cria o arquivo de indexação das tabelas.
 
-## Interpretação dos parâmetros
+### Interpretação dos parâmetros
 
 Mostra o menu se necessário ou lê o nome de um arquivo para execução.
 
-## fromFile()
+### fromFile()
 
 Executa os comandos de um arquivo.
 
-## commandLine()
+### commandLine()
 
 Executa os comandos do terminal.
 
-## Execução
+### Execução
 
 Enquanto há comandos e não há erro, linhas de comandos são lidos, são removidos os espaços do começo e então o comando é passados para o parser.
 
-## parser()
+### parser()
 
 Procura os comandos com a função findl, então é usado um padrão da sscanf para pegar os parâmetros, nessa parte são, Nome da Tabela, Modificadores (se existir) e o primeiro valor(ou dupla de valores). Os dados são tratados. O ponteiro avança para o próximo ';' com a findl, então outros parâmetros são pegos em um loop. Então a respectiva função é chamada.
 
-## createTable()
+### createTable()
 
 Lê a quantidade de tabelas do arquivo de indexação, lê os nomes da tabelas, verifica de o novo nome existe, converte a tabela para o modo "rep", então escreve a nova tabela no fim do arquivo e incrementa o número de tabelas no arquivo.
 
-## listTables()
+### listTables()
 
 Lê a quantidade de tabelas do arquivo de indexação, lê todos os dados das tabelas de uma vez, converte uma por uma para o modo "tipo", então printa as informações.
 
-# Erro
+## Erro
 
 Existem três variáveis de erro:
 
-## PRE_ERROR_CODE
+### PRE_ERROR_CODE
 
 Erros na interpretação dos parâmetros do programa. Interrompem o programa.
 
-## CMD_ERROR_CODE
+### CMD_ERROR_CODE
 
 Erros na interpretação do comando. Interrompem o programa.
 
-## EXEC_ERROR_CODE
+### EXEC_ERROR_CODE
 
 Erros na execução dos comandos. Não interrompem o programa.
 
-# Metadados
+## Metadados
 
-## Index
+### Index
 
 Quantidade de tabelas no 4 primeiros bytes. Struct de cada tabela uma atrás da outra.
