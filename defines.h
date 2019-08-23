@@ -48,6 +48,7 @@ extern const char PHELPX[7];
 
 // Arquivos
 #define TABLES_INDEX "table_index.tbli" // Arquivo de indexação das colunas
+#define TABLES_DIR "tables_dir/" // Diretório dos arquivos de colunas
 #define TABLE_FILE_EX ".tbl" // Extenção de arquivo um arquivo de tabela
 
 // Erros

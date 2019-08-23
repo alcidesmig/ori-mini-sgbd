@@ -7,6 +7,9 @@ int init() {
     // Index de tabelas
     fclose(fopen(TABLES_INDEX, "ab"));
 
+    // Cria o diretório dos arquivos de tabelas
+    mkdir(TABLES_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
     return 1;
 }
 
