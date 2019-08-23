@@ -21,14 +21,8 @@ extern char table_name[TABLE_NAME_MAX];
 extern char field_name[FIELD_MAX];
 extern char value[VALUE_MAX];
 
-// Buffers: Tipos, nomes do campo(chave) e valores
-// Usados em comando com mutiplos parâmetros
-extern char type_name_arr[NUMBER_COLUMNS][TYPE_MAX];
-extern char field_name_arr[NUMBER_COLUMNS][FIELD_MAX];
-extern char value_arr[NUMBER_COLUMNS][VALUE_MAX];
-
-// Index dos vetores a cima
-extern int index_arr;
+// Buffer de tabela
+extern TableWType table;
 
 // Identifica o comando
 // command: String com a linha de comando em questão

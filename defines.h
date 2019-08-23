@@ -22,15 +22,15 @@
 #define H "H"
 
 // Tipos
-#define STR "STR"
-#define BIN "BIN"
-#define INT "INT"
-#define FLT "FLT"
+extern const char STR[4];
+extern const char BIN[4];
+extern const char INT[4];
+extern const char FLT[4];
 
-#define STR_REP "S"
-#define BIN_REP "B"
-#define INT_REP "I"
-#define FLT_REP "F"
+extern const char STR_REP;
+extern const char BIN_REP;
+extern const char INT_REP;
+extern const char FLT_REP;
 
 // Tamanho máximo
 #define TABLE_NAME_MAX 32  // Tamanho máximo do nome da tabela
@@ -44,38 +44,49 @@
 #define TABLE_FILE_EX ".tbl" // Extenção de arquivo um arquivo de tabela
 
 // Erros
-// WS  0x01 Wrong Sintax
-// USC 0x02 Useless Semicolon
-// MP  0x04 Missing Parameter
 #define NONE      0x00
-#define IN_ERROR  0x10
-#define NO_CMD    0x20
-#define CT_WS     0x31
-#define CT_WS_USC 0x33
-#define RT_WS     0x41
-#define AT_WS     0x51
-#define IR_WS     0x61
-#define IR_USC    0x62
-#define BR_WS     0x71
-#define BR_MP     0x74
-#define AR_WS     0x81
-#define RR_WS     0x91
-#define CI_WS     0xb1
-#define CI_MP     0xa4
-#define RI_WS     0xc1
-#define GI_WS     0xd1
-#define EXIT      0xe0
 
-// Retorno de funções
-#define CT_SUCCESS 0
-#define CT_FAILED_TB_EXISTENT 1
-#define CT_FAILED 2
+#define IN_ERROR  0x01
+#define NO_CMD    0x02
+
+#define EXIT      0x03
+#define TODO      0x0F
+
+// SUCCESS      0x0
+// WS           0x1 Wrong Sintax
+// WS_USC       0x2 Wrong Sintax or Useless Semicolon
+// USC          0x3 Useless Semicolon
+// MP           0x4 Missing Parameter
+// TBL_EXISTENT 0xE Table already exists
+// FAILED       0xF
+
+#define CT_SUCCESS  0x10
+#define CT_WS       0x11
+#define CT_WS_USC   0x12
+#define CT_WRG_TYPE 0x1D
+#define CT_TBL_EXT  0x1E
+#define CT_FAILED   0x1F
+#define RT_WS       0x21
+#define AT_WS       0x31
+#define LT_SUCCESS  0x40
+#define LT_FAILED   0x4f
+#define IR_WS       0x51
+#define IR_USC      0x53
+#define BR_WS       0x61
+#define BR_MP       0x64
+#define AR_WS       0x71
+#define RR_WS       0x81
+#define CI_WS       0x91
+#define CI_MP       0x94
+#define RI_WS       0xA1
+#define GI_WS       0xB1
 
 //Typedefs
 typedef char TableName[TABLE_NAME_MAX];
 
 typedef char Type[TYPE_MAX];
 typedef Type TypeArr[NUMBER_COLUMNS];
+typedef char TypeRepArr[NUMBER_COLUMNS];
 
 typedef char Field[FIELD_MAX];
 typedef Field FieldArr[NUMBER_COLUMNS];
@@ -83,12 +94,24 @@ typedef Field FieldArr[NUMBER_COLUMNS];
 typedef char Value[VALUE_MAX];
 typedef Value ValueArr[NUMBER_COLUMNS];
 
-struct structTable {
-	TableName table_name;
-	Type types;
+typedef struct {
+	TableName name;
+	TypeArr types;
 	FieldArr fields;
-	int qt_fields;
-};
-typedef struct structTable Table;
+	int cols;
+} TableWType;
+
+typedef struct {
+	TableName name;
+	TypeRepArr types;
+	FieldArr fields;
+	int cols;
+} TableWRep;
+
+typedef struct {
+	TableName table_name;
+	ValueArr values;
+	int size;
+} Row;
 
 #endif /* DEFINES_H */

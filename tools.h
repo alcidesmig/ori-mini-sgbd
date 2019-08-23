@@ -6,6 +6,20 @@
 #include <string.h>
 
 #include "defines.h"
+#include "commands.h"
+
+// Cria o arquivo de index
+int init();
+
+// Verifica a existência de uma tabela com o nome especificado
+// name: Nome da tabela
+int tableNameExists(TableName *names, char *name);
+
+// Converte uma TableWType para uma TableWRep
+int convertToRep(TableWRep *tableR, TableWType *tableT);
+
+// Converte uma TableWRep para uma TableWType
+void convertToType(TableWType *tableT,TableWRep *tableR);
 
 // Separa uma string usando os separadores.
 // str: String
@@ -33,8 +47,14 @@ char *stripStart(char *command);
 // Retira espaços indesejados no meio dos tipos e substitui os espaços dos atributos por '_'
 void fixingCommand(char * command);
 
+// Substitui espaços dos campos por underline
+void underlinaizer(Field field);
+
 // Printa mensagens de acordo com o erro
 void errorHandler(int error);
+
+// Printa mensagens de acordo com o erro
+void errorHandlerExec(int error);
 
 int prepline();
 

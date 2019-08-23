@@ -6,72 +6,71 @@
 #include <string.h>
 
 #include "defines.h"
+#include "tools.h"
 
-// Erro global de execução de comandos
-extern int EXEC_ERROR_CODE;
+extern int EXEC_ERROR_CODE; // Erro global de execução de comandos
+
+extern FILE *tables_index; // Variável global utilizada para manipular arquivos
+
+extern int qt_tables;      // Quantidade de tabelas
 
 // Cria tabela
-// table_name: Nome da tabela
-// type_name_arr: Vetor de tipos
-// field_name_arr: Vetor de campos(chave)
-// size_arr: Tamanho dos vetores
-int createTable(char *table_name, TypeArr type_name_arr, FieldArr field_name_arr, int size_arr);
+// table: Struct com as informações para crira uma tabela
+void createTable(TableWType table);
 
 // Remove tabela
 // table_name: Nome da tabela
-void removeTable(char *table_name);
+void removeTable(TableName table_name);
 
 // Apresenta tabela tabela
 // table_name: Nome da tabela
-void apTable(char *table_name);
+void apTable(TableName table_name);
 
 // Lista tabela
 void listTables();
 
 // Inclui registro na tabela
-// table_name: Nome da tabela
-// value_arr: Vetor de valores
-// size_arr: Tamanho do vetores
-void includeReg(char *table_name, ValueArr value_arr, int size_arr);
+// row: Struct com os valores de um registro
+void includeReg(Row row);
 
 // Busca registros na tabela, único
 // table_name: Nome da tabela
 // field_name: Nome do campo(chave)
 // value: Nome do valor
-void busRegU(char *table_name, char *field_name, char *value);
+void busRegU(TableName table_name, Field field_name, Value value);
 
 // Busca registros na tabela, todos
 // table_name: Nome da tabela
 // field_name: Nome do campo(chave)
 // value: Nome do valor
-void busRegN(char *table_name, char *field_name, char *value);
+void busRegN(TableName table_name, Field field_name, Value value);
 
 // Apresenta registros pesquisados da tabela
 // table_name: Nome da tabela
-void apReg(char *table_name);
+void apReg(TableName table_name);
 
 // Remove registro da tabela
 // table_name: Nome da tabela
-void removeReg(char *table_name);
+void removeReg(TableName table_name);
 
 // Cria index da tabela, árvore
 // table_name: Nome da tabela
 // field_name: Nome da campo(chave) a ser usado
-void createIndexA(char *table_name, char *field_name);
+void createIndexA(TableName table_name, Field field_name);
 
 // Cria index da tabela, heap
 // table_name: Nome da tabela
 // field_name: Nome da campo(chave) a ser usado
-void createIndexH(char *table_name, char *field_name);
+void createIndexH(TableName table_name, Field field_name);
 
 // Remove index da tabela
 // table_name: Nome da tabela
 // field_name: Nome da campo(chave) a ser usado
-void removeIndex(char *table_name, char *field_name);
+void removeIndex(TableName table_name, Field field_name);
 
 // Gera index
 // table_name: Nome da tabela
 // field_name: Nome da campo(chave) a ser usado
-void genIndex(char *table_name, char *field_name);
+void genIndex(TableName table_name, Field field_name);
 
 #endif /* COMMANDS_H */

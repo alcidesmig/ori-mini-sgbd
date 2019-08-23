@@ -12,83 +12,71 @@ TableName table_name;
 Field field_name;
 Value value;
 
-// Buffers: Tipos, nomes do campo(chave) e valores
-// Usados em comando com mutiplos parâmetros
-TypeArr type_name_arr;
-FieldArr field_name_arr;
-ValueArr value_arr;
-
-// Index dos vetores a cima
-int index_arr = 0;
+// Buffer de tabela
+TableWType table;
+Row row;
 
 // Identifica o comando
 // command: String com a linha de comando em questão
 // Lógica básica: Procura o comando e pula o ponteiro para após o mesmo, lê o nome da tabela, outro parâmetro até o ':' e outro até o ';' ou fim, repete
 void parser(char * command) {
-    index_arr = 0;
+    table.cols = 0;
 
     // Começa o parsing
     if (parsing = findl(command, CT, 0)) {
         // Chama função para tratar dos espaços indesejados
-        fixingCommand(command);
-        if(sscanf(parsing, "%s %[^:^;]%*c%[^;^\n]", table_name, type_name_arr[index_arr], field_name_arr[index_arr]) == 3) {
-            toUpperCase(table_name);
-            toUpperCase(type_name_arr[index_arr]);
-            
-            index_arr++;
+        // fixingCommand(command);
+        if(sscanf(parsing, "%s %[^:^;]%*c%[^;^\n]", table.name, table.types[table.cols], table.fields[table.cols]) == 3) {
+            underlinaizer(table.fields[table.cols]);
+            toUpperCase(table.name);
+            toUpperCase(table.types[table.cols]);
+            table.cols++;
+
             while (parsing = find(parsing, ";")) {
-                if(sscanf(parsing, "%[^:^;]%*c%[^;^\n]", type_name_arr[index_arr], field_name_arr[index_arr]) == 2) {
-                    toUpperCase(type_name_arr[index_arr]);
-                    index_arr++;
+                if(sscanf(parsing, "%[^:^;]%*c%[^;^\n]", table.types[table.cols], table.fields[table.cols]) == 2) {
+                    underlinaizer(table.fields[table.cols]);
+                    toUpperCase(table.types[table.cols]);
+                    table.cols++;
                 } else {
                     CMD_ERROR_CODE = CT_WS_USC; return;
                 }
             }
-            switch (createTable(table_name, type_name_arr, field_name_arr, index_arr)) {
-                case CT_SUCCESS:
-                    printf("Tabela criada.\n");
-                break;
-                case CT_FAILED_TB_EXISTENT:
-                    printf("Uma tabela com o mesmo nome já existe.\n");
-                break;
-                case CT_FAILED:
-                    printf("Erro ao criar a tabela.\n");
-                break;
-            }
+
+            createTable(table);
         } else {
             CMD_ERROR_CODE = CT_WS; return;
         }
     } else if (parsing = findl(command, RT, 0)) {
-        if (sscanf(parsing, "%s", table_name) == 1) {
-            toUpperCase(table_name);
-            removeTable(table_name);
+        if (sscanf(parsing, "%s", table.name) == 1) {
+            toUpperCase(table.name);
+            removeTable(table.name);
         } else {
             CMD_ERROR_CODE = RT_WS; return;
         }
     } else if (parsing = findl(command, AT, 0)) {
-        if (sscanf(parsing, "%s", table_name) == 1) {
-            toUpperCase(table_name);
-            apTable(table_name);
+        if (sscanf(parsing, "%s", table.name) == 1) {
+            toUpperCase(table.name);
+            apTable(table.name);
         } else {
             CMD_ERROR_CODE = AT_WS; return;
         }
     } else if (parsing = findl(command, LT, 0)) {
         listTables();
     } else if (parsing = findl(command, IR, 0)) {
-        if (sscanf(parsing, "%s %[^;^\n]", table_name, value_arr[index_arr]) == 2) {
-            toUpperCase(table_name);
+        if (sscanf(parsing, "%s %[^;^\n]", row.table_name, row.values[row.size]) == 2) {
+            toUpperCase(row.table_name);
 
-            index_arr++;
+            row.size++;
 
             while (parsing = find(parsing, ";")) {
-                if (sscanf(parsing, "%[^;^\n]", value_arr[index_arr]) == 1) {
-                    index_arr++;
+                if (sscanf(parsing, "%[^;^\n]", row.values[row.size]) == 1) {
+                    row.size++;
                 } else {
                     CMD_ERROR_CODE = IR_USC; return;
                 }
             }
 
-            includeReg(table_name, value_arr, index_arr);
+            includeReg(row);
         } else {
             CMD_ERROR_CODE = IR_WS; return;
         }
@@ -96,9 +84,9 @@ void parser(char * command) {
         char *temp = parsing;
         char *aux_type = 0;
 
-        if (temp = findl(stripStart(parsing), U, 1)) {
+        if (temp = findl(stripStart(parsing), U, 0)) {
             aux_type = U;
-        } else if (temp = findl(stripStart(parsing), N, 1)) {
+        } else if (temp = findl(stripStart(parsing), N, 0)) {
             aux_type = N;
         } else {
             CMD_ERROR_CODE = BR_MP; return;
@@ -136,9 +124,9 @@ void parser(char * command) {
         char *temp = parsing;
         char *aux_type = 0;
 
-        if (temp = findl(stripStart(parsing), A, 1)) {
+        if (temp = findl(stripStart(parsing), A, 0)) {
             aux_type = A;
-        } else if (temp = findl(stripStart(parsing), H, 1)) {
+        } else if (temp = findl(stripStart(parsing), H, 0)) {
             aux_type = H;
         } else {
             CMD_ERROR_CODE = CI_MP; return;

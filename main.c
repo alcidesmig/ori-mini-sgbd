@@ -20,7 +20,9 @@ void commandLine() {
     CMD_ERROR_CODE = 0;
 
     while (!CMD_ERROR_CODE && prepline() && getline(&comando, &tam_comando, stdin)) {
+        printf("%s\n", comando);
         parser(stripStart(comando));
+        errorHandlerExec(EXEC_ERROR_CODE);
     }
 }
 
@@ -30,13 +32,19 @@ int fromFile() {
 
     while (!CMD_ERROR_CODE && getline(&comando, &tam_comando, cmd_file)) {
         parser(stripStart(comando));
+        errorHandlerExec(EXEC_ERROR_CODE);
     }
 }
 
 
 int main(int argc, char *argv[]) {
+    if (!init()) {
+        printf("Erro.\n");
+        return 0;
+    }
+
     if (argc == 1) {
-        menu();
+        //menu();
         commandLine();
     } else {
         char *file = argv[1];

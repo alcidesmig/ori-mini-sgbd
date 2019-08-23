@@ -1,5 +1,72 @@
-
 #include "tools.h"
+
+const int ZERO = 0;
+
+// Cria o arquivo de index
+int init() {
+    // Index de tabelas
+    fclose(fopen(TABLES_INDEX, "ab"));
+
+    return 1;
+}
+
+// Verifica a existência de uma tabela com o nome especificado
+// name: Nome da tabela
+int tableNameExists(TableName *names, char *name) {
+    for (int i = 0; i < qt_tables; i++) {
+        if(strcmp(names[i], name) == 0) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+// Converte uma TableWType para uma TableWRep
+int convertToRep(TableWRep *tableR, TableWType *tableT) {
+    strcpy((*tableR).name, (*tableT).name);
+    (*tableR).cols = (*tableT).cols;
+    
+    int s = (*tableT).cols;
+
+    for (int i = 0; i < s; i++) {
+        if(strcmp((*tableT).types[i], STR) == 0)
+            (*tableR).types[i] = STR_REP;
+        else if(strcmp((*tableT).types[i], INT) == 0)
+            (*tableR).types[i] = INT_REP;
+        else if(strcmp((*tableT).types[i], FLT) == 0)
+            (*tableR).types[i] = FLT_REP;
+        else if(strcmp((*tableT).types[i], BIN) == 0)
+            (*tableR).types[i] = BIN_REP;
+        else
+            return 0;
+
+        strcpy((*tableR).fields[i], (*tableT).fields[i]);
+    }
+
+    return 1;
+}
+
+// Converte uma TableWRep para uma TableWType
+void convertToType(TableWType *tableT, TableWRep *tableR) {
+    strcpy((*tableT).name, (*tableR).name);
+    (*tableT).cols = (*tableR).cols;
+    
+    int s = (*tableR).cols;
+
+    for (int i = 0; i < s; i++) {
+        if((*tableR).types[i] == STR_REP)
+            strcpy((*tableT).types[i], STR);
+        else if((*tableR).types[i] == INT_REP)
+            strcpy((*tableT).types[i], INT);
+        else if((*tableR).types[i] == FLT_REP)
+            strcpy((*tableT).types[i], FLT);
+        else if((*tableR).types[i] == BIN_REP)
+            strcpy((*tableT).types[i], BIN);
+
+        strcpy((*tableT).fields[i], (*tableR).fields[i]);
+    }
+}
 
 // Separa uma string usando os separadores.
 // str: String
@@ -85,7 +152,7 @@ char *stripStart(char *command) {
     return command + i;
 }
 
-// Retira espaços indesejados no meio dos tipos e substitui os espaços dos atributos por '_'
+// Retira espaços indesejados no meio dos tipos e substitui os espaços dos campos por underline
 void fixingCommand(char * command) {
     char * beginStruct = strstr((strstr(command, " ") + 1), " ") + 1;
     void bringBack(char * str, int qt) {
@@ -107,11 +174,27 @@ void fixingCommand(char * command) {
     }
 }
 
+// Substitui espaços dos campos por underline
+void underlinaizer(Field field) {
+    int i = 0;
+    while(field[i] != '\0') {
+        if (field[i] == ' ') {
+            field[i] = '_';
+        }
+        i++;
+    }
+}
+
 // Printa mensagens de acordo com o erro
 void errorHandler(int error) {
     switch (error) {
+        case NONE:
+            break;
         case IN_ERROR:
             printf("Erro interno.\n");
+            break;
+        case TODO:
+            printf("\tTODO.\n");
             break;
         case NO_CMD:
             printf("Nenhum comando encontrado.\n");
@@ -162,7 +245,41 @@ void errorHandler(int error) {
             printf("Saindo.\n");
             break;
         default:
-            printf("DEFAULT %d\n", error);
+            printf("DEFAULT %x\n", error);
+            break;
+    }
+}
+
+// Printa mensagens de acordo com o erro
+void errorHandlerExec(int error) {
+    switch (error) {
+        case NONE:
+            break;
+        case IN_ERROR:
+            printf("Erro interno.\n");
+            break;
+        case TODO:
+            printf("\tTODO.\n");
+            break;
+        case CT_SUCCESS:
+            printf("Tabela criada.\n");
+            break;
+        case CT_WRG_TYPE:
+            printf("Tipo de dado não suportado.\n");
+            break;
+        case CT_TBL_EXT:
+            printf("Uma tabela com o mesmo nome já existe.\n");
+            break;
+        case CT_FAILED:
+            printf("Erro ao criar a tabela.\n");
+            break;
+        case LT_SUCCESS:
+            break;
+        case LT_FAILED:
+            printf("Erro ao listar tabelas.\n");
+            break;
+        default:
+            printf("DEFAULT %x\n", error);
             break;
     }
 }
