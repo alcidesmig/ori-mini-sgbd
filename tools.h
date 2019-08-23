@@ -59,4 +59,6 @@ int preErrorHandler(Error error);
 
 int prepline();
 
+void safeFree(void *p);
+
 #endif /* TOOLS_H */

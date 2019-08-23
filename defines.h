@@ -71,26 +71,28 @@ extern const char PHELPX[7];
 // TBL_EXISTENT 0xE Table already exists
 // FAILED       0xF
 
-#define CT_SUCCESS  0x10
-#define CT_WS       0x11
-#define CT_WS_USC   0x12
-#define CT_WRG_TYPE 0x1D
-#define CT_TBL_EXT  0x1E
-#define CT_FAILED   0x1F
-#define RT_WS       0x21
-#define AT_WS       0x31
-#define LT_SUCCESS  0x40
-#define LT_FAILED   0x4f
-#define IR_WS       0x51
-#define IR_USC      0x53
-#define BR_WS       0x61
-#define BR_MP       0x64
-#define AR_WS       0x71
-#define RR_WS       0x81
-#define CI_WS       0x91
-#define CI_MP       0x94
-#define RI_WS       0xA1
-#define GI_WS       0xB1
+#define CT_SUCCESS   0x10
+#define CT_WS        0x11
+#define CT_WS_USC    0x12
+#define CT_WRG_TYPE  0x1D
+#define CT_TBL_EXT   0x1E
+#define CT_FAILED    0x1F
+#define RT_WS        0x21
+#define AT_SUCCESS   0x30
+#define AT_WS        0x31
+#define AT_NOT_FOUND 0x3C
+#define LT_SUCCESS   0x40
+#define LT_FAILED    0x4f
+#define IR_WS        0x51
+#define IR_USC       0x53
+#define BR_WS        0x61
+#define BR_MP        0x64
+#define AR_WS        0x71
+#define RR_WS        0x81
+#define CI_WS        0x91
+#define CI_MP        0x94
+#define RI_WS        0xA1
+#define GI_WS        0xB1
 
 //Typedefs
 typedef char TableName[TABLE_NAME_MAX];

@@ -24,6 +24,9 @@ void createTable(TableWType table) {
 
     if (qt_tables) {
         TableName *names = malloc(qt_tables * sizeof(TableName));
+        if (!names) {
+            EXEC_ERROR_CODE = IN_ERROR; return;
+        }
 
         fseek(tables_index, sizeof(int), SEEK_SET);
         for (int i = 0; i < qt_tables; i++) {
@@ -34,6 +37,8 @@ void createTable(TableWType table) {
         if (tableNameExists(names, table.name)) {
             EXEC_ERROR_CODE = CT_TBL_EXT; return;
         }
+
+        safeFree(names);
     }
 
     TableWRep tableData;
@@ -67,8 +72,68 @@ void removeTable(TableName table_name) {
 // Apresenta tabela tabela
 // table_name: Nome da tabela
 void apTable(TableName table_name) {
-    printf("Mostrando a tabela %s.\n", table_name);
-    EXEC_ERROR_CODE = TODO;
+    tables_index = fopen(TABLES_INDEX, "rb+");
+
+    if (!tables_index) {
+        EXEC_ERROR_CODE = IN_ERROR; return;
+    }
+
+    if(!fread(&qt_tables, sizeof(int), 1, tables_index)) {
+        qt_tables = 0;
+        fwrite(&qt_tables, sizeof(int), 1, tables_index);
+    }
+
+    if (qt_tables) {
+        TableWRep *tableData = malloc(sizeof(TableWRep));
+        if (!tableData) {
+            EXEC_ERROR_CODE = IN_ERROR; return;
+        }
+
+        TableWType *table = malloc(sizeof(TableWType));
+        if (!table) {
+            EXEC_ERROR_CODE = IN_ERROR; return;
+        }
+
+        fseek(tables_index, sizeof(int), SEEK_SET);
+
+        int i = 0;
+        while (i < qt_tables) {
+            fread(tableData->name, sizeof(TableName), 1, tables_index);
+
+            if (!strcmp(tableData->name, table_name)) {
+                fseek(tables_index, -1*sizeof(TableName), SEEK_CUR);
+                fread(tableData, sizeof(TableWRep), 1, tables_index);
+                break;
+            } else {
+                fseek(tables_index, sizeof(TableWRep) - sizeof(TableName), SEEK_CUR);
+            }
+
+            i++;
+        }
+
+        if (i == qt_tables) {
+            EXEC_ERROR_CODE = AT_NOT_FOUND; return;
+        }
+
+        printf("Mostrando a tabela %s.\n\n", table_name);
+
+        convertToType(table, tableData);
+
+        printf("%s\n", table->name);
+
+        for (int j = 0; j < table->cols; j++) {
+            printf("- %s:%s\n", table->types[j], table->fields[j]);
+        }
+
+        safeFree(tableData);
+        safeFree(table);
+    } else {
+        EXEC_ERROR_CODE = AT_NOT_FOUND; return;
+    }
+
+    fclose(tables_index);
+
+    EXEC_ERROR_CODE = AT_SUCCESS;
 }
 
 // Lista tabelas
@@ -87,31 +152,22 @@ void listTables() {
     printf("Listando %d tabelas.\n\n", qt_tables);
 
     if (qt_tables) {
-        TableWRep *tablesData = malloc(qt_tables * sizeof(TableWRep));
-        if (!tablesData) {
-            EXEC_ERROR_CODE = IN_ERROR; return;
-        }
-
-        TableWType *tables = malloc(qt_tables * sizeof(TableWType));
-        if (!tables) {
+        TableName *tablesName = malloc(qt_tables * sizeof(TableName));
+        if (!tablesName) {
             EXEC_ERROR_CODE = IN_ERROR; return;
         }
 
         fseek(tables_index, sizeof(int), SEEK_SET);
-        fread(tablesData, sizeof(TableWRep), qt_tables, tables_index);
-
         for (int i = 0; i < qt_tables; i++) {
-            convertToType(&tables[i], &tablesData[i]);
+            fread(&tablesName[i], sizeof(TableName), 1, tables_index);
+            fseek(tables_index, sizeof(TableWRep) - sizeof(TableName), SEEK_CUR);
         }
 
         for (int i = 0; i < qt_tables; i++) {
-            printf("%s\n", tables[i].name);
-
-            for (int j = 0; j < tables[i].cols; j++) {
-                printf("- %s:%s\n", tables[i].types[j], tables[i].fields[j]);
-            }
-            printf("\n");
+            printf("%s\n", tablesName[i]);
         }
+
+        safeFree(tablesName);
     }
 
     fclose(tables_index);

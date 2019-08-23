@@ -280,6 +280,11 @@ int ExecErrorHandler(Error error) {
         case CT_FAILED:
             printf("Erro ao criar a tabela.\n");
             return 0;
+        case AT_SUCCESS:
+            return 0;
+        case AT_NOT_FOUND:
+            printf("Erro ao encontrar tabela.\n");
+            return 0;
         case LT_SUCCESS:
             return 0;
         case LT_FAILED:
@@ -311,4 +316,9 @@ int prepline() {
     printf("SGDB>");
 
     return 1;
+}
+
+void safeFree(void *p) {
+    if (p)
+        free(p);
 }
