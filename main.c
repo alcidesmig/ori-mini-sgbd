@@ -20,7 +20,6 @@ void commandLine() {
     CMD_ERROR_CODE = 0;
 
     while (!CMD_ERROR_CODE && prepline() && getline(&comando, &tam_comando, stdin)) {
-        printf("%s\n", comando);
         parser(stripStart(comando));
         errorHandlerExec(EXEC_ERROR_CODE);
     }
