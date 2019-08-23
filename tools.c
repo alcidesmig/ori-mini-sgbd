@@ -171,7 +171,7 @@ int fixingCommandCT(char * command) {
         }
     }
     int inType = 0;
-    int cont_ = 0;
+    int cont_ = 0, contSpace = 0;
     for(int i = 0; beginStruct[i] != '\0'; i++){
         if(beginStruct[i] == ':') inType = 1;
         else if(beginStruct[i] == ';') inType = 0;
@@ -184,7 +184,8 @@ int fixingCommandCT(char * command) {
             }
         }
     }
-    if(cont_) printf("%d espaços nos nomes dos campos foram substituídos por "_" para melhor representação dos dados.\n");
+    if(cont_) printf("%d espaços nos nomes dos campos foram substituídos por "_" para melhor representação dos dados.\n", cont_);
+    if(contSpace) printf("%d espaços nos tipos dos campos foram removidos para obedecer a tipação disponível.\n", contSpace);
     return 1;
 }
 
