@@ -2,18 +2,18 @@
 #define DEFINES_H
 
 // Comandos
-#define CT "CT"
-#define RT "RT"
-#define AT "AT"
-#define LT "LT"
-#define IR "IR"
-#define BR "BR"
-#define AR "AR"
-#define RR "RR"
-#define CI "CI"
-#define RI "RI"
-#define GI "GI"
-#define EB "EB"
+#define CT "CT "
+#define RT "RT "
+#define AT "AT "
+#define LT "LT "
+#define IR "IR "
+#define BR "BR "
+#define AR "AR "
+#define RR "RR "
+#define CI "CI "
+#define RI "RI "
+#define GI "GI "
+#define EB "EB "
 
 // Parâmetros do BR
 #define U "U"

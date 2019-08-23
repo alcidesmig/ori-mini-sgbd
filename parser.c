@@ -23,7 +23,7 @@ void parser(char * command) {
     table.cols = 0;
 
     // Começa o parsing
-    if (parsing = findl(command, CT, 0)) {
+    if (parsing = findl(command, CT_, 0)) {
         // Chama função para tratar dos espaços indesejados
         if(fixingCommandCT(command) && sscanf(parsing, "%s %[^:^;]%*c%[^;^\n]", table.name, table.types[table.cols], table.fields[table.cols]) == 3) {
             toUpperCase(table.name);
