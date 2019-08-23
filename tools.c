@@ -152,8 +152,17 @@ char *stripStart(char *command) {
     return command + i;
 }
 
-// Retira espaços indesejados no meio dos tipos e substitui os espaços dos campos por underline
-void fixingCommand(char * command) {
+int countSpaces(char * str){
+    int cont = 0;
+    for (int i = 0; i < strlen(str); i++) {
+        if(*(str + i) == ' ') cont++;
+    }
+    return cont;
+}
+
+// Retira espaços indesejados no meio dos tipos e substitui os espaços dos campos por underline -> Para CT
+int fixingCommandCT(char * command) {
+    if(countSpaces(command) < 2) return 0;
     char * beginStruct = strstr((strstr(command, " ") + 1), " ") + 1;
     void bringBack(char * str, int qt) {
         for(int i = 0; i < strlen(str); i++) {
@@ -172,6 +181,7 @@ void fixingCommand(char * command) {
             }
         }
     }
+    return 1;
 }
 
 // Substitui espaços dos campos por underline

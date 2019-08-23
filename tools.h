@@ -45,7 +45,7 @@ char *find(char *haystack, const char *needle);
 char *stripStart(char *command);
 
 // Retira espaços indesejados no meio dos tipos e substitui os espaços dos atributos por '_'
-void fixingCommand(char * command);
+int fixingCommandCT(char * command);
 
 // Substitui espaços dos campos por underline
 void underlinaizer(Field field);
