@@ -180,7 +180,7 @@ int tableNameExists(TableName *names, char *name, int qt_tables) {
 
 // Converte uma TableWType para uma TableWRep
 int convertToRep(TableWRep *tableR, TableWType *tableT) {
-    strcpy((*tableR).name, (*tableT).name);
+    strncpy((*tableR).name, (*tableT).name, sizeof(TableName));
     (*tableR).cols = (*tableT).cols;
     (*tableR).row_bytes_size = 0;
 
@@ -203,7 +203,7 @@ int convertToRep(TableWRep *tableR, TableWType *tableT) {
             return 0;
         }
 
-        strcpy((*tableR).fields[i], (*tableT).fields[i]);
+        strncpy((*tableR).fields[i], (*tableT).fields[i], sizeof(Field));
     }
 
     return 1;
@@ -211,24 +211,24 @@ int convertToRep(TableWRep *tableR, TableWType *tableT) {
 
 // Converte uma TableWRep para uma TableWType
 int convertToType(TableWType *tableT, TableWRep *tableR) {
-    strcpy((*tableT).name, (*tableR).name);
+    strncpy((*tableT).name, (*tableR).name, sizeof(TableName));
     (*tableT).cols = (*tableR).cols;
     
     int s = (*tableR).cols;
 
     for (int i = 0; i < s; i++) {
         if((*tableR).types[i] == STR_REP)
-            strcpy((*tableT).types[i], STR);
+            strncpy((*tableT).types[i], STR, sizeof(Type));
         else if((*tableR).types[i] == INT_REP)
-            strcpy((*tableT).types[i], INT);
+            strncpy((*tableT).types[i], INT, sizeof(Type));
         else if((*tableR).types[i] == FLT_REP)
-            strcpy((*tableT).types[i], FLT);
+            strncpy((*tableT).types[i], FLT, sizeof(Type));
         else if((*tableR).types[i] == BIN_REP)
-            strcpy((*tableT).types[i], BIN);
+            strncpy((*tableT).types[i], BIN, sizeof(Type));
         else
             return 0;
 
-        strcpy((*tableT).fields[i], (*tableR).fields[i]);
+        strncpy((*tableT).fields[i], (*tableR).fields[i], sizeof(Field));
     }
 
     return 1;
