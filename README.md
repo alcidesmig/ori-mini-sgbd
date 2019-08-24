@@ -52,13 +52,11 @@ Enquanto há comandos, linhas de comandos são lidos, o comando é passado para 
 
 Procura os comandos na linha, para cada comando faz sscanf's específicos para pegar os parâmetros que precisa, então chama a função espefífica.
 
-'''c
-"%s" // string normal
-"%*c" // ignora um char
-"%[^:]" // até antes de um ':'
-"%[^;]" // até antes de um ';'
-"%[^\n]" // até antes de um '\n'
-'''
+- "%s" string normal
+- "%*c" ignora um char
+- "%[^:]" até antes de um ':'
+- "%[^;]" até antes de um ';'
+- "%[^\n]" até antes de um '\n'
 
 ### createTable()
 
@@ -84,7 +82,7 @@ Quantidade de tabelas nos 4 primeiros bytes. Nome da cada tabela em sequência.
 
 ### Arquivo da tabela
 
-Metadados ta tabela (TableWRep):
+Metadados da tabela (TableWRep):
 - Tamanho da row da tabela (bytes)
 - Nome
 - Tipos
