@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "defines.h"
 #include "menu.h"
@@ -8,93 +9,42 @@
 #include "commands.h"
 #include "tools.h"
 
-// Buffer da linha de comando
-char *comando;
-ssize_t tam_comando;
+char *line = NULL; // Buffer da linha de comando
+ssize_t length = 0; // Tamanho da linha lida por getline
 
-// Arquivo de comandos
-FILE *cmd_file = NULL;
-
-Error PRE_ERROR_CODE = NONE; // Erro global
-
-// Executa comandos a partir da linha de comando
-void commandLine() {
-    CMD_ERROR_CODE = 0;
-
-    while (!CMD_ERROR_CODE && prepline() && getline(&comando, &tam_comando, stdin)) {
-        parser(stripStart(comando));
-        ExecErrorHandler(EXEC_ERROR_CODE);
+FILE *run(FILE *cmd_file, int term) {
+    if (term)
+        preline();
+    while (getline(&line, &length, cmd_file) != -1) {
+        parser(line);
+        if (term)
+            preline();
     }
-}
 
-// Executa comandos a partir de um arquivo
-int fromFile() {
-    CMD_ERROR_CODE = 0;
-
-    while (!CMD_ERROR_CODE && getline(&comando, &tam_comando, cmd_file)) {
-        parser(stripStart(comando));
-        ExecErrorHandler(EXEC_ERROR_CODE);
-    }
+    return cmd_file;
 }
 
 int main(int argc, char *argv[]) {
-    if (!init()) {
-        printf("Erro.\n");
-        return 0;
-    }
+    int opt; // Auxiliar dos parâmetroschar
+    int term = 1; // Flag de uso do terminal
 
-    int needFile = 0;
+    init();
 
-    // Arquivo de comandos
-    char *file = NULL;
-
-    // Interpretação dos parâmetros
-    for (int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], PHELP) || !strcmp(argv[i], PHELPX)) {
-            if (!needFile) {
+    while ((opt = getopt(argc, argv, "hf:")) != -1) {
+        switch(opt) {
+            case 'h':
                 menu();
-            } else {
-                PRE_ERROR_CODE = PRE_MISS_FL;
-            }
-        } else if (!strcmp(argv[i], PFILE) || !strcmp(argv[i], PFILEX)) {
-            if (!needFile) {
-                if (!file) {
-                    needFile = 1;
-                } else {
-                    PRE_ERROR_CODE = PRE_MANY_FL;
-                }
-            } else {
-                PRE_ERROR_CODE = PRE_MISS_FL;
-            }
-        } else {
-            if (!needFile) {
-                PRE_ERROR_CODE = PRE_WRG_PRM;
-            } else {
-                file = argv[i];
-                needFile = 0;
-            }
-        }
-
-        if (!preErrorHandler(PRE_ERROR_CODE)) {
-            return 0;
+            case 'f':
+                term = 0;
+                fclose(run(safe_fopen(optarg, "rb+"), term));
+            case '?':
+                raiseError(UNSUPORTED_PARAM);
         }
     }
 
-    if (file) {
-        cmd_file = fopen(file, "r");
-
-        printf("Executando %s.\n", file);
-
-        if (cmd_file) {
-            fromFile(cmd_file);
-        } else {
-            printf("Erro ao abrir o arquivo.\n");
-        }
-    } else {
-        commandLine();
+    if (term) {
+        run(stdin, term);
     }
-
-    errorHandler(CMD_ERROR_CODE);
 
     return 0;
 }

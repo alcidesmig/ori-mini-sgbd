@@ -8,6 +8,7 @@
 #include "defines.h"
 #include "tools.h"
 #include "commands.h"
+#include "error.h"
 
 // Erro global de interpretação de comandos
 extern Error CMD_ERROR_CODE;

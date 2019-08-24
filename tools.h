@@ -4,63 +4,66 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #include "defines.h"
-#include "commands.h"
+#include "error.h"
 
-// Cria o arquivo de index
 int init();
+
+void *safe_malloc(size_t size);
+
+FILE *safe_fopen(char *name, char *mode);
+
+char *safe_strcat(char *dest, char *src);
+
+// Lê a quantidade de tabelas
+// tables_index: Arquivo de index das tabelas
+int read_qt_tables(FILE *tables_index);
+
+// Lê os nomes das tabelas
+// tables_index: Arquivo de index das tabelas
+// qt_tables: Quantidade de tabelas
+TableName *read_tables_names(FILE *tables_index, int qt_tables);
+
+// Aumenta a quantidade de tabelas em 1
+// tables_index: Arquivo de index das tabelas
+// qt_tables: Quantidade de tabelas
+void increase_qt_tables(FILE *tables_index, int qt_tables);
+
+// Diminui a quantidade de tabelas em 1
+// tables_index: Arquivo de index das tabelas
+// qt_tables: Quantidade de tabelas
+void reduce_qt_tables(FILE *tables_index, int qt_tables);
+
+// Escreve os metadados de uma tabela no seu arquivo
+// tables_index: Arquivo de index das tabelas
+// table: tabela a ser gravada
+void write_table_metadata(FILE *tables_index, TableWRep *table);
+
+// Lê os metadados de uma tabela, se ela existir
+// tableName: Nome da tabela a ser lida
+TableWRep *read_table_metadata(TableName tableName);
+
+void toUpperCase(char *str);
+
+// Conta a quantidade de espaços em uma string
+int countSpaces(char *str);
+
+// Retira espaços indesejados no meio dos tipos e substitui os espaços dos campos por underline -> Para CT
+int fixingCommandCT(char *command);
 
 // Verifica a existência de uma tabela com o nome especificado
 // name: Nome da tabela
-int tableNameExists(TableName *names, char *name);
+int tableNameExists(TableName *names, char *name, int qt_tables);
 
 // Converte uma TableWType para uma TableWRep
 int convertToRep(TableWRep *tableR, TableWType *tableT);
 
 // Converte uma TableWRep para uma TableWType
-void convertToType(TableWType *tableT,TableWRep *tableR);
+int convertToType(TableWType *tableT, TableWRep *tableR);
 
-// Separa uma string usando os separadores.
-// str: String
-// splitter: separador
-// Retorna vetor de strings
-char ** split(char * str, char splitter);
-
-void toUpperCase(char * str);
-
-// Acha uma substring em string, pode haver limite de caracteres de matching
-// haystack: string
-// needle: substring
-// limit: limite
-char *findl(char *haystack, const char *needle, int limit);
-
-// Acha uma substring em string
-// haystack: string
-// needle: substring
-char *find(char *haystack, const char *needle);
-
-// Remove espaços no começo de um uma string
-// Retorna ponteiro para a nova posição
-char *stripStart(char *command);
-
-// Conta a quantidade de espaços em uma string
-int countSpaces(char * str);
-
-// Retira espaços indesejados no meio dos tipos e substitui os espaços dos atributos por '_'
-int fixingCommandCT(char * command);
-
-// Printa mensagens de acordo com o erro
-int errorHandler(Error error);
-
-int ExecErrorHandler(Error error);
-
-int preErrorHandler(Error error);
-
-int prepline();
-
-void safeFree(void *p);
+void preline();
 
 #endif /* TOOLS_H */

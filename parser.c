@@ -1,11 +1,5 @@
 #include "parser.h"
 
-// Erro global de interpretação de comandos
-Error CMD_ERROR_CODE = NONE;
-
-// Marca a posição corrente no buffer de comando
-char *parsing;
-
 // Buffers: Nome da tabela, nome do campo(chave) e valor
 // Usados em comando com único parâmetro
 TableName table_name;
@@ -17,150 +11,127 @@ TableWType table;
 Row row;
 
 // Identifica o comando
-// command: String com a linha de comando em questão
-// Lógica básica: Procura o comando e pula o ponteiro para após o mesmo, lê o nome da tabela, outro parâmetro até o ':' e outro até o ';' ou fim, repete
-void parser(char * command) {
+// line: String com a linha de comando em questão
+void parser(char * line) {
     table.cols = 0;
+    row.size = 0;
 
-    // Começa o parsing
-    if (parsing = findl(command, CT, 0)) {
-        // Chama função para tratar dos espaços indesejados
-        if(fixingCommandCT(command) && sscanf(parsing, "%s %[^:^;]%*c%[^;^\n]", table.name, table.types[table.cols], table.fields[table.cols]) == 3) {
+    char cmd[3];
+    char parameter[2];
+    int scaned = 0;
+
+    sscanf(line, "%s %[^\n]", cmd, line);
+    toUpperCase(cmd);
+
+    if (!strcmp(cmd, CT)) {
+        fixingCommandCT(line);
+        if (sscanf(line, "%s %[^\n]", table.name, line) == 2) {
             toUpperCase(table.name);
+            scaned = sscanf(line, "%[^:]%*c%[^;]%*c%[^\n]", table.types[table.cols], table.fields[table.cols], line);
             toUpperCase(table.types[table.cols]);
             table.cols++;
-
-            while (parsing = find(parsing, ";")) {
-                if(sscanf(parsing, "%[^:^;]%*c%[^;^\n]", table.types[table.cols], table.fields[table.cols]) == 2) {
+            if (scaned == 2 || scaned == 3) {
+                while (scaned == 3) {
+                    scaned = sscanf(line, "%[^:]%*c%[^;]%*c%[^\n]", table.types[table.cols], table.fields[table.cols], line);
                     toUpperCase(table.types[table.cols]);
                     table.cols++;
-                } else {
-                    CMD_ERROR_CODE = CT_WS_USC; return;
                 }
+                createTable(&table); return;
             }
-
-            createTable(table);
-        } else {
-            CMD_ERROR_CODE = CT_WS; return;
         }
-    } else if (parsing = findl(command, RT, 0)) {
-        if (sscanf(parsing, "%s", table.name) == 1) {
+        raiseError(CT_WRONG_SINTAX);
+    } else if (!strcmp(cmd, RT)) {
+        if (sscanf(line, "%s %[^\n]", table.name, line) == 1) {
             toUpperCase(table.name);
-            removeTable(table.name);
-        } else {
-            CMD_ERROR_CODE = RT_WS; return;
+            removeTable(table.name); return;
         }
-    } else if (parsing = findl(command, AT, 0)) {
-        if (sscanf(parsing, "%s", table.name) == 1) {
+        raiseError(RT_WRONG_SINTAX);
+    } else if (!strcmp(cmd, AT)) {
+        if (sscanf(line, "%s %[^\n]", table.name, line) == 1) {
             toUpperCase(table.name);
-            apTable(table.name);
-        } else {
-            CMD_ERROR_CODE = AT_WS; return;
+            apTable(table.name); return;
         }
-    } else if (parsing = findl(command, LT, 0)) {
-        listTables();
-    } else if (parsing = findl(command, IR, 0)) {
-        if (sscanf(parsing, "%s %[^;^\n]", row.table_name, row.values[row.size]) == 2) {
+        raiseError(AT_WRONG_SINTAX);
+    } else if (!strcmp(cmd, LT)) {
+        listTables(); return;
+    } else if (!strcmp(cmd, IR)) {
+        if (sscanf(line, "%s %[^\n]", row.table_name, line) == 2) {
             toUpperCase(row.table_name);
-
+            scaned = sscanf(line, "%[^;]%*c%[^\n]", row.values[row.size], line);
             row.size++;
-
-            while (parsing = find(parsing, ";")) {
-                if (sscanf(parsing, "%[^;^\n]", row.values[row.size]) == 1) {
+            if (scaned == 1 || scaned == 2) {
+                table.cols++;
+                while (scaned == 2) {
+                    scaned = sscanf(line, "%[^;]%*c%[^\n]", row.values[row.size], line);
                     row.size++;
-                } else {
-                    CMD_ERROR_CODE = IR_USC; return;
+                }
+                includeReg(&row); return;
+            }
+        }
+        raiseError(IR_WRONG_SINTAX);
+    } else if (!strcmp(cmd, BR)) {
+        if (sscanf(line, "%s %[^\n]", parameter, line) == 2) {
+            if (sscanf(line, "%s %[^\n]", table_name, line) == 2) {
+                if (sscanf(line, "%[^:]%*c%s %[^\n]", field_name, value, line) == 2) {
+                    toUpperCase(table_name);
+                    if (!strcmp(parameter, U)) {
+                        busRegU(table_name, field_name, value); return;
+                    } else if (!strcmp(parameter, N)) {
+                        busRegN(table_name, field_name, value); return;
+                    } else {
+                        raiseError(BR_WRONG_PARAMETER);
+                    }
                 }
             }
-
-            includeReg(row);
-        } else {
-            CMD_ERROR_CODE = IR_WS; return;
         }
-    } else if (parsing = findl(command, BR, 0)) {
-        char *temp = parsing;
-        char *aux_type = 0;
-
-        if (temp = findl(stripStart(parsing), U, 0)) {
-            aux_type = U;
-        } else if (temp = findl(stripStart(parsing), N, 0)) {
-            aux_type = N;
-        } else {
-            CMD_ERROR_CODE = BR_MP; return;
-        }
-
-        if (sscanf(temp, "%s %[^:]%*c%s", table_name, field_name, value) == 3) {
+        raiseError(BR_WRONG_SINTAX);
+    } else if (!strcmp(cmd, AR)) {
+        if (sscanf(line, "%s %[^\n]", table_name, line) == 1) {
             toUpperCase(table_name);
-            
-            if (aux_type == U) {
-                busRegU(table_name, field_name, value);
-            } else if (aux_type == N) {
-                busRegN(table_name, field_name, value);
-            } else {
-                CMD_ERROR_CODE = IN_ERROR;  return;
+            apReg(table_name); return;
+        }
+        raiseError(AR_WRONG_SINTAX);
+    } else if (!strcmp(cmd, RR)) {
+        if (sscanf(line, "%s %[^\n]", table_name, line) == 1) {
+            toUpperCase(table_name);
+            removeReg(table_name); return;
+        }
+        raiseError(RR_WRONG_SINTAX);
+    } else if (!strcmp(cmd, CI)) {
+        if (sscanf(line, "%s %[^\n]", parameter, line) == 2) {
+            if (sscanf(line, "%s %[^\n]", table_name, line) == 2) {
+                if (sscanf(line, "%s %[^\n]", field_name, line) == 1) {
+                    toUpperCase(table_name);
+                    if (!strcmp(parameter, A)) {
+                        createIndexA(table_name, field_name); return;
+                    } else if (!strcmp(parameter, H)) {
+                        createIndexH(table_name, field_name); return;
+                    } else {
+                        raiseError(CI_WRONG_PARAMETER);
+                    }
+                }
             }
-        } else {
-            CMD_ERROR_CODE = BR_WS; return;
         }
-    } else if (parsing = findl(command, AR, 0)) {
-        if (sscanf(parsing, "%s", table_name) == 1) {
-            toUpperCase(table_name);
-            apReg(table_name);
-        } else {
-            CMD_ERROR_CODE = AR_WS; return;
-        }
-    } else if (parsing = findl(command, RR, 0)) {
-        if (sscanf(parsing, "%s", table_name) == 1) {
-            toUpperCase(table_name);
-
-            removeReg(table_name);
-        } else {
-            CMD_ERROR_CODE = RR_WS; return;
-        }
-    } else if (parsing = findl(command, CI, 0)) {
-        char *temp = parsing;
-        char *aux_type = 0;
-
-        if (temp = findl(stripStart(parsing), A, 0)) {
-            aux_type = A;
-        } else if (temp = findl(stripStart(parsing), H, 0)) {
-            aux_type = H;
-        } else {
-            CMD_ERROR_CODE = CI_MP; return;
-        }
-
-        if (sscanf(temp, "%s %s", table_name, field_name) == 2) {
-            toUpperCase(table_name);
-            
-            if (aux_type == A) {
-                createIndexA(table_name, field_name);
-            } else if (aux_type == H) {
-                createIndexH(table_name, field_name);
-            } else {
-                CMD_ERROR_CODE = IN_ERROR;  return;
+        raiseError(CI_WRONG_SINTAX);
+    } else if (!strcmp(cmd, RI)) {
+        if (sscanf(line, "%s %[^\n]", table_name, line) == 2) {
+            if (sscanf(line, "%s %[^\n]", field_name, line) == 1) {
+                toUpperCase(table_name);
+                removeIndex(table_name, field_name); return;
             }
-        } else {
-            CMD_ERROR_CODE = CI_WS;  return;              
         }
-    } else if (parsing = findl(command, RI, 0)) {
-        if (sscanf(parsing, "%s %s", table_name, field_name) == 2) {
-            toUpperCase(table_name);
-            removeIndex(table_name, field_name);
-        } else {
-            CMD_ERROR_CODE = RI_WS; return;
+        raiseError(RI_WRONG_SINTAX);
+    } else if (!strcmp(cmd, GI)) {
+        if (sscanf(line, "%s %[^\n]", table_name, line) == 2) {
+            if (sscanf(line, "%s %[^\n]", field_name, line) == 1) {
+                toUpperCase(table_name);
+                genIndex(table_name, field_name); return;
+            }
         }
-    } else if (parsing = findl(command, GI, 0)) {
-        if (sscanf(parsing, "%s %s", table_name, field_name) == 2) {
-            toUpperCase(table_name);
-            genIndex(table_name, field_name);
-        } else {
-            CMD_ERROR_CODE = GI_WS; return;
-        }
-    } else if (parsing = findl(command, EB, 0)) {
-        CMD_ERROR_CODE = EXIT; return;
+        raiseError(GI_WRONG_SINTAX);
+    } else if (!strcmp(cmd, EB)) {
+        raiseError(EXIT);
     } else {
-        CMD_ERROR_CODE = NO_CMD; return;
+        raiseError(NO_COMMAND);
     }
-
-    CMD_ERROR_CODE = NONE; return;
 }

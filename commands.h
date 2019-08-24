@@ -7,6 +7,7 @@
 
 #include "defines.h"
 #include "tools.h"
+#include "error.h"
 
 extern Error EXEC_ERROR_CODE; // Erro global de execução de comandos
 
@@ -16,7 +17,7 @@ extern int qt_tables;      // Quantidade de tabelas
 
 // Cria tabela
 // table: Struct com as informações para crira uma tabela
-void createTable(TableWType table);
+void createTable(TableWType *table);
 
 // Remove tabela
 // table_name: Nome da tabela
@@ -31,7 +32,7 @@ void listTables();
 
 // Inclui registro na tabela
 // row: Struct com os valores de um registro
-void includeReg(Row row);
+void includeReg(Row *row);
 
 // Busca registros na tabela, único
 // table_name: Nome da tabela
