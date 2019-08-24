@@ -115,7 +115,7 @@ void includeReg(Row *row) {
 // field_name: Nome do campo(chave)
 // value: Nome do valor
 void busRegU(TableName table_name, Field field_name, Value value) {
-    printf("Buscando %s igual à %s em %s.\n", table_name, field_name, value);
+    printf("Buscando %s igual à %s em %s.\n", field_name, value, table_name);
 
     raiseError(TODO);
 }

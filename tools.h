@@ -48,11 +48,9 @@ TableWRep *read_table_metadata(TableName tableName);
 
 void toUpperCase(char *str);
 
-// Conta a quantidade de espaços em uma string
-int countSpaces(char *str);
+int replaceSpace(char *str, char c);
 
-// Retira espaços indesejados no meio dos tipos e substitui os espaços dos campos por underline -> Para CT
-int fixingCommandCT(char *command);
+int glueChars(char *str, char c);
 
 // Verifica a existência de uma tabela com o nome especificado
 // name: Nome da tabela

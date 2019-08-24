@@ -24,16 +24,20 @@ void parser(char * line) {
     toUpperCase(cmd);
 
     if (!strcmp(cmd, CT)) {
-        fixingCommandCT(line);
         if (sscanf(line, "%s %[^\n]", table.name, line) == 2) {
             toUpperCase(table.name);
-            scaned = sscanf(line, "%[^:]%*c%[^;]%*c%[^\n]", table.types[table.cols], table.fields[table.cols], line);
+            scaned = sscanf(line, "%[^:^;]%*c%[^;^:]%*c%[^\n]", table.types[table.cols], table.fields[table.cols], line);
             toUpperCase(table.types[table.cols]);
+            if (glueChars(table.types[table.cols], ' ')) printf("Espaços foram eliminados do tipo: %s\n", table.types[table.cols]);
+            if (replaceSpace(table.fields[table.cols], '_')) printf("Espaços foram eliminados do campo: %s\n", table.fields[table.cols]);
             table.cols++;
+            
             if (scaned == 2 || scaned == 3) {
                 while (scaned == 3) {
-                    scaned = sscanf(line, "%[^:]%*c%[^;]%*c%[^\n]", table.types[table.cols], table.fields[table.cols], line);
+                    scaned = sscanf(line, "%[^:^;]%*c%[^;^:]%*c%[^\n]", table.types[table.cols], table.fields[table.cols], line);
                     toUpperCase(table.types[table.cols]);
+                    if (glueChars(table.types[table.cols], ' ')) printf("Espaços foram eliminados do tipo: %s\n", table.types[table.cols]);
+                    if (replaceSpace(table.fields[table.cols], '_')) printf("Espaços foram eliminados do campo: %s\n", table.fields[table.cols]);
                     table.cols++;
                 }
                 createTable(&table); return;
@@ -59,6 +63,7 @@ void parser(char * line) {
             toUpperCase(row.table_name);
             scaned = sscanf(line, "%[^;]%*c%[^\n]", row.values[row.size], line);
             row.size++;
+            
             if (scaned == 1 || scaned == 2) {
                 table.cols++;
                 while (scaned == 2) {
@@ -72,8 +77,11 @@ void parser(char * line) {
     } else if (!strcmp(cmd, BR)) {
         if (sscanf(line, "%s %[^\n]", parameter, line) == 2) {
             if (sscanf(line, "%s %[^\n]", table_name, line) == 2) {
-                if (sscanf(line, "%[^:]%*c%s %[^\n]", field_name, value, line) == 2) {
+                if (sscanf(line, "%[^:]%*c%[^\n]", field_name, value) == 2) {
                     toUpperCase(table_name);
+                    toUpperCase(parameter);
+                    if (replaceSpace(field_name, '_')) printf("Espaços foram eliminados do campo: %s\n", field_name);
+
                     if (!strcmp(parameter, U)) {
                         busRegU(table_name, field_name, value); return;
                     } else if (!strcmp(parameter, N)) {
@@ -100,8 +108,11 @@ void parser(char * line) {
     } else if (!strcmp(cmd, CI)) {
         if (sscanf(line, "%s %[^\n]", parameter, line) == 2) {
             if (sscanf(line, "%s %[^\n]", table_name, line) == 2) {
-                if (sscanf(line, "%s %[^\n]", field_name, line) == 1) {
+                if (sscanf(line, "%[^\n]", field_name) == 1) {
                     toUpperCase(table_name);
+                    toUpperCase(parameter);
+                    if (replaceSpace(field_name, '_')) printf("Espaços foram eliminados do campo: %s\n", field_name);
+
                     if (!strcmp(parameter, A)) {
                         createIndexA(table_name, field_name); return;
                     } else if (!strcmp(parameter, H)) {
@@ -115,16 +126,18 @@ void parser(char * line) {
         raiseError(CI_WRONG_SINTAX);
     } else if (!strcmp(cmd, RI)) {
         if (sscanf(line, "%s %[^\n]", table_name, line) == 2) {
-            if (sscanf(line, "%s %[^\n]", field_name, line) == 1) {
+            if (sscanf(line, "%[^\n]", field_name) == 1) {
                 toUpperCase(table_name);
+                if (replaceSpace(field_name, '_')) printf("Espaços foram eliminados do campo: %s\n", field_name);
                 removeIndex(table_name, field_name); return;
             }
         }
         raiseError(RI_WRONG_SINTAX);
     } else if (!strcmp(cmd, GI)) {
         if (sscanf(line, "%s %[^\n]", table_name, line) == 2) {
-            if (sscanf(line, "%s %[^\n]", field_name, line) == 1) {
+            if (sscanf(line, "%[^\n]", field_name) == 1) {
                 toUpperCase(table_name);
+                if (replaceSpace(field_name, '_')) printf("Espaços foram eliminados do campo: %s\n", field_name);
                 genIndex(table_name, field_name); return;
             }
         }

@@ -127,45 +127,43 @@ void toUpperCase(char *str) {
         if (str[i] >= 'a' && str[i] <= 'z') str[i] = str[i] - 32;
 }
 
-// Conta a quantidade de espaços em uma string
-int countSpaces(char *str) {
-    int cont = 0;
-    for (int i = 0; i < strlen(str); i++) {
-        if(*(str + i) == ' ') cont++;
+int replaceSpace(char *str, char c) {
+    int flag = 0;
+
+    for(int i = 0; str[i]; i++) {
+        if (str[i] == ' ') {
+            str[i] = c;
+            flag = 1;
+        }
     }
-    return cont;
+
+    return flag;
 }
 
-// Retira espaços indesejados no meio dos tipos e substitui os espaços dos campos por underline -> Para CT
-int fixingCommandCT(char *command) {
-    if(countSpaces(command) < 2) return 0;
-    char * beginStruct = strstr((strstr(command, " ") + 1), " ") + 1;
-    void bringBack(char * str, int qt) {
-        for(int i = 0; i < strlen(str); i++) {
-            str[i] = str[i+qt];
+int glueChars(char *str, char c) {
+    int flag = 0;
+
+    int i = 0;
+    for (; str[i]; i++);
+
+    char *temp = safe_malloc(i*sizeof(char));
+    int ti = 0;
+
+    for (i = 0; str[i]; i++) {
+        if (str[i] != c) {
+            temp[ti++] = str[i];
+        } else {
+            flag = 1;
         }
     }
-    int inType = 0;
-    int cont_ = 0, contSpace = 0;
-    for(int i = 0; beginStruct[i] != '\0'; i++){
-        if(beginStruct[i] == ':') inType = 1;
-        else if(beginStruct[i] == ';') inType = 0;
-        if(beginStruct[i] == ' '){
-            if(!inType) {
-                bringBack(&beginStruct[i], 1);
-            } else {
-                cont_++;
-                beginStruct[i] = '_';
-            }
-        }
+
+    for (i = 0; i < ti; i++) {
+        str[i] = temp[i];
     }
-    if(cont_) {
-        printf("%d espaços nos nomes dos campos foram substituídos por \"_\" para melhor representação dos dados.\n", cont_);
-    }
-    if(contSpace) {
-        printf("%d espaços nos tipos dos campos foram removidos para obedecer a tipação disponível.\n", contSpace);
-    }
-    return 1;
+
+    str[i] = '\0';
+
+    return flag;
 }
 
 // Verifica a existência de uma tabela com o nome especificado
