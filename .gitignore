@@ -1,1 +1,3 @@
 main
+*.tbli
+tables_dir/*
