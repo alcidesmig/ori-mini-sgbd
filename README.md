@@ -5,14 +5,18 @@
 ### Como usar
 - make
 - Linha de comando: ./main
+- Printa os comandos: ./main -h
 - Arquivo: ./main -f file.txt
-- Arquivo: ./main --file file.txt
 
 ## Organização
 
 ### Defines
 
-Contém defines e constantes de comandos, erros, arquivos e limites.
+Contém defines e constantes de comandos, arquivos e limites.
+
+### Error
+
+Contém defines de erros e a função raiseError, que gere os erros.
 
 ### Commands
 
@@ -34,54 +38,55 @@ Funções auxiliares. Provavelmente será separado em Tools e Error.
 
 ### init()
 
-Cria o arquivo de indexação das tabelas.
+Cria o arquivo de indexação das tabelas e o diretório de arquivos de tabelas.
 
 ### Interpretação dos parâmetros
 
 Mostra o menu se necessário ou lê o nome de um arquivo para execução.
 
-### fromFile()
-
-Executa os comandos de um arquivo.
-
-### commandLine()
-
-Executa os comandos do terminal.
-
 ### Execução
 
-Enquanto há comandos e não há erro, linhas de comandos são lidos, são removidos os espaços do começo e então o comando é passados para o parser.
+Enquanto há comandos, linhas de comandos são lidos, o comando é passado para o parser.
 
 ### parser()
 
-Procura os comandos com a função findl, então é usado um padrão da sscanf para pegar os parâmetros, nessa parte são, Nome da Tabela, Modificadores (se existir) e o primeiro valor(ou dupla de valores). Os dados são tratados. O ponteiro avança para o próximo ';' com a findl, então outros parâmetros são pegos em um loop. Então a respectiva função é chamada.
+Procura os comandos na linha, para cada comando faz sscanf's específicos para pegar os parâmetros que precisa, então chama a função espefífica.
+
+'''c
+"%s" // string normal
+"%*c" // ignora um char
+"%[^:]" // até antes de um ':'
+"%[^;]" // até antes de um ';'
+"%[^\n]" // até antes de um '\n'
+'''
 
 ### createTable()
 
-Lê a quantidade de tabelas do arquivo de indexação, lê os nomes da tabelas, verifica de o novo nome existe, converte a tabela para o modo "rep", então escreve a nova tabela no fim do arquivo e incrementa o número de tabelas no arquivo.
+Lê a quantidade de tabelas do arquivo de indexação, lê os nomes da tabelas, verifica de o novo nome existe, converte a tabela para o modo "rep", então escreve o noma da nova tabela no fim do arquivo, incrementa o número de tabelas no arquivo e escreve os metadados no arquivo próprio da tabela.
+
+### apTable()
+
+Lê os metadados da tabela e os printa para o usuário.
 
 ### listTables()
 
-Lê a quantidade de tabelas do arquivo de indexação, lê todos os dados das tabelas de uma vez, converte uma por uma para o modo "tipo", então printa as informações.
+Lê a quantidade de tabelas do arquivo de indexação, então lê os nomes das tabelas e os printa para o usuário.
 
 ## Erro
 
-Existem três variáveis de erro:
-
-### PRE_ERROR_CODE
-
-Erros na interpretação dos parâmetros do programa. Interrompem o programa.
-
-### CMD_ERROR_CODE
-
-Erros na interpretação do comando. Interrompem o programa.
-
-### EXEC_ERROR_CODE
-
-Erros na execução dos comandos. Não interrompem o programa.
+A função raiseError pode ser chamada para finalizar o programa ou printar uma mensagem referente a algum erro.
 
 ## Metadados
 
 ### Index
 
-Quantidade de tabelas no 4 primeiros bytes. Struct de cada tabela uma atrás da outra.
+Quantidade de tabelas nos 4 primeiros bytes. Nome da cada tabela em sequência.
+
+### Arquivo da tabela
+
+Metadados ta tabela (TableWRep):
+- Tamanho da row da tabela (bytes)
+- Nome
+- Tipos
+- Nome das colunas
+- Número de colunas
