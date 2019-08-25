@@ -115,6 +115,7 @@ void write_table_metadata(FILE *tables_index, TableWRep *table, int index) {
     fclose(safe_fopen(path, "ab"));
     FILE *table_file = safe_fopen(path, "rb+");
     fwrite(table, sizeof(TableWRep), 1, table_file);
+    fwrite((int[]){0}, sizeof(int), 1, table_file);
     fclose(table_file);
 
     fseek(tables_index, sizeof(int) + index * sizeof(TableName), SEEK_SET);

@@ -9,6 +9,7 @@ void createTable(TableWType *table) {
     tables_index = safe_fopen(TABLES_INDEX, "rb+");
     qt_tables = read_qt_tables(tables_index);
 
+    //  Verifica se o nome já existe
     if (qt_tables) {
         TableName *names = read_tables_names(tables_index, qt_tables);
 
@@ -19,6 +20,7 @@ void createTable(TableWType *table) {
         free(names);
     }
 
+    // Converte a tabela
     TableWRep tableData;
 
     // Converte a tabela
@@ -55,6 +57,7 @@ void removeTable(TableName table_name) {
 
     TableName *names = read_tables_names(tables_index, qt_tables);
 
+    // Procura o nome da tabela
     int i = 0;
     while (i < qt_tables) {
         if (!strcmp(names[i], table_name)) {
@@ -63,6 +66,7 @@ void removeTable(TableName table_name) {
         i++;
     }
 
+    // Verifica se a tabela foi achada
     if (i == qt_tables) {
         raiseError(RT_CANT_FIND_TABLE);
     }
@@ -71,17 +75,16 @@ void removeTable(TableName table_name) {
 
     qt_tables--;
 
+    // Arruma os nomes colocando o último no lugar do que foi removido
     if (i != qt_tables) {
         strncpy(names[i], names[qt_tables], sizeof(TableName));
         write_tables_names(tables_index, names, qt_tables);
     }
 
-    for (int i = 0; i < qt_tables; i++) {
-        printf(">>%s\n", names[i]);
-    }
-
+    // Salva o novo número de tabelas
     write_qt_tables(tables_index, qt_tables);
 
+    // Deleta o arquivo da tabela
     TablePath path = "";
 
     safe_strcat(path, TABLES_DIR);
@@ -104,6 +107,7 @@ void apTable(TableName table_name) {
         raiseError(AT_CANT_FIND_TABLE);
     }
 
+    // Converte a tabela
     TableWType *table = safe_malloc(sizeof(TableWType));
 
     convertToType(table, tableData);
@@ -134,6 +138,7 @@ void listTables() {
 
     printf("Listando %d tabelas.\n", qt_tables);
 
+    // Pega os nomes das tabelas
     TableName *names = read_tables_names(tables_index, qt_tables);
 
     for (int i = 0; i < qt_tables; i++) {
@@ -150,10 +155,10 @@ void listTables() {
 // Inclui registro na tabela
 // row: Struct com os valores de um registro
 void includeReg(Row *row) {
-    printf("Novo registro na tabela %s.\n", row->table_name);
-
+    // Lê a tabela
     TableWRep *meta = read_table_metadata(row->table_name);
 
+    // Abre o arquivo da tabela
     TablePath path = "";
 
     safe_strcat(path, TABLES_DIR);
@@ -161,21 +166,30 @@ void includeReg(Row *row) {
     safe_strcat(path, TABLE_EXTENSION);
 
     FILE *table_file = safe_fopen(path, "rb+");
-    fseek(table_file, 0, SEEK_END);
 
+    // Confere o número de valores
     if (meta->cols != row->size) {
         raiseError(IR_DIFF_PARAM_NUMB);
     }
 
-    int temp = 0;
+    // Lê o número de rows
+    int row_length = 0;
+    fread(&row_length, sizeof(int), 1, table_file);
 
+    // Lê o número de rows
+    int qt_row = 0;
+    fseek(table_file, sizeof(TableWRep), SEEK_SET);
+    fread(&qt_row, sizeof(int), 1, table_file);
+
+    // Muda o ponteiro para o lugar onde a row será salva, ignora possíveis dados que foram salvos anteriormente e falharam
+    fseek(table_file, sizeof(int)+sizeof(TableWRep)+qt_row*row_length, SEEK_SET);
+
+    // Grava cada valor
     for (int i = 0; i < row->size; i++) {
         if (meta->types[i] == STR_REP) {
             char str[STR_SIZE] = "";
             if (sscanf(row->values[i], "%[^\n]", str) == 1) {        
                 fwrite(str, STR_SIZE * sizeof(char), 1, table_file);
-
-                temp+=256;
             } else {
                 raiseError(IR_WRONG_VALUE);
             }
@@ -183,8 +197,6 @@ void includeReg(Row *row) {
             int i = 0;
             if (sscanf(row->values[i], "%d", &i) == 1) {        
                 fwrite(&i, sizeof(int), 1, table_file);
-           
-                temp+=4;
             } else {
                 raiseError(IR_WRONG_VALUE);
             }
@@ -192,8 +204,6 @@ void includeReg(Row *row) {
             float f = 0.0;
             if (sscanf(row->values[i], "%f", &f) == 1) {        
                 fwrite(&f, sizeof(float), 1, table_file);
-             
-                temp+=4;
             } else {
                 raiseError(IR_WRONG_VALUE);
             }
@@ -201,15 +211,18 @@ void includeReg(Row *row) {
             char bin[BIN_SIZE] = "";
             if (sscanf(row->values[i], "%[^\n]", bin) == 1) {        
                 fwrite(bin, BIN_SIZE * sizeof(char), 1, table_file);
-               
-                temp+=256;
             } else {
                 raiseError(IR_WRONG_VALUE);
             }
         }
     }
 
-    printf("%d\n", temp);
+    // Aumenta o número de row
+    qt_row++;
+    fseek(table_file, sizeof(int) * sizeof(TableWRep), SEEK_SET);
+    fwrite(&qt_row, sizeof(int), 1, table_file);
+
+    printf("Novo registro na tabela %s.\n", row->table_name);
 
     free(meta);
 

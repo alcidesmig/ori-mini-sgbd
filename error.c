@@ -27,7 +27,7 @@ void raiseError(Error error) {
 			printf("STRCAT_ERROR.\n");
 			exit(0);
 		case CANT_REMOVE_FILE:
-			printf("STRCAT_ERROR.\n");
+			printf("Falha ao deletar arquivo.\n");
 			exit(0);
 		case CT_WRONG_SINTAX:
 			printf("Sintax errada.\n");
@@ -57,7 +57,7 @@ void raiseError(Error error) {
 			printf("Sintax errada.\n");
 			exit(0);
 		case IR_WRONG_VALUE:
-			printf("Sintax errada.\n");
+			printf("Número de valores não corresponde ao da tabela.\n");
 			exit(0);
 		case BR_WRONG_SINTAX:
 			printf("Sintax errada.\n");
