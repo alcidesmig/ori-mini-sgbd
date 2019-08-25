@@ -88,3 +88,5 @@ Metadados da tabela (TableWRep):
 - Tipos
 - Nome das colunas
 - Número de colunas
+- Quantidade de rows
+- As row em sequência
