@@ -65,8 +65,6 @@ int convertToRep(TableWRep *tableR, TableWType *tableT);
 // Converte uma TableWRep para uma TableWType
 int convertToType(TableWType *tableT, TableWRep *tableR);
 
-void cleanTable(TableWType *table);
-
 void preline();
 
 #endif /* TOOLS_H */
