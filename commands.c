@@ -26,8 +26,10 @@ void createTable(TableWType *table) {
         raiseError(CT_WRONG_TYPE);
     }
 
+    qt_tables++;
+
     // Salva o novo número de tabelas
-    increase_qt_tables(tables_index, qt_tables);
+    write_qt_tables(tables_index, qt_tables);
 
     // Escreve a tabela no arquivo
     write_table_metadata(tables_index, &tableData);
@@ -40,8 +42,52 @@ void createTable(TableWType *table) {
 // Remove tabela
 // table_name: Nome da tabela
 void removeTable(TableName table_name) {
+    tables_index = safe_fopen(TABLES_INDEX, "rb+");
+
+    qt_tables = read_qt_tables(tables_index);
+
+    if (!qt_tables) {
+        printf("Nenhuma tabela no sistema.\n");
+        fclose(tables_index);
+        return;
+    }
+
+    TableName *names = read_tables_names(tables_index, qt_tables);
+
+    int i = 0;
+    while (i < qt_tables) {
+        if (!strcmp(names[i], table_name)) {
+            break;
+        }
+        i++;
+    }
+
+    if (i == qt_tables) {
+        raiseError(RT_CANT_FIND_TABLE);
+    }
+
     printf("Removendo a tabela %s.\n", table_name);
-    raiseError(TODO);
+
+    qt_tables--;
+
+    if (i != qt_tables) {
+        strncpy(names[i], names[qt_tables], sizeof(TableName));
+        write_tables_names(tables_index, names, qt_tables);
+    }
+
+    write_qt_tables(tables_index, qt_tables);
+
+    TablePath path = "";
+
+    safe_strcat(path, TABLES_DIR);
+    safe_strcat(path, table_name);
+    safe_strcat(path, TABLE_EXTENSION);
+
+    safe_remove(path);
+
+    free(names);
+
+    fclose(tables_index);
 }
 
 // Apresenta tabela tabela
@@ -83,15 +129,13 @@ void listTables() {
 
     printf("Listando %d tabelas.\n", qt_tables);
 
-    if (qt_tables) {
-        TableName *names = read_tables_names(tables_index, qt_tables);
+    TableName *names = read_tables_names(tables_index, qt_tables);
 
-        for (int i = 0; i < qt_tables; i++) {
-            printf("- %s\n", names[i]);
-        }
-
-        free(names);
+    for (int i = 0; i < qt_tables; i++) {
+        printf("- %s\n", names[i]);
     }
+
+    free(names);
 
     fclose(tables_index);
 

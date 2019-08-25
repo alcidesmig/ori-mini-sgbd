@@ -26,6 +26,9 @@ void raiseError(Error error) {
 		case STRCAT_ERROR:
 			printf("STRCAT_ERROR.\n");
 			exit(0);
+		case CANT_REMOVE_FILE:
+			printf("STRCAT_ERROR.\n");
+			exit(0);
 		case CT_WRONG_SINTAX:
 			printf("Sintax errada.\n");
 			exit(0);
@@ -37,6 +40,9 @@ void raiseError(Error error) {
 			exit(0);
 		case RT_WRONG_SINTAX:
 			printf("Sintax errada.\n");
+			exit(0);
+		case RT_CANT_FIND_TABLE:
+			printf("Tabela não existe.\n");
 			exit(0);
 		case AT_WRONG_SINTAX:
 			printf("Sintax errada.\n");

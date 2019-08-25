@@ -50,6 +50,14 @@ int read_qt_tables(FILE *tables_index) {
     return qt_tables;
 }
 
+// Escreve a quantidade de tabelas
+// tables_index: Arquivo de index das tabelas
+// qt_tables: Quantidade de tabelas
+void write_qt_tables(FILE *tables_index, int qt_tables) {
+    fseek(tables_index, 0, SEEK_SET);
+    fwrite(&qt_tables, sizeof(int), 1, tables_index);
+}
+
 // Lê os nomes das tabelas
 // tables_index: Arquivo de index das tabelas
 // qt_tables: Quantidade de tabelas
@@ -62,22 +70,13 @@ TableName *read_tables_names(FILE *tables_index, int qt_tables) {
     return names;
 }
 
-// Aumenta a quantidade de tabelas em 1
+// Escreve os nomes das tabelas
 // tables_index: Arquivo de index das tabelas
+// names: Lista dos nomes
 // qt_tables: Quantidade de tabelas
-void increase_qt_tables(FILE *tables_index, int qt_tables) {
-    qt_tables++;
-    fseek(tables_index, 0, SEEK_SET);
-    fwrite(&qt_tables, sizeof(int), 1, tables_index);
-}
-
-// Diminui a quantidade de tabelas em 1
-// tables_index: Arquivo de index das tabelas
-// qt_tables: Quantidade de tabelas
-void reduce_qt_tables(FILE *tables_index, int qt_tables) {
-    qt_tables--;
-    fseek(tables_index, 0, SEEK_SET);
-    fwrite(&qt_tables, sizeof(int), 1, tables_index);
+void write_tables_names(FILE *tables_index, TableName *names, int qt_tables) {
+    fseek(tables_index, sizeof(int), SEEK_SET);
+    fwrite(names, sizeof(TableName), qt_tables, tables_index);
 }
 
 // Escreve os metadados de uma tabela no seu arquivo
@@ -119,6 +118,12 @@ TableWRep *read_table_metadata(TableName tableName) {
     fclose(table_file);
 
     return table;
+}
+
+void safe_remove(char *path) {
+    if (remove(path)) {
+        raiseError(CANT_REMOVE_FILE);
+    }
 }
 
 void toUpperCase(char *str) {

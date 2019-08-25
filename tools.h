@@ -22,20 +22,21 @@ char *safe_strcat(char *dest, char *src);
 // tables_index: Arquivo de index das tabelas
 int read_qt_tables(FILE *tables_index);
 
+// Escreve a quantidade de tabelas
+// tables_index: Arquivo de index das tabelas
+// qt_tables: Quantidade de tabelas
+void write_qt_tables(FILE *tables_index, int qt_tables);
+
 // Lê os nomes das tabelas
 // tables_index: Arquivo de index das tabelas
 // qt_tables: Quantidade de tabelas
 TableName *read_tables_names(FILE *tables_index, int qt_tables);
 
-// Aumenta a quantidade de tabelas em 1
+// Escreve os nomes das tabelas
 // tables_index: Arquivo de index das tabelas
+// names: Lista dos nomes
 // qt_tables: Quantidade de tabelas
-void increase_qt_tables(FILE *tables_index, int qt_tables);
-
-// Diminui a quantidade de tabelas em 1
-// tables_index: Arquivo de index das tabelas
-// qt_tables: Quantidade de tabelas
-void reduce_qt_tables(FILE *tables_index, int qt_tables);
+void write_tables_names(FILE *tables_index, TableName *names, int qt_tables);
 
 // Escreve os metadados de uma tabela no seu arquivo
 // tables_index: Arquivo de index das tabelas
@@ -45,6 +46,8 @@ void write_table_metadata(FILE *tables_index, TableWRep *table);
 // Lê os metadados de uma tabela, se ela existir
 // tableName: Nome da tabela a ser lida
 TableWRep *read_table_metadata(TableName tableName);
+
+void safe_remove(char *path);
 
 void toUpperCase(char *str);
 
