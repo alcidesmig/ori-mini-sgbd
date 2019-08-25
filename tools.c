@@ -82,11 +82,7 @@ void write_tables_names(FILE *tables_index, TableName *names, int qt_tables) {
 // Lê os metadados de uma tabela, se ela existir
 // tableName: Nome da tabela a ser lida
 TableWRep *read_table_metadata(TableName tableName) {
-    TablePath path = "";
-
-    safe_strcat(path, TABLES_DIR);
-    safe_strcat(path, tableName);
-    safe_strcat(path, TABLE_EXTENSION);
+    char *path = glueString(3, TABLES_DIR, tableName, TABLE_EXTENSION);
 
     FILE *table_file = fopen(path, "rb+");
     if (!table_file) {
@@ -106,11 +102,7 @@ TableWRep *read_table_metadata(TableName tableName) {
 // table: tabela a ser gravada
 // index: Posição da tabela
 void write_table_metadata(FILE *tables_index, TableWRep *table, int index) {
-    TablePath path = "";
-
-    safe_strcat(path, TABLES_DIR);
-    safe_strcat(path, table->name);
-    safe_strcat(path, TABLE_EXTENSION);
+    char *path = glueString(3, TABLES_DIR, table->name, TABLE_EXTENSION);
 
     fclose(safe_fopen(path, "ab"));
     FILE *table_file = safe_fopen(path, "rb+");
@@ -239,6 +231,35 @@ int convertToType(TableWType *tableT, TableWRep *tableR) {
     }
 
     return 1;
+}
+
+char *glueString(int n_args, ...) {
+    char **args = safe_malloc(n_args * sizeof(char*));
+    int size = 0;
+
+    va_list ap;
+    va_start(ap, n_args);
+
+    for (int i = 0; i < n_args; i++) {
+        args[i] = va_arg(ap, char *);
+        for (int j = 0; args[i][j]; j++) {
+            size++;
+        }
+    }
+    
+    va_end(ap);
+    
+    size++;
+    char *r = safe_malloc(size * sizeof(char));
+
+    int k = 0;
+    for (int i = 0; i < n_args; i++) {
+        for (int j = 0; args[i][j]; j++) {
+            r[k++] = args[i][j];
+        }
+    }
+
+    return r;
 }
 
 void preline() {

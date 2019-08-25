@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -64,6 +65,8 @@ int convertToRep(TableWRep *tableR, TableWType *tableT);
 
 // Converte uma TableWRep para uma TableWType
 int convertToType(TableWType *tableT, TableWRep *tableR);
+
+char *glueString(int n_args, ...);
 
 void preline();
 

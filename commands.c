@@ -85,11 +85,7 @@ void removeTable(TableName table_name) {
     write_qt_tables(tables_index, qt_tables);
 
     // Deleta o arquivo da tabela
-    TablePath path = "";
-
-    safe_strcat(path, TABLES_DIR);
-    safe_strcat(path, table_name);
-    safe_strcat(path, TABLE_EXTENSION);
+    char *path = glueString(3, TABLES_DIR, table_name, TABLE_EXTENSION);
 
     safe_remove(path);
 
@@ -159,11 +155,7 @@ void includeReg(Row *row) {
     TableWRep *meta = read_table_metadata(row->table_name);
 
     // Abre o arquivo da tabela
-    TablePath path = "";
-
-    safe_strcat(path, TABLES_DIR);
-    safe_strcat(path, row->table_name);
-    safe_strcat(path, TABLE_EXTENSION);
+    char *path = glueString(3, TABLES_DIR, row->table_name, TABLE_EXTENSION);
 
     FILE *table_file = safe_fopen(path, "rb+");
 

@@ -23,7 +23,6 @@
 
 // Tamanho máximo
 #define TABLE_NAME_MAX 32 // Tamanho máximo do nome da tabela
-#define TABLE_PATH_MAX 48 // Tamanho máximo do nome da tabela
 #define TYPE_MAX  4       // Tamanho máximo dos tipos de dados
 #define FIELD_MAX 32      // Tamanho máximo do nome de um campo(chave)
 #define VALUE_MAX 32      // Tamanho máximo de um valor
@@ -33,7 +32,6 @@
 
 // Typedefs
 typedef char TableName[TABLE_NAME_MAX];
-typedef char TablePath[TABLE_PATH_MAX];
 
 typedef char Type[TYPE_MAX];
 typedef Type TypeArr[NUMBER_COLUMNS];
