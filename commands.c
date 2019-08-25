@@ -152,11 +152,68 @@ void listTables() {
 void includeReg(Row *row) {
     printf("Novo registro na tabela %s.\n", row->table_name);
 
-    for (int i = 0; i < row->size; i++) {
-        printf("%s\n", row->values[i]);
+    TableWRep *meta = read_table_metadata(row->table_name);
+
+    TablePath path = "";
+
+    safe_strcat(path, TABLES_DIR);
+    safe_strcat(path, row->table_name);
+    safe_strcat(path, TABLE_EXTENSION);
+
+    FILE *table_file = safe_fopen(path, "rb+");
+    fseek(table_file, 0, SEEK_END);
+
+    if (meta->cols != row->size) {
+        raiseError(IR_DIFF_PARAM_NUMB);
     }
 
-    raiseError(TODO);
+    int temp = 0;
+
+    for (int i = 0; i < row->size; i++) {
+        if (meta->types[i] == STR_REP) {
+            char str[STR_SIZE] = "";
+            if (sscanf(row->values[i], "%[^\n]", str) == 1) {        
+                fwrite(str, STR_SIZE * sizeof(char), 1, table_file);
+
+                temp+=256;
+            } else {
+                raiseError(IR_WRONG_VALUE);
+            }
+        } else if (meta->types[i] == INT_REP) {
+            int i = 0;
+            if (sscanf(row->values[i], "%d", &i) == 1) {        
+                fwrite(&i, sizeof(int), 1, table_file);
+           
+                temp+=4;
+            } else {
+                raiseError(IR_WRONG_VALUE);
+            }
+        } else if (meta->types[i] == FLT_REP) {
+            float f = 0.0;
+            if (sscanf(row->values[i], "%f", &f) == 1) {        
+                fwrite(&f, sizeof(float), 1, table_file);
+             
+                temp+=4;
+            } else {
+                raiseError(IR_WRONG_VALUE);
+            }
+        } else if (meta->types[i] == BIN_REP) {
+            char bin[BIN_SIZE] = "";
+            if (sscanf(row->values[i], "%[^\n]", bin) == 1) {        
+                fwrite(bin, BIN_SIZE * sizeof(char), 1, table_file);
+               
+                temp+=256;
+            } else {
+                raiseError(IR_WRONG_VALUE);
+            }
+        }
+    }
+
+    printf("%d\n", temp);
+
+    free(meta);
+
+    fclose(table_file);
 }
 
 // Busca registros na tabela, único

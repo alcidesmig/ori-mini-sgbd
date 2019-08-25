@@ -38,14 +38,14 @@ TableName *read_tables_names(FILE *tables_index, int qt_tables);
 // qt_tables: Quantidade de tabelas
 void write_tables_names(FILE *tables_index, TableName *names, int qt_tables);
 
+// Lê os metadados de uma tabela, se ela existir
+// tableName: Nome da tabela a ser lida
+TableWRep *read_table_metadata(TableName tableName);
+
 // Escreve os metadados de uma tabela no seu arquivo
 // tables_index: Arquivo de index das tabelas
 // table: tabela a ser gravada
 void write_table_metadata(FILE *tables_index, TableWRep *table, int index);
-
-// Lê os metadados de uma tabela, se ela existir
-// tableName: Nome da tabela a ser lida
-TableWRep *read_table_metadata(TableName tableName);
 
 void safe_remove(char *path);
 
@@ -64,6 +64,8 @@ int convertToRep(TableWRep *tableR, TableWType *tableT);
 
 // Converte uma TableWRep para uma TableWType
 int convertToType(TableWType *tableT, TableWRep *tableR);
+
+void cleanTable(TableWType *table);
 
 void preline();
 

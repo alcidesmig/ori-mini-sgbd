@@ -79,26 +79,6 @@ void write_tables_names(FILE *tables_index, TableName *names, int qt_tables) {
     fwrite(names, sizeof(TableName), qt_tables, tables_index);
 }
 
-// Escreve os metadados de uma tabela no seu arquivo
-// tables_index: Arquivo de index das tabelas
-// table: tabela a ser gravada
-// index: Posição da tabela
-void write_table_metadata(FILE *tables_index, TableWRep *table, int index) {
-    TablePath path = "";
-
-    safe_strcat(path, TABLES_DIR);
-    safe_strcat(path, table->name);
-    safe_strcat(path, TABLE_EXTENSION);
-
-    fclose(safe_fopen(path, "ab"));
-    FILE *table_file = safe_fopen(path, "rb+");
-    fwrite(table, sizeof(TableWRep), 1, table_file);
-    fclose(table_file);
-
-    fseek(tables_index, sizeof(int) + index * sizeof(TableName), SEEK_SET);
-    fwrite(table->name, sizeof(TableName), 1, tables_index);
-}
-
 // Lê os metadados de uma tabela, se ela existir
 // tableName: Nome da tabela a ser lida
 TableWRep *read_table_metadata(TableName tableName) {
@@ -119,6 +99,26 @@ TableWRep *read_table_metadata(TableName tableName) {
     fclose(table_file);
 
     return table;
+}
+
+// Escreve os metadados de uma tabela no seu arquivo
+// tables_index: Arquivo de index das tabelas
+// table: tabela a ser gravada
+// index: Posição da tabela
+void write_table_metadata(FILE *tables_index, TableWRep *table, int index) {
+    TablePath path = "";
+
+    safe_strcat(path, TABLES_DIR);
+    safe_strcat(path, table->name);
+    safe_strcat(path, TABLE_EXTENSION);
+
+    fclose(safe_fopen(path, "ab"));
+    FILE *table_file = safe_fopen(path, "rb+");
+    fwrite(table, sizeof(TableWRep), 1, table_file);
+    fclose(table_file);
+
+    fseek(tables_index, sizeof(int) + index * sizeof(TableName), SEEK_SET);
+    fwrite(table->name, sizeof(TableName), 1, tables_index);
 }
 
 void safe_remove(char *path) {
@@ -197,10 +197,10 @@ int convertToRep(TableWRep *tableR, TableWType *tableT) {
             (*tableR).row_bytes_size += STR_SIZE;
             (*tableR).types[i] = STR_REP;
         } else if(strcmp((*tableT).types[i], INT) == 0) {
-            (*tableR).row_bytes_size += INT_SIZE;
+            (*tableR).row_bytes_size += sizeof(int);
             (*tableR).types[i] = INT_REP;
         } else if(strcmp((*tableT).types[i], FLT) == 0) {
-            (*tableR).row_bytes_size += FLT_SIZE;
+            (*tableR).row_bytes_size += sizeof(float);
             (*tableR).types[i] = FLT_REP;
         } else if(strcmp((*tableT).types[i], BIN) == 0) {
             (*tableR).row_bytes_size += BIN_SIZE;

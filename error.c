@@ -53,6 +53,12 @@ void raiseError(Error error) {
 		case IR_WRONG_SINTAX:
 			printf("Sintax errada.\n");
 			exit(0);
+		case IR_DIFF_PARAM_NUMB:
+			printf("Sintax errada.\n");
+			exit(0);
+		case IR_WRONG_VALUE:
+			printf("Sintax errada.\n");
+			exit(0);
 		case BR_WRONG_SINTAX:
 			printf("Sintax errada.\n");
 			exit(0);

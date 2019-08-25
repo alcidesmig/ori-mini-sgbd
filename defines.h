@@ -28,9 +28,7 @@
 #define FIELD_MAX 32      // Tamanho máximo do nome de um campo(chave)
 #define VALUE_MAX 32      // Tamanho máximo de um valor
 #define NUMBER_COLUMNS 32 // Número máximo de colunas
-#define INT_SIZE 4        // Número máximo de colunas
 #define STR_SIZE 256      // Número máximo de colunas
-#define FLT_SIZE 4        // Número máximo de colunas
 #define BIN_SIZE 256      // Número máximo de colunas
 
 // Typedefs
