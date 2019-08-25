@@ -10,7 +10,7 @@ void raiseError(Error error) {
 			exit(0);
 		case NO_COMMAND:
 			printf("Comando não reconhecido.\n");
-			exit(0);
+			return;
 		case TODO:
 			printf("TODO.\n");
 			return;

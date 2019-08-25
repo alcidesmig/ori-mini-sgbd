@@ -41,7 +41,7 @@ void write_tables_names(FILE *tables_index, TableName *names, int qt_tables);
 // Escreve os metadados de uma tabela no seu arquivo
 // tables_index: Arquivo de index das tabelas
 // table: tabela a ser gravada
-void write_table_metadata(FILE *tables_index, TableWRep *table);
+void write_table_metadata(FILE *tables_index, TableWRep *table, int index);
 
 // Lê os metadados de uma tabela, se ela existir
 // tableName: Nome da tabela a ser lida

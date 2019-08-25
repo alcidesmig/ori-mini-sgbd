@@ -26,13 +26,13 @@ void createTable(TableWType *table) {
         raiseError(CT_WRONG_TYPE);
     }
 
+    // Escreve a tabela no arquivo
+    write_table_metadata(tables_index, &tableData, qt_tables);
+
     qt_tables++;
 
     // Salva o novo número de tabelas
     write_qt_tables(tables_index, qt_tables);
-
-    // Escreve a tabela no arquivo
-    write_table_metadata(tables_index, &tableData);
 
     fclose(tables_index);
 
@@ -41,6 +41,7 @@ void createTable(TableWType *table) {
 
 // Remove tabela
 // table_name: Nome da tabela
+// OBS: remove o nome da lista de index e salva o último no lugar, a menos que seja o último esteja sendo removido
 void removeTable(TableName table_name) {
     tables_index = safe_fopen(TABLES_INDEX, "rb+");
 
@@ -73,6 +74,10 @@ void removeTable(TableName table_name) {
     if (i != qt_tables) {
         strncpy(names[i], names[qt_tables], sizeof(TableName));
         write_tables_names(tables_index, names, qt_tables);
+    }
+
+    for (int i = 0; i < qt_tables; i++) {
+        printf(">>%s\n", names[i]);
     }
 
     write_qt_tables(tables_index, qt_tables);

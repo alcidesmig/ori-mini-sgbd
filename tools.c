@@ -82,7 +82,8 @@ void write_tables_names(FILE *tables_index, TableName *names, int qt_tables) {
 // Escreve os metadados de uma tabela no seu arquivo
 // tables_index: Arquivo de index das tabelas
 // table: tabela a ser gravada
-void write_table_metadata(FILE *tables_index, TableWRep *table) {
+// index: Posição da tabela
+void write_table_metadata(FILE *tables_index, TableWRep *table, int index) {
     TablePath path = "";
 
     safe_strcat(path, TABLES_DIR);
@@ -94,7 +95,7 @@ void write_table_metadata(FILE *tables_index, TableWRep *table) {
     fwrite(table, sizeof(TableWRep), 1, table_file);
     fclose(table_file);
 
-    fseek(tables_index, 0, SEEK_END);
+    fseek(tables_index, sizeof(int) + index * sizeof(TableName), SEEK_SET);
     fwrite(table->name, sizeof(TableName), 1, tables_index);
 }
 
