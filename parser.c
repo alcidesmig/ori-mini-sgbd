@@ -20,7 +20,7 @@ void parser(char * line) {
     char parameter[2];
     int scaned = 0;
 
-    sscanf(line, "%s %[^\n]", cmd, line);
+    sscanf(line, "%.3s %[^\n]", cmd, line);
     toUpperCase(cmd);
 
     if (!strcmp(cmd, CT)) {

@@ -174,6 +174,10 @@ int getline_custom(char **lineptr, ssize_t *n) {
 		strncpy(buffer, buffer, bsize);
 		buffer[bsize] = '\0';
 
+		// for (int i = 0; i < bsize; i++) {
+		// 	printf("%x\n", buffer[i]);
+		// }
+
 		if (buffer[0] == 0x0) { // NUL
 		// } else if (buffer[0] == 0x1) { // SOH
 		// } else if (buffer[0] == 0x2) { // STX
@@ -284,7 +288,7 @@ int getline_custom(char **lineptr, ssize_t *n) {
 		// } else if (buffer[0] == 0x1e) { // RS
 		// } else if (buffer[0] == 0x1f) { // US
 		} else if (buffer[0] >= 0x20 && buffer[0] <= 0x7e) { // CHARS
-			if (INSERT_MODE) {
+			if (INSERT_MODE && cursor != scursor) {
 				int repsize = replace_multichar(line, buffer, size, bsize, pos);
 				printf("%s", &line[pos]);
 				move_cursor_left(scursor-cursor-1);
@@ -313,7 +317,7 @@ int getline_custom(char **lineptr, ssize_t *n) {
 				cursor -= 1;
 			}
 		} else {
-			if (INSERT_MODE) {
+			if (INSERT_MODE && cursor != scursor) {
 				int repsize = replace_multichar(line, buffer, size, bsize, pos);
 				printf("%s", &line[pos]);
 				move_cursor_left(scursor-cursor-1);
