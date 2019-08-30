@@ -58,6 +58,6 @@ int replace_multichar(char *line, char *sub, int size, int ssize, int place);
 //   retorna strings como getline(),
 //   dá funcionalidade ás seta, backspace, delete, insert,
 //   não polui a entrada com outras teclas
-int getline_custom(char **lineptr, size_t *n);
+int getline_custom(char **lineptr, ssize_t *n);
 
 #endif /* GETLINE_CUSTOM_H */

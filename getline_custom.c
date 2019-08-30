@@ -152,7 +152,7 @@ int replace_multichar(char *line, char *sub, int size, int ssize, int place) {
 	return csize;
 }
 
-int getline_custom(char **lineptr, size_t *n) {
+int getline_custom(char **lineptr, ssize_t *n) {
 	char buffer[8];
 	int bsize;
 
