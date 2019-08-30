@@ -193,13 +193,13 @@ int getline_custom(char **lineptr, ssize_t *n) {
 		} else if (buffer[0] == 0xd) { // CR
 			printf("\n");
 			
-			if (size) {
-				*lineptr = realloc(*lineptr, size*sizeof(char));
-			}
+			size++;
+
+			*lineptr = realloc(*lineptr, size*sizeof(char));
 			
 			*n = size;
 			
-			strncpy(*lineptr, line, size+1);
+			strncpy(*lineptr, line, size);
 
 			return size;
 		// } else if (buffer[0] == 0xe) { // SO
