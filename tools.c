@@ -1,7 +1,5 @@
 #include "tools.h"
 
-#include <errno.h>
-
 int init() {
     // Index de tabelas
     fclose(fopen(TABLES_INDEX, "ab"));
