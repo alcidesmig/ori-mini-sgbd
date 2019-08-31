@@ -10,3 +10,13 @@ const char STR_REP = 'S';
 const char BIN_REP = 'B';
 const char INT_REP = 'I';
 const char FLT_REP = 'F';
+
+// Scanf Strings
+
+char CMD_SCANF[16];
+char TBL_NAME_SCANF[16];
+char FIELD_NAME_SCANF[16] = "%[^\n]";
+char PARAMETER_SCANF[16];
+char FIELD_NAME_VALUE_SCANF[16] = "%[^:]%*c%[^\n]";
+char TYPE_FIELD_SCANF[32] = "%[^:^;]%*c%[^;^:]%*c%[^\n]";
+char VALUE_SCANF[16] = "%[^;]%*c%[^\n]";

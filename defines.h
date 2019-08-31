@@ -22,6 +22,8 @@
 #define H "H"
 
 // Tamanho máximo
+#define CMD_MAX 3         // Tamanho máximo de um comando
+#define PARAMETER_MAX 2   // Tamanho máximo de um paramêtro
 #define TABLE_NAME_MAX 32 // Tamanho máximo do nome da tabela
 #define TYPE_MAX  4       // Tamanho máximo dos tipos de dados
 #define FIELD_MAX 32      // Tamanho máximo do nome de um campo(chave)
@@ -79,5 +81,15 @@ extern const char STR_REP;
 extern const char BIN_REP;
 extern const char INT_REP;
 extern const char FLT_REP;
+
+// Scanf Strings
+
+extern char CMD_SCANF[16];
+extern char TBL_NAME_SCANF[16];
+extern char FIELD_NAME_SCANF[16];
+extern char PARAMETER_SCANF[16];
+extern char FIELD_NAME_VALUE_SCANF[16];
+extern char TYPE_FIELD_SCANF[32];
+extern char VALUE_SCANF[16];
 
 #endif /* DEFINES_H */

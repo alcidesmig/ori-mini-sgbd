@@ -7,6 +7,11 @@ int init() {
     // Cria o diretório dos arquivos de tabelas
     mkdir(TABLES_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
+    // Cria as strings para os scanf's do parser, com relação ao tamanho dos paramêtros
+    sprintf(CMD_SCANF, "%%%ds %%[^\n]", CMD_MAX-1);
+    sprintf(TBL_NAME_SCANF, "%%%ds %%[^\n]", TABLE_NAME_MAX-1);
+    sprintf(PARAMETER_SCANF, "%%%ds %%[^\n]", PARAMETER_MAX-1);
+
     return 1;
 }
 
