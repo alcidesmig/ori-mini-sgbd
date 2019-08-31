@@ -27,6 +27,7 @@ typedef int Error;
 #define IR_WRONG_SINTAX    0x0501
 #define IR_DIFF_PARAM_NUMB 0x0506
 #define IR_WRONG_VALUE     0x0507
+#define IR_WRONG_TABLE     0x0508
 #define BR_WRONG_SINTAX    0x0601
 #define BR_WRONG_PARAMETER 0x0602
 #define AR_WRONG_SINTAX    0x0701

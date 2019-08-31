@@ -153,6 +153,9 @@ void listTables() {
 void includeReg(Row *row) {
     // Lê a tabela
     TableWRep *meta = read_table_metadata(row->table_name);
+    if (!meta) {
+        raiseError(IR_WRONG_TABLE);
+    }
 
     // Abre o arquivo da tabela
     char *path = glueString(3, TABLES_DIR, row->table_name, TABLE_EXTENSION);
@@ -164,13 +167,13 @@ void includeReg(Row *row) {
         raiseError(IR_DIFF_PARAM_NUMB);
     }
 
-    // Lê o número de rows
+    // Lê o tamanho de uma rows
     int row_length = 0;
     fread(&row_length, sizeof(int), 1, table_file);
 
     // Lê o número de rows
     int qt_row = 0;
-    fseek(table_file, sizeof(TableWRep), SEEK_SET);
+    fseek(table_file, sizeof(TableWRep), SEEK_CUR);
     fread(&qt_row, sizeof(int), 1, table_file);
 
     // Muda o ponteiro para o lugar onde a row será salva, ignora possíveis dados que foram salvos anteriormente e falharam
@@ -211,11 +214,12 @@ void includeReg(Row *row) {
 
     // Aumenta o número de row
     qt_row++;
-    fseek(table_file, sizeof(int) * sizeof(TableWRep), SEEK_SET);
+    fseek(table_file, sizeof(int) + sizeof(TableWRep), SEEK_SET);
     fwrite(&qt_row, sizeof(int), 1, table_file);
 
     printf("Novo registro na tabela %s.\n", row->table_name);
 
+    free(path);
     free(meta);
 
     fclose(table_file);

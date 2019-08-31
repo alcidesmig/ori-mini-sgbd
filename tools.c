@@ -1,5 +1,7 @@
 #include "tools.h"
 
+#include <errno.h>
+
 int init() {
     // Index de tabelas
     fclose(fopen(TABLES_INDEX, "ab"));
@@ -263,7 +265,9 @@ char *glueString(int n_args, ...) {
             r[k++] = args[i][j];
         }
     }
+    r[k] = '\0';
 
+    free(args);
     return r;
 }
 

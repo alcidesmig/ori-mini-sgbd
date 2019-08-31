@@ -59,6 +59,9 @@ void raiseError(Error error) {
 		case IR_WRONG_VALUE:
 			printf("Número de valores não corresponde ao da tabela.\n");
 			exit(0);
+		case IR_WRONG_TABLE:
+			printf("Tabela não existe.\n");
+			exit(0);
 		case BR_WRONG_SINTAX:
 			printf("Sintax errada.\n");
 			exit(0);
