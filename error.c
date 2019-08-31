@@ -4,7 +4,7 @@ void raiseError(Error error) {
 	switch(error) {
 		case NONE:
 		case IN_ERROR:
-			printf("Erro isterno.\n");
+			printf("Erro interno.\n");
 			exit(0);
 		case UNSUPORTED_PARAM:
 			exit(0);
