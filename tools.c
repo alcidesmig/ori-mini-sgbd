@@ -269,4 +269,5 @@ char *glueString(int n_args, ...) {
 
 void preline() {
     printf("SGDB>");
+    fflush(stdout);
 }

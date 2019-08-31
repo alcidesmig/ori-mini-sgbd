@@ -8,17 +8,14 @@
 #include "parser.h"
 #include "commands.h"
 #include "tools.h"
+#include "getline_custom.h"
 
 char *line = NULL; // Buffer da linha de comando
 ssize_t length = 0; // Tamanho da linha lida por getline
 
-FILE *run(FILE *cmd_file, int term) {
-    if (term)
-        preline();
+FILE *run_file(FILE *cmd_file, int term) {
     while (getline(&line, &length, cmd_file) != -1) {
         parser(line);
-        if (term)
-            preline();
     }
 
     return cmd_file;
@@ -36,15 +33,25 @@ int main(int argc, char *argv[]) {
                 menu();
             case 'f':
                 term = 0;
-                fclose(run(safe_fopen(optarg, "rb+"), term));
+                fclose(run_file(safe_fopen(optarg, "rb+"), term));
             case '?':
                 raiseError(UNSUPORTED_PARAM);
         }
     }
 
+
     if (term) {
-        run(stdin, term);
+        term_init();
+
+        preline();
+        while (getline_custom(&line, &length) != EOF) {
+            parser(line);
+            preline();
+        }
+        
+        term_close();
     }
+
 
     return 0;
 }
