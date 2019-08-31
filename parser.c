@@ -26,11 +26,8 @@ void parser(char * line) {
     if (!strcmp(cmd, CT)) {
         if (sscanf(line, TBL_NAME_SCANF, table.name, line) == 2) {
             toUpperCase(table.name);
-        printf("%s\n", line);
             scaned = sscanf(line, TYPE_FIELD_SCANF, table.types[table.cols], table.fields[table.cols], line);
             toUpperCase(table.types[table.cols]);
-        printf("%s\n", table.types[table.cols]);
-        printf("%s\n", table.fields[table.cols]);
             if (glueChars(table.types[table.cols], ' ')) printf("Espaços foram eliminados do tipo: %s\n", table.types[table.cols]);
             if (replaceSpace(table.fields[table.cols], '_')) printf("Espaços foram eliminados do campo: %s\n", table.fields[table.cols]);
             table.cols++;
