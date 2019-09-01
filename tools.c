@@ -44,6 +44,7 @@ char *safe_strcat(char *dest, char *src) {
 
 // Lê a quantidade de tabelas
 // tables_index: Arquivo de index das tabelas
+// return: Quantidade de tabelas
 int read_qt_tables(FILE *tables_index) {
     int qt_tables = 0;
 
@@ -66,6 +67,7 @@ void write_qt_tables(FILE *tables_index, int qt_tables) {
 // Lê os nomes das tabelas
 // tables_index: Arquivo de index das tabelas
 // qt_tables: Quantidade de tabelas
+// return: Vetor de TableName
 TableName *read_tables_names(FILE *tables_index, int qt_tables) {
     TableName *names = safe_malloc(qt_tables * sizeof(TableName));
 
@@ -86,6 +88,7 @@ void write_tables_names(FILE *tables_index, TableName *names, int qt_tables) {
 
 // Lê os metadados de uma tabela, se ela existir
 // tableName: Nome da tabela a ser lida
+// return: Ponteiro para TableWRep lida
 TableWRep *read_table_metadata(TableName tableName) {
     char *path = glueString(3, TABLES_DIR, tableName, TABLE_EXTENSION);
 
@@ -131,6 +134,7 @@ void toUpperCase(char *str) {
         if (str[i] >= 'a' && str[i] <= 'z') str[i] = str[i] - 32;
 }
 
+// return: Flag indicando se algum espaço foi substituido
 int replaceSpace(char *str, char c) {
     int flag = 0;
 
@@ -144,6 +148,7 @@ int replaceSpace(char *str, char c) {
     return flag;
 }
 
+// return: Flag indicando se algum char foi substituido
 int glueChars(char *str, char c) {
     int flag = 0;
 
@@ -172,6 +177,7 @@ int glueChars(char *str, char c) {
 
 // Verifica a existência de uma tabela com o nome especificado
 // name: Nome da tabela
+// return: 1 se a tabela existe
 int tableNameExists(TableName *names, char *name, int qt_tables) {
     for (int i = 0; i < qt_tables; i++) {
         if(strcmp(names[i], name) == 0) {
@@ -183,6 +189,7 @@ int tableNameExists(TableName *names, char *name, int qt_tables) {
 }
 
 // Converte uma TableWType para uma TableWRep
+// return: 1 em sucesso
 int convertToRep(TableWRep *tableR, TableWType *tableT) {
     strncpy((*tableR).name, (*tableT).name, sizeof(TableName));
     (*tableR).cols = (*tableT).cols;
@@ -214,6 +221,7 @@ int convertToRep(TableWRep *tableR, TableWType *tableT) {
 }
 
 // Converte uma TableWRep para uma TableWType
+// return: 1 em sucesso
 int convertToType(TableWType *tableT, TableWRep *tableR) {
     strncpy((*tableT).name, (*tableR).name, sizeof(TableName));
     (*tableT).cols = (*tableR).cols;
@@ -238,6 +246,8 @@ int convertToType(TableWType *tableT, TableWRep *tableR) {
     return 1;
 }
 
+// Junta várias strings em uma
+// return: Nova string
 char *glueString(int n_args, ...) {
     char **args = safe_malloc(n_args * sizeof(char*));
     int size = 0;
