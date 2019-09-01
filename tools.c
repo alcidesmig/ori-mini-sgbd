@@ -272,3 +272,14 @@ char *glueString(int n_args, ...) {
 void preline() {
     printf("SGDB>");
 }
+
+// Compara duas strings, 'a' e 'b'
+// retorno: 1 se 'a' é 'maior'
+int strOrder(char *a, char *b) {
+    int i = 0;
+    while (a[i] && b[i] && a[i] == b[i]) {
+        i++;
+    }
+
+    return a[i] > b[i];
+}

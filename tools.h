@@ -70,4 +70,8 @@ char *glueString(int n_args, ...);
 
 void preline();
 
+// Compara duas strings, 'a' e 'b'
+// retorno: 1 se 'a' é 'maior'
+int strOrder(char *a, char *b);
+
 #endif /* TOOLS_H */
