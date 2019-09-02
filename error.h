@@ -30,7 +30,12 @@ typedef int Error;
 #define IR_WRONG_TABLE     0x0508
 #define BR_WRONG_SINTAX    0x0601
 #define BR_WRONG_PARAMETER 0x0602
+#define BR_WRONG_TYPE      0x0603
+#define BR_WRONG_VALUE     0x0607
+#define BR_WRONG_TABLE     0x0608
+#define BR_FIELD_NFOUND    0x0609
 #define AR_WRONG_SINTAX    0x0701
+#define AR_WRONG_TABLE     0x0708
 #define RR_WRONG_SINTAX    0x0801
 #define CI_WRONG_SINTAX    0x0901
 #define CI_WRONG_PARAMETER 0x0902

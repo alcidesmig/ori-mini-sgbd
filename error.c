@@ -68,8 +68,23 @@ void raiseError(Error error) {
 		case BR_WRONG_PARAMETER:
 			printf("Parâmetro errado.\n");
 			exit(0);
+		case BR_WRONG_TYPE:
+			printf("Tipo não suportado.\n");
+			exit(0);
+		case BR_WRONG_VALUE:
+			printf("Tipo não suportado.\n");
+			exit(0);
+		case BR_WRONG_TABLE:
+			printf("Tabela não existe.\n");
+			exit(0);
+		case BR_FIELD_NFOUND:
+			printf("Campo não existe.\n");
+			exit(0);
 		case AR_WRONG_SINTAX:
 			printf("Sintax errada.\n");
+			exit(0);
+		case AR_WRONG_TABLE:
+			printf("Não há pesquisa para essa tabela.\n");
 			exit(0);
 		case RR_WRONG_SINTAX:
 			printf("Sintax errada.\n");

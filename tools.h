@@ -85,4 +85,10 @@ void preline();
 // retorno: 1 se 'a' é 'maior'
 int strOrder(char *a, char *b);
 
+// Calcula o offset de uma campo dentro dos dados de uma row e o tamanho do campo
+// meta: ponteiro para os metadados de uma tabela
+// field: nome do campo
+// return: vetor com o offset e o tamanho do campo em bytes
+int *getOffset(TableWRep *meta, Field field);
+
 #endif /* TOOLS_H */

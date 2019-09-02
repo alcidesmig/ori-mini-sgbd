@@ -71,6 +71,7 @@ void write_qt_tables(FILE *tables_index, int qt_tables) {
 TableName *read_tables_names(FILE *tables_index, int qt_tables) {
     TableName *names = safe_malloc(qt_tables * sizeof(TableName));
 
+    // Pula o número de tabelas
     fseek(tables_index, sizeof(int), SEEK_SET);
     fread(names, sizeof(TableName), qt_tables, tables_index);
 
@@ -82,6 +83,7 @@ TableName *read_tables_names(FILE *tables_index, int qt_tables) {
 // names: Lista dos nomes
 // qt_tables: Quantidade de tabelas
 void write_tables_names(FILE *tables_index, TableName *names, int qt_tables) {
+    // Pula o número de tabelas
     fseek(tables_index, sizeof(int), SEEK_SET);
     fwrite(names, sizeof(TableName), qt_tables, tables_index);
 }
@@ -114,10 +116,13 @@ void write_table_metadata(FILE *tables_index, TableWRep *table, int index) {
 
     fclose(safe_fopen(path, "ab"));
     FILE *table_file = safe_fopen(path, "rb+");
+    // Escreve a tabela
     fwrite(table, sizeof(TableWRep), 1, table_file);
+    // Escreve o número de rows
     fwrite((int[]){0}, sizeof(int), 1, table_file);
     fclose(table_file);
 
+    // Adiciona o nome no arquivo de index
     fseek(tables_index, sizeof(int) + index * sizeof(TableName), SEEK_SET);
     fwrite(table->name, sizeof(TableName), 1, tables_index);
 }
@@ -292,4 +297,49 @@ int strOrder(char *a, char *b) {
     }
 
     return a[i] > b[i];
+}
+
+// Calcula o offset de uma campo dentro dos dados de uma row e o tamanho do campo
+// meta: ponteiro para os metadados de uma tabela
+// field: nome do campo
+// return: vetor com o offset, o tamanho e o tipo do campo em bytes
+int *getOffset(TableWRep *meta, Field field) {
+    int *info = safe_malloc(3 * sizeof(int));
+    int offset = 0;
+    int i = 0;
+
+    while (i < meta->cols && strcmp(meta->fields[i], field)) {
+        if (meta->types[i] == STR_REP) {
+            offset += STR_SIZE;
+        } else if (meta->types[i] == INT_REP) {
+            offset += sizeof(int);
+        } else if (meta->types[i] == FLT_REP) {
+            offset += sizeof(float);
+        } else if (meta->types[i] == BIN_REP) {
+            offset += BIN_SIZE;
+        }
+
+        i++;
+    }
+
+    // Campo não encontrado
+    if (i == meta->cols) {
+        info[0] = -1;
+        return info;
+    }
+
+    // Offset e tamanho
+    info[0] = offset;
+    if (meta->types[i] == STR_REP) {
+        info[1] = STR_SIZE;
+    } else if (meta->types[i] == INT_REP) {
+        info[1] = sizeof(int);
+    } else if (meta->types[i] == FLT_REP) {
+        info[1] = sizeof(float);
+    } else if (meta->types[i] == BIN_REP) {
+        info[1] = BIN_SIZE;
+    }
+    info[2] = meta->types[i];
+
+    return info;
 }

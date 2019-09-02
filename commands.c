@@ -1,7 +1,12 @@
 #include "commands.h"
 
 FILE *tables_index = NULL; // Variável global utilizada para manipular arquivos
-int qt_tables = 0;      // Quantidade de tabelas
+
+int qt_tables = 0; // Quantidade de tabelas
+
+Result *result_list = NULL; // Lista de resultados
+
+Dnode *search_dict = NULL; // Árvore com os resultados das pesquisas
 
 // Cria tabela
 // table: Struct com as informações para crira uma tabela
@@ -167,9 +172,8 @@ void includeReg(Row *row) {
         raiseError(IR_DIFF_PARAM_NUMB);
     }
 
-    // Lê o tamanho de uma rows
-    int row_length = 0;
-    fread(&row_length, sizeof(int), 1, table_file);
+    // Tamanho de uma row
+    int row_length = meta->row_bytes_size;
 
     // Lê o número de rows
     int qt_row = 0;
@@ -214,7 +218,8 @@ void includeReg(Row *row) {
 
     // Aumenta o número de row
     qt_row++;
-    fseek(table_file, sizeof(int) + sizeof(TableWRep), SEEK_SET);
+    // Pula os metadados
+    fseek(table_file, sizeof(TableWRep), SEEK_SET);
     fwrite(&qt_row, sizeof(int), 1, table_file);
 
     printf("Novo registro na tabela %s.\n", row->table_name);
@@ -230,9 +235,160 @@ void includeReg(Row *row) {
 // field_name: Nome do campo(chave)
 // value: Nome do valor
 void busRegU(TableName table_name, Field field_name, Value value) {
+    // Lê a tabela
+    TableWRep *meta = read_table_metadata(table_name);
+    if (!meta) {
+        raiseError(BR_WRONG_TABLE);
+    }
+
+    // Abre o arquivo da tabela
+    char *path = glueString(3, TABLES_DIR, table_name, TABLE_EXTENSION);
+
+    FILE *table_file = safe_fopen(path, "rb+");
+
+    // Lê o tamanho de uma row
+    int row_length = meta->row_bytes_size;
+
+    // Lê o número de rows
+    int qt_row = 0;
+    fseek(table_file, sizeof(TableWRep), SEEK_CUR);
+    fread(&qt_row, sizeof(int), 1, table_file);
+
+    // Offset, tamanho e tipo do campo
+    int *field_info = getOffset(meta, field_name);
+    int offset = field_info[0];
+    int field_size = field_info[1];
+    char field_type = field_info[2];
+
+    if (offset == -1) {
+        raiseError(BR_FIELD_NFOUND);
+    }
+    
+    // Auxiliar da leitura para cada tipo de dado
+    char *s = NULL;
+    int i;
+    float f;
+    char *b = NULL;
+
+    // Auxiliar da leitura para row
+    char *data = NULL;
+
+    // Backup da posição no arquivo
+    long int fp = 0;
+
+    // Lê os dados das rows e salva os matchings
+    int j = 0;
+    while (j < qt_row) {
+        // Salva a posição no arquivo
+        fp = ftell(table_file);
+
+        // Avança o offset
+        fseek(table_file, offset, SEEK_CUR);
+
+        if (field_type == STR_REP) {
+            // Lê o campo
+            fread(s, STR_SIZE, 1, table_file);
+
+            // Compara
+            if (!strcmp(s, value)) {
+                // Reseta a posição no arquivo para o começo de uma row
+                fseek(table_file, fp, SEEK_SET);
+
+                // Aloca para a row que será salva
+                data = safe_malloc(row_length);
+
+                // Lê a row
+                fread(data, row_length, 1, table_file);
+
+                // Adiciona na lista
+                result_list = addResult(result_list, data);
+                break;
+            }
+        } else if (field_type == INT_REP) {
+            // Lê o campo
+            fread(&i, sizeof(int), 1, table_file);
+
+            // Converte o valor para int
+            int v;
+            if (sscanf(value, "%d", &v) != 1) {
+                raiseError(BR_WRONG_VALUE);
+            }
+
+            // Compara
+            if (i == v) {
+                // Reseta a posição no arquivo para o começo de uma row
+                fseek(table_file, fp, SEEK_SET);
+                
+                // Aloca para a row que será salva
+                data = safe_malloc(row_length);
+
+                // Lê a row
+                fread(data, row_length, 1, table_file);
+
+                // Adiciona na lista
+                result_list = addResult(result_list, data);
+                break;
+            }
+        } else if (field_type == FLT_REP) {
+            // Lê o campo
+            fread(&f, sizeof(float), 1, table_file);
+
+            // Converte o valor para int
+            float v;
+            if (sscanf(value, "%f", &v) != 1) {
+                raiseError(BR_WRONG_VALUE);
+            }
+
+            // Compara
+            if (f == v) {
+                // Reseta a posição no arquivo para o começo de uma row
+                fseek(table_file, fp, SEEK_SET);
+                
+                // Aloca para a row que será salva
+                data = safe_malloc(row_length);
+
+                // Lê a row
+                fread(data, row_length, 1, table_file);
+
+                // Adiciona na lista
+                result_list = addResult(result_list, data);
+                break;
+            }
+        } else if (field_type == BIN_REP) {
+            // Lê o campo
+            fread(b, BIN_SIZE, 1, table_file);
+
+            // Compara
+            if (!strcmp(b, value)) {
+                // Reseta a posição no arquivo para o começo de uma row
+                fseek(table_file, fp, SEEK_SET);
+                
+                // Aloca para a row que será salva
+                data = safe_malloc(row_length);
+
+                // Lê a row
+                fread(data, row_length, 1, table_file);
+
+                // Adiciona na lista
+                result_list = addResult(result_list, data);
+                break;
+            }
+        } else {
+            raiseError(BR_WRONG_TYPE);
+        }
+
+        j++;
+    }
+
     printf("Buscando %s igual à %s em %s.\n", field_name, value, table_name);
 
-    raiseError(TODO);
+    search_dict = addDnode(search_dict, meta, result_list);
+    result_list = NULL;
+
+    free(field_info);
+    free(path);
+
+    fclose(table_file);
 }
 
 // Busca registros na tabela, todos
@@ -240,24 +396,220 @@ void busRegU(TableName table_name, Field field_name, Value value) {
 // field_name: Nome do campo(chave)
 // value: Nome do valor
 void busRegN(TableName table_name, Field field_name, Value value) {
+    // Lê a tabela
+    TableWRep *meta = read_table_metadata(table_name);
+    if (!meta) {
+        raiseError(BR_WRONG_TABLE);
+    }
+    // Abre o arquivo da tabela
+    char *path = glueString(3, TABLES_DIR, table_name, TABLE_EXTENSION);
+
+    FILE *table_file = safe_fopen(path, "rb+");
+
+    // Lê o tamanho de uma row
+    int row_length = meta->row_bytes_size;
+
+    // Lê o número de rows
+    int qt_row = 0;
+    fseek(table_file, sizeof(TableWRep), SEEK_CUR);
+    fread(&qt_row, sizeof(int), 1, table_file);
+
+    // Offset, tamanho e tipo do campo
+    int *field_info = getOffset(meta, field_name);
+    int offset = field_info[0];
+    int field_size = field_info[1];
+    char field_type = field_info[2];
+
+    if (offset == -1) {
+        raiseError(BR_FIELD_NFOUND);
+    }
+    
+    // Auxiliar da leitura para cada tipo de dado
+    char *s = NULL;
+    int i;
+    float f;
+    char *b = NULL;
+
+    // Auxiliar da leitura para row
+    char *data = NULL;
+
+    // Backup da posição no arquivo
+    long int fp = 0;
+
+    // Lê os dados das rows e salva os matchings
+    int j = 0;
+    while (j < qt_row) {
+        // Salva a posição n arquivo
+        fp = ftell(table_file);
+
+        // Avança o offset
+        fseek(table_file, offset, SEEK_CUR);
+
+        if (field_type == STR_REP) {
+            // Lê o campo
+            fread(s, STR_SIZE, 1, table_file);
+
+            // Compara
+            if (!strcmp(s, value)) {
+                // Reseta a posição no arquivo para o começo de uma row
+                fseek(table_file, fp, SEEK_SET);
+
+                // Aloca para a row que será salva
+                data = safe_malloc(row_length);
+
+                // Lê a row
+                fread(data, row_length, 1, table_file);
+
+                // Adiciona na lista
+                result_list = addResult(result_list, data);
+            }
+        } else if (field_type == INT_REP) {
+            // Lê o campo
+            fread(&i, sizeof(int), 1, table_file);
+
+            // Converte o valor para int
+            int v;
+            if (sscanf(value, "%d", &v) != 1) {
+                raiseError(BR_WRONG_VALUE);
+            }
+
+            // Compara
+            if (i == v) {
+                // Reseta a posição no arquivo para o começo de uma row
+                fseek(table_file, fp, SEEK_SET);
+                
+                // Aloca para a row que será salva
+                data = safe_malloc(row_length);
+
+                // Lê a row
+                fread(data, row_length, 1, table_file);
+
+                // Adiciona na lista
+                result_list = addResult(result_list, data);
+            }
+        } else if (field_type == FLT_REP) {
+            // Lê o campo
+            fread(&f, sizeof(float), 1, table_file);
+
+            // Converte o valor para int
+            float v;
+            if (sscanf(value, "%f", &v) != 1) {
+                raiseError(BR_WRONG_VALUE);
+            }
+
+            // Compara
+            if (f == v) {
+                // Reseta a posição no arquivo para o começo de uma row
+                fseek(table_file, fp, SEEK_SET);
+                
+                // Aloca para a row que será salva
+                data = safe_malloc(row_length);
+
+                // Lê a row
+                fread(data, row_length, 1, table_file);
+
+                // Adiciona na lista
+                result_list = addResult(result_list, data);
+            }
+        } else if (field_type == BIN_REP) {
+            // Lê o campo
+            fread(b, BIN_SIZE, 1, table_file);
+
+            // Compara
+            if (!strcmp(b, value)) {
+                // Reseta a posição no arquivo para o começo de uma row
+                fseek(table_file, fp, SEEK_SET);
+                
+                // Aloca para a row que será salva
+                data = safe_malloc(row_length);
+
+                // Lê a row
+                fread(data, row_length, 1, table_file);
+
+                // Adiciona na lista
+                result_list = addResult(result_list, data);
+            }
+        } else {
+            raiseError(BR_WRONG_TYPE);
+        }
+
+        j++;
+    }
+
     printf("Buscando todos os %s igual à %s em %s.\n", table_name, field_name, value);
 
-    raiseError(TODO);
+    search_dict = addDnode(search_dict, meta, result_list);
+    result_list = NULL;
+
+    free(field_info);
+    free(path);
+
+    fclose(table_file);
 }
 
 // Apresenta registros pesquisados da tabela
 // table_name: Nome da tabela
 void apReg(TableName table_name) {
+    // Nó que foi salvo a pesquisa
+    Dnode *node = findResultList(search_dict, table_name);
+    if (!node) {
+        raiseError(AR_WRONG_TABLE);
+    }
+
     printf("Mostrando a pesquisa de %s.\n", table_name);
 
-    raiseError(TODO);
+    // A lista com os resultados
+    Result *lista = node->result_list;
+    // Posição nos dados
+    int index = 0;
+
+    // Auxiliares
+    char *s = safe_malloc(STR_SIZE);
+    int i;
+    float f;
+    char *b = safe_malloc(BIN_SIZE);
+
+    while (lista) {
+        index = 0;
+        printf("Reg:\n");
+
+        for (int i = 0; i < node->meta->cols; i++) {
+            // Printa o nome do campo
+            printf("- %s ", node->meta->fields[i]);
+
+            // Verifica o tipo de dado
+            if (node->meta->types[i] == STR_REP) {
+                memcpy(s, &lista->row_raw[index], STR_SIZE);
+                printf("%s\n", s);
+                index += STR_SIZE;
+            } else if (node->meta->types[i] == INT_REP) {
+                memcpy(&i, &lista->row_raw[index], sizeof(int));
+                printf("%d\n", i);
+                index += sizeof(int);
+            } else if (node->meta->types[i] == FLT_REP) {
+                memcpy(&f, &lista->row_raw[index], sizeof(float));
+                printf("%f\n", f);
+                index += sizeof(float);
+            } else if (node->meta->types[i] == BIN_REP) {
+                memcpy(b, &lista->row_raw[index], BIN_SIZE);
+                printf("%s\n", b);
+                index += BIN_SIZE;
+            }
+        }
+
+        lista = lista->next;
+        printf("\n");
+    }
+
+    free(s);
+    free(b);
 }
 
 // Remove registro da tabela
 // table_name: Nome da tabela
 void removeReg(TableName table_name) {
     printf("Registros removidos de %s.\n", table_name);
-    
+
     raiseError(TODO);
 }
 

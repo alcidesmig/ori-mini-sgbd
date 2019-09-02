@@ -8,12 +8,15 @@
 #include "defines.h"
 #include "tools.h"
 #include "error.h"
-
-extern Error EXEC_ERROR_CODE; // Erro global de execução de comandos
+#include "data_struct.h"
 
 extern FILE *tables_index; // Variável global utilizada para manipular arquivos
 
-extern int qt_tables;      // Quantidade de tabelas
+extern int qt_tables; // Quantidade de tabelas
+
+extern Result *result_list; // Lista de resultados
+
+extern Dnode *search_dict; // Árvore com os resultados das pesquisas
 
 // Cria tabela
 // table: Struct com as informações para crira uma tabela

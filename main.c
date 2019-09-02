@@ -46,5 +46,9 @@ int main(int argc, char *argv[]) {
         run(stdin, term);
     }
 
+    if (search_dict) {
+        freeDnodeTree(search_dict);
+    }
+    
     return 0;
 }
