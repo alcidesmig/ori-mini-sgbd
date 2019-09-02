@@ -34,6 +34,14 @@ Mostra os comandos e uma descrição.
 
 Funções auxiliares. Provavelmente será separado em Tools e Error.
 
+### Getline Custom
+
+Implementa uma getline customizada visando dar funcionalidade às setas, backspace, delete, insert, FN.
+
+### Data Struct
+
+Arquivos com as declarações e implementações das estruturas de dados usadas no código.
+
 ## Lógica do Código
 
 ### init()
@@ -60,7 +68,11 @@ Procura os comandos na linha, para cada comando faz sscanf's específicos para p
 
 ### createTable()
 
-Lê a quantidade de tabelas do arquivo de indexação, lê os nomes da tabelas, verifica de o novo nome existe, converte a tabela para o modo "rep", então escreve o noma da nova tabela no fim do arquivo, incrementa o número de tabelas no arquivo e escreve os metadados no arquivo próprio da tabela.
+Lê a quantidade de tabelas do arquivo de indexação, lê os nomes da tabelas, verifica de o novo nome existe, converte a tabela para o modo "rep", então escreve o nome da nova tabela no fim do arquivo, incrementa o número de tabelas no arquivo index e escreve os metadados no arquivo próprio da tabela.
+
+### removeTable()
+
+Lê a quantidade de tabelas, verifica se há tabelas no sistema, lê os nomes, procura o nome da tabela, decrementa o número de tabelas, remove o nome da tabela, deleta seu arquivo próprio.
 
 ### apTable()
 
@@ -69,6 +81,18 @@ Lê os metadados da tabela e os printa para o usuário.
 ### listTables()
 
 Lê a quantidade de tabelas do arquivo de indexação, então lê os nomes das tabelas e os printa para o usuário.
+
+### includeReg()
+
+Lê os metadados da tabela, abre o arquivo da tabela, compara o número de parâmetros recebidos com o número de colunas da tabela, lê o numero de rows da tabela, grava os valores recebidos, incrementa o número de tabelas e o salva.
+
+### busReg()
+
+Lê os metadados da tabela, abre o arquivo da tabela, lê a quantidade de rows, pega informações sobre o campo de pesquisa (offset, tamanho e tipo), lê as rows e compara o valor da rows com o valor de pesquisa, se forem iguais toda a row é lida e então é salva em uma lista de resultados, quando todas as rows são lidas a lista de resultados é colocada no dicionário de resultados, associado ao nome da tabela.
+
+### apReg()
+
+Procura a lista de resultados referente a tabela, para cada row da lista de resultado, cada valor é printado.
 
 ## Erro
 
