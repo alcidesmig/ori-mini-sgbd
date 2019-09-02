@@ -13,36 +13,19 @@ typedef int Error;
 #define MALLOC_ERROR       0x0004
 #define FOPEN_ERROR        0x0005
 #define STRCAT_ERROR       0x0006
-#define CANT_REMOVE_FILE   0x0007
+#define CANT_REMOVE_FILE   0x0007 // O arquivo não pode ser removido
+#define TABLE_EXISTS       0x0008 // A tabela já existe
+#define UNSUPORTED_TYPE    0x0009 // Tipo de dado não é suportado
+#define CANT_FIND_TABLE    0x000a // Tabela não foi encontrada
+#define DIFF_PARAM_NUMB    0x000b // Número de parâmetros diferente
+#define WRONG_SINTAX       0x000c // Sintax do comando errada
+#define WRONG_VALUE        0x000d // Valor incompatível
+#define WRONG_PARAMETER    0x000e // Parâmetro não reconhecido
+#define FIELD_NOT_FOUND    0x000f // Campo não encontrado
+#define NOT_INT            0x0010 // O valor não é um int
+#define NOT_FLOAT          0x0011 // O valor não é um float
 #define TODO               0x00f0
 #define EXIT               0x00f1
-#define CT_WRONG_SINTAX    0x0101
-#define CT_WRONG_TYPE      0x0103 // Tipo da coluna não suportado
-#define CT_TABLE_EXISTS    0x0104 // Tabela la existe
-#define RT_WRONG_SINTAX    0x0201
-#define RT_CANT_FIND_TABLE 0x0205 // Tabela não existe
-#define AT_WRONG_SINTAX    0x0301
-#define AT_CANT_FIND_TABLE 0x0305 // Tabela não existe
-// LT 0x04
-#define IR_WRONG_SINTAX    0x0501
-#define IR_DIFF_PARAM_NUMB 0x0506
-#define IR_WRONG_VALUE     0x0507
-#define IR_WRONG_TABLE     0x0508
-#define BR_WRONG_SINTAX    0x0601
-#define BR_WRONG_PARAMETER 0x0602
-#define BR_WRONG_TYPE      0x0603
-#define BR_WRONG_VALUE     0x0607
-#define BR_WRONG_TABLE     0x0608
-#define BR_FIELD_NFOUND    0x0609
-#define BR_NOT_INT         0x060a
-#define BR_NOT_FLOAT       0x060b
-#define AR_WRONG_SINTAX    0x0701
-#define AR_WRONG_TABLE     0x0708
-#define RR_WRONG_SINTAX    0x0801
-#define CI_WRONG_SINTAX    0x0901
-#define CI_WRONG_PARAMETER 0x0902
-#define RI_WRONG_SINTAX    0x0a01
-#define GI_WRONG_SINTAX    0x0b01
 
 void raiseError(Error error);
 

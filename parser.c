@@ -43,19 +43,19 @@ void parser(char * line) {
                 createTable(&table); return;
             }
         }
-        raiseError(CT_WRONG_SINTAX);
+        raiseError(WRONG_SINTAX);
     } else if (!strcmp(cmd, RT)) {
         if (sscanf(line, TBL_NAME_SCANF, table.name, line) == 1) {
             toUpperCase(table.name);
             removeTable(table.name); return;
         }
-        raiseError(RT_WRONG_SINTAX);
+        raiseError(WRONG_SINTAX);
     } else if (!strcmp(cmd, AT)) {
         if (sscanf(line, TBL_NAME_SCANF, table.name, line) == 1) {
             toUpperCase(table.name);
             apTable(table.name); return;
         }
-        raiseError(AT_WRONG_SINTAX);
+        raiseError(WRONG_SINTAX);
     } else if (!strcmp(cmd, LT)) {
         listTables(); return;
     } else if (!strcmp(cmd, IR)) {
@@ -73,7 +73,7 @@ void parser(char * line) {
                 includeReg(&row); return;
             }
         }
-        raiseError(IR_WRONG_SINTAX);
+        raiseError(WRONG_SINTAX);
     } else if (!strcmp(cmd, BR)) {
         if (sscanf(line, PARAMETER_SCANF, parameter, line) == 2) {
             if (sscanf(line, TBL_NAME_SCANF, table_name, line) == 2) {
@@ -87,24 +87,24 @@ void parser(char * line) {
                     } else if (!strcmp(parameter, N)) {
                         busReg(table_name, field_name, value, 2147483647); return;
                     } else {
-                        raiseError(BR_WRONG_PARAMETER);
+                        raiseError(WRONG_PARAMETER);
                     }
                 }
             }
         }
-        raiseError(BR_WRONG_SINTAX);
+        raiseError(WRONG_SINTAX);
     } else if (!strcmp(cmd, AR)) {
         if (sscanf(line, TBL_NAME_SCANF, table_name, line) == 1) {
             toUpperCase(table_name);
             apReg(table_name); return;
         }
-        raiseError(AR_WRONG_SINTAX);
+        raiseError(WRONG_SINTAX);
     } else if (!strcmp(cmd, RR)) {
         if (sscanf(line, TBL_NAME_SCANF, table_name, line) == 1) {
             toUpperCase(table_name);
             removeReg(table_name); return;
         }
-        raiseError(RR_WRONG_SINTAX);
+        raiseError(WRONG_SINTAX);
     } else if (!strcmp(cmd, CI)) {
         if (sscanf(line, PARAMETER_SCANF, parameter, line) == 2) {
             if (sscanf(line, TBL_NAME_SCANF, table_name, line) == 2) {
@@ -118,12 +118,12 @@ void parser(char * line) {
                     } else if (!strcmp(parameter, H)) {
                         createIndexH(table_name, field_name); return;
                     } else {
-                        raiseError(CI_WRONG_PARAMETER);
+                        raiseError(WRONG_PARAMETER);
                     }
                 }
             }
         }
-        raiseError(CI_WRONG_SINTAX);
+        raiseError(WRONG_SINTAX);
     } else if (!strcmp(cmd, RI)) {
         if (sscanf(line, TBL_NAME_SCANF, table_name, line) == 2) {
             if (sscanf(line, FIELD_NAME_SCANF, field_name) == 1) {
@@ -132,7 +132,7 @@ void parser(char * line) {
                 removeIndex(table_name, field_name); return;
             }
         }
-        raiseError(RI_WRONG_SINTAX);
+        raiseError(WRONG_SINTAX);
     } else if (!strcmp(cmd, GI)) {
         if (sscanf(line, TBL_NAME_SCANF, table_name, line) == 2) {
             if (sscanf(line, FIELD_NAME_SCANF, field_name) == 1) {
@@ -141,7 +141,7 @@ void parser(char * line) {
                 genIndex(table_name, field_name); return;
             }
         }
-        raiseError(GI_WRONG_SINTAX);
+        raiseError(WRONG_SINTAX);
     } else if (!strcmp(cmd, EB)) {
         raiseError(EXIT);
     } else {

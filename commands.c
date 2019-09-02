@@ -19,7 +19,7 @@ void createTable(TableWType *table) {
         TableName *names = read_tables_names(tables_index, qt_tables);
 
         if (tableNameExists(names, table->name, qt_tables)) {
-            raiseError(CT_TABLE_EXISTS);
+            raiseError(TABLE_EXISTS);
         }
 
         free(names);
@@ -30,7 +30,7 @@ void createTable(TableWType *table) {
 
     // Converte a tabela
     if(!convertToRep(&tableData, table)) {
-        raiseError(CT_WRONG_TYPE);
+        raiseError(UNSUPORTED_TYPE);
     }
 
     // Escreve a tabela no arquivo
@@ -73,7 +73,7 @@ void removeTable(TableName table_name) {
 
     // Verifica se a tabela foi achada
     if (i == qt_tables) {
-        raiseError(RT_CANT_FIND_TABLE);
+        raiseError(CANT_FIND_TABLE);
     }
 
     printf("Removendo a tabela %s.\n", table_name);
@@ -105,7 +105,7 @@ void apTable(TableName table_name) {
     TableWRep *tableData = read_table_metadata(table_name);
 
     if (!tableData) {
-        raiseError(AT_CANT_FIND_TABLE);
+        raiseError(CANT_FIND_TABLE);
     }
 
     // Converte a tabela
@@ -159,7 +159,7 @@ void includeReg(Row *row) {
     // Lê a tabela
     TableWRep *meta = read_table_metadata(row->table_name);
     if (!meta) {
-        raiseError(IR_WRONG_TABLE);
+        raiseError(CANT_FIND_TABLE);
     }
 
     // Abre o arquivo da tabela
@@ -169,7 +169,7 @@ void includeReg(Row *row) {
 
     // Confere o número de valores
     if (meta->cols != row->size) {
-        raiseError(IR_DIFF_PARAM_NUMB);
+        raiseError(DIFF_PARAM_NUMB);
     }
 
     // Tamanho de uma row
@@ -190,28 +190,28 @@ void includeReg(Row *row) {
             if (sscanf(row->values[i], "%[^\n]", str) == 1) {        
                 fwrite(str, STR_SIZE * sizeof(char), 1, table_file);
             } else {
-                raiseError(IR_WRONG_VALUE);
+                raiseError(WRONG_VALUE);
             }
         } else if (meta->types[i] == INT_REP) {
             int i = 0;
             if (sscanf(row->values[i], "%d", &i) == 1) {        
                 fwrite(&i, sizeof(int), 1, table_file);
             } else {
-                raiseError(IR_WRONG_VALUE);
+                raiseError(WRONG_VALUE);
             }
         } else if (meta->types[i] == FLT_REP) {
             float f = 0.0;
             if (sscanf(row->values[i], "%f", &f) == 1) {        
                 fwrite(&f, sizeof(float), 1, table_file);
             } else {
-                raiseError(IR_WRONG_VALUE);
+                raiseError(WRONG_VALUE);
             }
         } else if (meta->types[i] == BIN_REP) {
             char bin[BIN_SIZE] = "";
             if (sscanf(row->values[i], "%[^\n]", bin) == 1) {        
                 fwrite(bin, BIN_SIZE * sizeof(char), 1, table_file);
             } else {
-                raiseError(IR_WRONG_VALUE);
+                raiseError(WRONG_VALUE);
             }
         }
     }
@@ -239,7 +239,7 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
     // Lê a tabela
     TableWRep *meta = read_table_metadata(table_name);
     if (!meta) {
-        raiseError(BR_WRONG_TABLE);
+        raiseError(CANT_FIND_TABLE);
     }
 
     // Abre o arquivo da tabela
@@ -262,7 +262,7 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
     char field_type = field_info[2];
 
     if (offset == -1) {
-        raiseError(BR_FIELD_NFOUND);
+        raiseError(FIELD_NOT_FOUND);
     }
     
     // Auxiliar da leitura para cada tipo de dado
@@ -310,7 +310,7 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
             // Converte o valor para int
             int v;
             if (sscanf(value, "%d", &v) != 1) {
-                raiseError(BR_NOT_INT);
+                raiseError(NOT_INT);
             }
 
             // Compara
@@ -324,7 +324,7 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
             // Converte o valor para int
             float v;
             if (sscanf(value, "%f", &v) != 1) {
-                raiseError(BR_NOT_FLOAT);
+                raiseError(NOT_FLOAT);
             }
 
             // Compara
@@ -340,7 +340,7 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
                 equal = 1;
             }
         } else {
-            raiseError(BR_WRONG_TYPE);
+            raiseError(UNSUPORTED_TYPE);
         }
 
         if (equal) {
@@ -378,7 +378,7 @@ void apReg(TableName table_name) {
     // Nó que foi salvo a pesquisa
     Dnode *node = findResultList(search_dict, table_name);
     if (!node) {
-        raiseError(AR_WRONG_TABLE);
+        raiseError(CANT_FIND_TABLE);
     }
 
     printf("Mostrando a pesquisa de %s.\n", table_name);
