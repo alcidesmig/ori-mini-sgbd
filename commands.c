@@ -415,7 +415,7 @@ void apReg(TableName table_name) {
         printf("cols %d\n", cols);
         for (int j = 0; j < cols; j++) {
             // Printa o nome do campo
-            printf("- %s: ", fields[j]);
+            printf("- %s: ", *fields[j]);
 
             // Verifica o tipo de dado
             if (*types[j] == STR_REP) {
