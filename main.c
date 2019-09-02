@@ -52,6 +52,9 @@ int main(int argc, char *argv[]) {
         term_close();
     }
 
+    if (search_dict) {
+        freeDnodeTree(search_dict);
+    }
 
     return 0;
 }

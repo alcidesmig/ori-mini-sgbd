@@ -59,16 +59,51 @@ void raiseError(Error error) {
 			exit_term_close(0);
 		case IR_WRONG_VALUE:
 			printf("Número de valores não corresponde ao da tabela.\n");
+<<<<<<< HEAD
 			exit_term_close(0);
+=======
+			exit(0);
+		case IR_WRONG_TABLE:
+			printf("Tabela não existe.\n");
+			exit(0);
+>>>>>>> etapa2
 		case BR_WRONG_SINTAX:
 			printf("Sintax errada.\n");
 			exit_term_close(0);
 		case BR_WRONG_PARAMETER:
 			printf("Parâmetro errado.\n");
+<<<<<<< HEAD
 			exit_term_close(0);
 		case AR_WRONG_SINTAX:
 			printf("Sintax errada.\n");
 			exit_term_close(0);
+=======
+			exit(0);
+		case BR_WRONG_TYPE:
+			printf("Tipo não suportado.\n");
+			exit(0);
+		case BR_WRONG_VALUE:
+			printf("Tipo não suportado.\n");
+			exit(0);
+		case BR_WRONG_TABLE:
+			printf("Tabela não existe.\n");
+			exit(0);
+		case BR_FIELD_NFOUND:
+			printf("Campo não existe.\n");
+			exit(0);
+		case BR_NOT_INT:
+			printf("O valor não é um int.\n");
+			exit(0);
+		case BR_NOT_FLOAT:
+			printf("O valor não é um float.\n");
+			exit(0);
+		case AR_WRONG_SINTAX:
+			printf("Sintax errada.\n");
+			exit(0);
+		case AR_WRONG_TABLE:
+			printf("Não há pesquisa para essa tabela.\n");
+			exit(0);
+>>>>>>> etapa2
 		case RR_WRONG_SINTAX:
 			printf("Sintax errada.\n");
 			exit_term_close(0);
