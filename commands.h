@@ -37,17 +37,11 @@ void listTables();
 // row: Struct com os valores de um registro
 void includeReg(Row *row);
 
-// Busca registros na tabela, único
+// Busca registros na tabela
 // table_name: Nome da tabela
 // field_name: Nome do campo(chave)
 // value: Nome do valor
-void busRegU(TableName table_name, Field field_name, Value value);
-
-// Busca registros na tabela, todos
-// table_name: Nome da tabela
-// field_name: Nome do campo(chave)
-// value: Nome do valor
-void busRegN(TableName table_name, Field field_name, Value value);
+void busReg(TableName table_name, Field field_name, Value value, int matchings);
 
 // Apresenta registros pesquisados da tabela
 // table_name: Nome da tabela

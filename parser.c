@@ -83,9 +83,9 @@ void parser(char * line) {
                     if (replaceSpace(field_name, '_')) printf("Espaços foram eliminados do campo: %s\n", field_name);
 
                     if (!strcmp(parameter, U)) {
-                        busRegU(table_name, field_name, value); return;
+                        busReg(table_name, field_name, value, 1); return;
                     } else if (!strcmp(parameter, N)) {
-                        busRegN(table_name, field_name, value); return;
+                        busReg(table_name, field_name, value, 2147483647); return;
                     } else {
                         raiseError(BR_WRONG_PARAMETER);
                     }
