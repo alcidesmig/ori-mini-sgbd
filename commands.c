@@ -265,10 +265,10 @@ void busRegU(TableName table_name, Field field_name, Value value) {
     }
     
     // Auxiliar da leitura para cada tipo de dado
-    char *s = NULL;
+    char *s = safe_malloc(STR_SIZE);
     int i;
     float f;
-    char *b = NULL;
+    char *b = safe_malloc(BIN_SIZE);
 
     // Auxiliar da leitura para row
     char *data = NULL;
@@ -396,6 +396,10 @@ void busRegU(TableName table_name, Field field_name, Value value) {
 // field_name: Nome do campo(chave)
 // value: Nome do valor
 void busRegN(TableName table_name, Field field_name, Value value) {
+    printf("%s\n", table_name);
+    printf("%s\n", field_name);
+    printf("%s\n\n", value);
+
     // Lê a tabela
     TableWRep *meta = read_table_metadata(table_name);
     if (!meta) {
@@ -425,10 +429,10 @@ void busRegN(TableName table_name, Field field_name, Value value) {
     }
     
     // Auxiliar da leitura para cada tipo de dado
-    char *s = NULL;
+    char *s = safe_malloc(STR_SIZE);
     int i;
     float f;
-    char *b = NULL;
+    char *b = safe_malloc(BIN_SIZE);
 
     // Auxiliar da leitura para row
     char *data = NULL;
@@ -541,6 +545,8 @@ void busRegN(TableName table_name, Field field_name, Value value) {
     search_dict = addDnode(search_dict, meta, result_list);
     result_list = NULL;
 
+    free(s);
+    free(b);
     free(field_info);
     free(path);
 
@@ -573,24 +579,25 @@ void apReg(TableName table_name) {
         index = 0;
         printf("Reg:\n");
 
-        for (int i = 0; i < node->meta->cols; i++) {
+        printf("cols %d\n", node->meta->cols);
+        for (int j = 0; j < node->meta->cols; j++) {
             // Printa o nome do campo
-            printf("- %s ", node->meta->fields[i]);
+            printf("- %s: ", node->meta->fields[j]);
 
             // Verifica o tipo de dado
-            if (node->meta->types[i] == STR_REP) {
+            if (node->meta->types[j] == STR_REP) {
                 memcpy(s, &lista->row_raw[index], STR_SIZE);
                 printf("%s\n", s);
                 index += STR_SIZE;
-            } else if (node->meta->types[i] == INT_REP) {
+            } else if (node->meta->types[j] == INT_REP) {
                 memcpy(&i, &lista->row_raw[index], sizeof(int));
                 printf("%d\n", i);
                 index += sizeof(int);
-            } else if (node->meta->types[i] == FLT_REP) {
+            } else if (node->meta->types[j] == FLT_REP) {
                 memcpy(&f, &lista->row_raw[index], sizeof(float));
                 printf("%f\n", f);
                 index += sizeof(float);
-            } else if (node->meta->types[i] == BIN_REP) {
+            } else if (node->meta->types[j] == BIN_REP) {
                 memcpy(b, &lista->row_raw[index], BIN_SIZE);
                 printf("%s\n", b);
                 index += BIN_SIZE;
