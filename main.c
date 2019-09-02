@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
                     parser(line);
                 }
 
-                fclose(file);
+                fclose(cmd_file);
             case '?':
                 raiseError(UNSUPORTED_PARAM);
         }
