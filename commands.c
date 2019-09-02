@@ -278,11 +278,17 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
     long int fp = 0;
 
     // Rows encontradas
-    int flag = 0;
+    int rows_found = 0;
+
+    // Flag de igualdade
+    int equal;
+
 
     // Lê os dados das rows e salva os matchings
     int j = 0;
-    while (j < qt_row && flag < matchings) {
+    while (j < qt_row && rows_found < matchings) {
+        equal = 0;
+
         // Salva a posição no arquivo
         fp = ftell(table_file);
 
@@ -295,18 +301,7 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
 
             // Compara
             if (!strcmp(s, value)) {
-                // Reseta a posição no arquivo para o começo de uma row
-                fseek(table_file, fp, SEEK_SET);
-
-                // Aloca para a row que será salva
-                data = safe_malloc(row_length);
-
-                // Lê a row
-                fread(data, row_length, 1, table_file);
-
-                // Adiciona na lista
-                result_list = addResult(result_list, data);
-                flag++;
+                equal = 1;
             }
         } else if (field_type == INT_REP) {
             // Lê o campo
@@ -315,23 +310,12 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
             // Converte o valor para int
             int v;
             if (sscanf(value, "%d", &v) != 1) {
-                raiseError(BR_WRONG_VALUE);
+                raiseError(BR_NOT_INT);
             }
 
             // Compara
             if (i == v) {
-                // Reseta a posição no arquivo para o começo de uma row
-                fseek(table_file, fp, SEEK_SET);
-                
-                // Aloca para a row que será salva
-                data = safe_malloc(row_length);
-
-                // Lê a row
-                fread(data, row_length, 1, table_file);
-
-                // Adiciona na lista
-                result_list = addResult(result_list, data);
-                flag++;
+                equal = 1;
             }
         } else if (field_type == FLT_REP) {
             // Lê o campo
@@ -340,23 +324,12 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
             // Converte o valor para int
             float v;
             if (sscanf(value, "%f", &v) != 1) {
-                raiseError(BR_WRONG_VALUE);
+                raiseError(BR_NOT_FLOAT);
             }
 
             // Compara
             if (f == v) {
-                // Reseta a posição no arquivo para o começo de uma row
-                fseek(table_file, fp, SEEK_SET);
-                
-                // Aloca para a row que será salva
-                data = safe_malloc(row_length);
-
-                // Lê a row
-                fread(data, row_length, 1, table_file);
-
-                // Adiciona na lista
-                result_list = addResult(result_list, data);
-                flag++;
+                equal = 1;
             }
         } else if (field_type == BIN_REP) {
             // Lê o campo
@@ -364,21 +337,25 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
 
             // Compara
             if (!strcmp(b, value)) {
-                // Reseta a posição no arquivo para o começo de uma row
-                fseek(table_file, fp, SEEK_SET);
-                
-                // Aloca para a row que será salva
-                data = safe_malloc(row_length);
-
-                // Lê a row
-                fread(data, row_length, 1, table_file);
-
-                // Adiciona na lista
-                result_list = addResult(result_list, data);
-                flag++;
+                equal = 1;
             }
         } else {
             raiseError(BR_WRONG_TYPE);
+        }
+
+        if (equal) {
+            // Reseta a posição no arquivo para o começo de uma row
+            fseek(table_file, fp, SEEK_SET);
+
+            // Aloca para a row que será salva
+            data = safe_malloc(row_length);
+
+            // Lê a row
+            fread(data, row_length, 1, table_file);
+
+            // Adiciona na lista
+            result_list = addResult(result_list, data);
+            rows_found++;
         }
 
         j++;
@@ -417,30 +394,44 @@ void apReg(TableName table_name) {
     float f;
     char *b = safe_malloc(BIN_SIZE);
 
+    // Número de colunas
+    int cols = node->meta->cols;
+
+    // Nomes dos campos
+    FieldArr *fields = &node->meta->fields;
+
+    // Tipos
+    TypeRepArr *types = &node->meta->types;
+
+    // Dados
+    char *raw = NULL;
+
     while (lista) {
         index = 0;
+
+        raw = lista->row_raw;
         printf("Reg:\n");
 
-        printf("cols %d\n", node->meta->cols);
-        for (int j = 0; j < node->meta->cols; j++) {
+        printf("cols %d\n", cols);
+        for (int j = 0; j < cols; j++) {
             // Printa o nome do campo
-            printf("- %s: ", node->meta->fields[j]);
+            printf("- %s: ", fields[j]);
 
             // Verifica o tipo de dado
-            if (node->meta->types[j] == STR_REP) {
-                memcpy(s, &lista->row_raw[index], STR_SIZE);
+            if (*types[j] == STR_REP) {
+                memcpy(s, &raw[index], STR_SIZE);
                 printf("%s\n", s);
                 index += STR_SIZE;
-            } else if (node->meta->types[j] == INT_REP) {
-                memcpy(&i, &lista->row_raw[index], sizeof(int));
+            } else if (*types[j] == INT_REP) {
+                memcpy(&i, &raw[index], sizeof(int));
                 printf("%d\n", i);
                 index += sizeof(int);
-            } else if (node->meta->types[j] == FLT_REP) {
-                memcpy(&f, &lista->row_raw[index], sizeof(float));
+            } else if (*types[j] == FLT_REP) {
+                memcpy(&f, &raw[index], sizeof(float));
                 printf("%f\n", f);
                 index += sizeof(float);
-            } else if (node->meta->types[j] == BIN_REP) {
-                memcpy(b, &lista->row_raw[index], BIN_SIZE);
+            } else if (*types[j] == BIN_REP) {
+                memcpy(b, &raw[index], BIN_SIZE);
                 printf("%s\n", b);
                 index += BIN_SIZE;
             }

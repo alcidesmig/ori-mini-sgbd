@@ -34,6 +34,8 @@ typedef int Error;
 #define BR_WRONG_VALUE     0x0607
 #define BR_WRONG_TABLE     0x0608
 #define BR_FIELD_NFOUND    0x0609
+#define BR_NOT_INT         0x060a
+#define BR_NOT_FLOAT       0x060b
 #define AR_WRONG_SINTAX    0x0701
 #define AR_WRONG_TABLE     0x0708
 #define RR_WRONG_SINTAX    0x0801

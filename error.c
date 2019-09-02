@@ -80,6 +80,12 @@ void raiseError(Error error) {
 		case BR_FIELD_NFOUND:
 			printf("Campo não existe.\n");
 			exit(0);
+		case BR_NOT_INT:
+			printf("O valor não é um int.\n");
+			exit(0);
+		case BR_NOT_FLOAT:
+			printf("O valor não é um float.\n");
+			exit(0);
 		case AR_WRONG_SINTAX:
 			printf("Sintax errada.\n");
 			exit(0);
