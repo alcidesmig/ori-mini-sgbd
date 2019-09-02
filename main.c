@@ -13,14 +13,6 @@
 char *line = NULL; // Buffer da linha de comando
 ssize_t length = 0; // Tamanho da linha lida por getline
 
-FILE *run_file(FILE *cmd_file, int term) {
-    while (getline(&line, &length, cmd_file) != -1) {
-        parser(line);
-    }
-
-    return cmd_file;
-}
-
 int main(int argc, char *argv[]) {
     int opt; // Auxiliar dos parâmetroschar
     int term = 1; // Flag de uso do terminal
@@ -33,12 +25,17 @@ int main(int argc, char *argv[]) {
                 menu();
             case 'f':
                 term = 0;
-                fclose(run_file(safe_fopen(optarg, "rb+"), term));
+                FILE *cmd_file = safe_fopen(optarg, "rb+");
+
+                while (getline(&line, &length, cmd_file) != -1) {
+                    parser(line);
+                }
+
+                fclose(file);
             case '?':
                 raiseError(UNSUPORTED_PARAM);
         }
     }
-
 
     if (term) {
         term_init();
