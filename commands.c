@@ -312,8 +312,6 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
                 raiseError(NOT_INT);
             }
 
-            printf("%d\n", i);
-
             // Compara
             if (i == v) {
                 equal = 1;
@@ -417,23 +415,23 @@ void apReg(TableName table_name) {
         printf("Reg:\n");
         for (int j = 0; j < cols; j++) {
             // Printa o nome do campo
-            printf("- %s: ", node->meta->fields[j]);
+            printf("- %s: ", (*fields)[j]);
 
             // Verifica o tipo de dado
-            if (node->meta->types[j] == STR_REP) {
-                memcpy(s, &(lista->row_raw)[index], STR_SIZE);
+            if ((*types)[j] == STR_REP) {
+                memcpy(s, &raw[index], STR_SIZE);
                 printf("%s\n", s);
                 index += STR_SIZE;
-            } else if (node->meta->types[j] == INT_REP) {
-                memcpy(&i, &(lista->row_raw)[index], sizeof(int));
+            } else if ((*types)[j] == INT_REP) {
+                memcpy(&i, &raw[index], sizeof(int));
                 printf("%d\n", i);
                 index += sizeof(int);
-            } else if (node->meta->types[j] == FLT_REP) {
-                memcpy(&f, &(lista->row_raw)[index], sizeof(float));
+            } else if ((*types)[j] == FLT_REP) {
+                memcpy(&f, &raw[index], sizeof(float));
                 printf("%f\n", f);
                 index += sizeof(float);
-            } else if (node->meta->types[j] == BIN_REP) {
-                memcpy(b, &(lista->row_raw)[index], BIN_SIZE);
+            } else if ((*types)[j] == BIN_REP) {
+                memcpy(b, &raw[index], BIN_SIZE);
                 printf("%s\n", b);
                 index += BIN_SIZE;
             } else {
