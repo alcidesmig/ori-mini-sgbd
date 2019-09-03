@@ -23,6 +23,7 @@ int main(int argc, char *argv[]) {
         switch(opt) {
             case 'h':
                 menu();
+                break;
             case 'f':
                 term = 0;
                 FILE *cmd_file = safe_fopen(optarg, "rb+");
