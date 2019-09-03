@@ -275,14 +275,13 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
     char *data = NULL;
 
     // Backup da posição no arquivo
-    long int fp = 0;
+    long fp = 0;
 
     // Rows encontradas
     int rows_found = 0;
 
     // Flag de igualdade
     int equal;
-
 
     // Lê os dados das rows e salva os matchings
     int j = 0;
@@ -312,6 +311,8 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
             if (sscanf(value, "%d", &v) != 1) {
                 raiseError(NOT_INT);
             }
+
+            printf("%d\n", i);
 
             // Compara
             if (i == v) {
@@ -348,7 +349,7 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
             fseek(table_file, fp, SEEK_SET);
 
             // Aloca para a row que será salva
-            data = safe_malloc(row_length);
+            data = safe_malloc(row_length*sizeof(char));
 
             // Lê a row
             fread(data, row_length, 1, table_file);
@@ -356,6 +357,8 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
             // Adiciona na lista
             result_list = addResult(result_list, data);
             rows_found++;
+        } else {
+            fseek(table_file, fp+row_length, SEEK_SET);
         }
 
         j++;
@@ -385,6 +388,7 @@ void apReg(TableName table_name) {
 
     // A lista com os resultados
     Result *lista = node->result_list;
+
     // Posição nos dados
     int index = 0;
 
@@ -411,29 +415,29 @@ void apReg(TableName table_name) {
 
         raw = lista->row_raw;
         printf("Reg:\n");
-
-        printf("cols %d\n", cols);
         for (int j = 0; j < cols; j++) {
             // Printa o nome do campo
             printf("- %s: ", node->meta->fields[j]);
 
             // Verifica o tipo de dado
-            if (*types[j] == STR_REP) {
-                memcpy(s, &raw[index], STR_SIZE);
+            if (node->meta->types[j] == STR_REP) {
+                memcpy(s, &(lista->row_raw)[index], STR_SIZE);
                 printf("%s\n", s);
                 index += STR_SIZE;
             } else if (node->meta->types[j] == INT_REP) {
-                memcpy(&i, &raw[index], sizeof(int));
+                memcpy(&i, &(lista->row_raw)[index], sizeof(int));
                 printf("%d\n", i);
                 index += sizeof(int);
             } else if (node->meta->types[j] == FLT_REP) {
-                memcpy(&f, &raw[index], sizeof(float));
+                memcpy(&f, &(lista->row_raw)[index], sizeof(float));
                 printf("%f\n", f);
                 index += sizeof(float);
             } else if (node->meta->types[j] == BIN_REP) {
-                memcpy(b, &raw[index], BIN_SIZE);
+                memcpy(b, &(lista->row_raw)[index], BIN_SIZE);
                 printf("%s\n", b);
                 index += BIN_SIZE;
+            } else {
+                raiseError(UNSUPORTED_TYPE);
             }
         }
 

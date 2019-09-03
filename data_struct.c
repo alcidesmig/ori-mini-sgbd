@@ -5,7 +5,7 @@
 // row_raw: dados adicionados à lista
 // return: Novo início da lista
 Result *addResult(Result *result, char *row_raw) {
-	Result *r = malloc(sizeof(Result));
+	Result *r = safe_malloc(sizeof(Result));
 	
 	if (!r) return NULL;
 
@@ -31,7 +31,7 @@ void freeResultList(Result *result) {
 // return: Raiz da nova lista
 Dnode *addDnode(Dnode *root, TableWRep *meta, Result *result) {
 	if (root == NULL) {
-		Dnode *n = malloc(sizeof(Dnode));
+		Dnode *n = safe_malloc(sizeof(Dnode));
 		if (!n)
 			return n;
 
