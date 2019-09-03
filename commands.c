@@ -224,6 +224,11 @@ void includeReg(Row *row) {
 
     printf("Novo registro na tabela %s.\n", row->table_name);
 
+    for (int i = 0; i < row->size; i++) {
+        printf("- %s\n", row->values[i]);
+    }
+    printf("\n");
+
     free(path);
     free(meta);
 
