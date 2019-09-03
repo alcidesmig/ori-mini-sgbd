@@ -24,6 +24,7 @@ typedef int Error;
 #define FIELD_NOT_FOUND    0x000f // Campo não encontrado
 #define NOT_INT            0x0010 // O valor não é um int
 #define NOT_FLOAT          0x0011 // O valor não é um float
+#define NO_SEARCH_TABLE    0x0012 // Não há pesquisa para a tabela
 #define TODO               0x00f0
 #define EXIT               0x00f1
 

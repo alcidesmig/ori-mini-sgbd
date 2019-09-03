@@ -55,6 +55,9 @@ void raiseError(Error error) {
 		case NOT_FLOAT:
 			printf("O valor não é um float.\n");
 			exit_term_close(0);
+		case NO_SEARCH_TABLE:
+			printf("Não há pesquisa para tabela.\n");
+			exit_term_close(0);
 		case TODO:
 			printf("TODO.\n");
 			break;

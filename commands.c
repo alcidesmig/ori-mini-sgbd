@@ -378,7 +378,7 @@ void apReg(TableName table_name) {
     // Nó que foi salvo a pesquisa
     Dnode *node = findResultList(search_dict, table_name);
     if (!node) {
-        raiseError(CANT_FIND_TABLE);
+        raiseError(NO_SEARCH_FOR_TABLE);
     }
 
     printf("Mostrando a pesquisa de %s.\n", table_name);
