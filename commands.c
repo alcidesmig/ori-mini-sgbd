@@ -378,7 +378,7 @@ void apReg(TableName table_name) {
     // Nó que foi salvo a pesquisa
     Dnode *node = findResultList(search_dict, table_name);
     if (!node) {
-        raiseError(NO_SEARCH_FOR_TABLE);
+        raiseError(NO_SEARCH_TABLE);
     }
 
     printf("Mostrando a pesquisa de %s.\n", table_name);
@@ -415,22 +415,22 @@ void apReg(TableName table_name) {
         printf("cols %d\n", cols);
         for (int j = 0; j < cols; j++) {
             // Printa o nome do campo
-            printf("- %s: ", *fields[j]);
+            printf("- %s: ", node->meta->fields[j]);
 
             // Verifica o tipo de dado
             if (*types[j] == STR_REP) {
                 memcpy(s, &raw[index], STR_SIZE);
                 printf("%s\n", s);
                 index += STR_SIZE;
-            } else if (*types[j] == INT_REP) {
+            } else if (node->meta->types[j] == INT_REP) {
                 memcpy(&i, &raw[index], sizeof(int));
                 printf("%d\n", i);
                 index += sizeof(int);
-            } else if (*types[j] == FLT_REP) {
+            } else if (node->meta->types[j] == FLT_REP) {
                 memcpy(&f, &raw[index], sizeof(float));
                 printf("%f\n", f);
                 index += sizeof(float);
-            } else if (*types[j] == BIN_REP) {
+            } else if (node->meta->types[j] == BIN_REP) {
                 memcpy(b, &raw[index], BIN_SIZE);
                 printf("%s\n", b);
                 index += BIN_SIZE;
