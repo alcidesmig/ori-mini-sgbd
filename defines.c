@@ -22,4 +22,4 @@ char TYPE_FIELD_SCANF[32] = "%[^:^;]%*c%[^;^:]%*c%[^\n]";
 char VALUE_SCANF[16] = "%[^;]%*c%[^\n]";
 
 // Tamanho de um campo binário
-long int BIN_SIZE = sizeof (long int);
+const long int BIN_SIZE = sizeof (long int);

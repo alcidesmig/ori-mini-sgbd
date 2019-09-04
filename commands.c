@@ -191,7 +191,7 @@ void includeReg(Row *row) {
         } else if (meta->types[i] == FLT_REP) {
             row_len += sizeof(float);
         } else if (meta->types[i] == BIN_REP) {
-            char bin[BIN_SIZE] = "";
+            char bin[BIN_FILE_NAME_SIZE] = "";
             if (sscanf(row->values[i], "%[^\n]", bin) == 1) {
                 FILE * binary_file;
                 binary_file = fopen(bin, "rb");
