@@ -71,7 +71,7 @@ typedef struct {
 #define TABLES_INDEX "table_index.tbli" // Arquivo de indexação das colunas
 #define TABLES_DIR "tables_dir/" // Diretório dos arquivos de colunas
 #define TABLE_EXTENSION ".tbl" // Extenção de arquivo um arquivo de tabela
-#define BINARY_TABLE "binary_data.bin"
+#define BINARY_TABLE "tables_dir/binary_data.bin"
 
 // Tipos
 extern const char STR[4];
