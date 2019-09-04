@@ -266,6 +266,11 @@ void includeReg(Row *row) {
 
     printf("Novo registro na tabela %s.\n", row->table_name);
 
+    for (int i = 0; i < row->size; i++) {
+        printf("- %s\n", row->values[i]);
+    }
+    printf("\n");
+
     free(path);
     free(meta);
 
@@ -317,7 +322,7 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
     char *data = NULL;
 
     // Backup da posição no arquivo
-    long int fp = 0;
+    long fp = 0;
 
     // Rows encontradas
     int rows_found = 0;
@@ -330,6 +335,7 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
 
     // Guarda se o atual campo da row é um campo binário
     int is_bin = 0;
+
 
     // Lê os dados das rows e salva os matchings
     int j = 0;
@@ -385,12 +391,15 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
             // Reseta a posição no arquivo para o começo de uma row
             fseek(table_file, fp, SEEK_SET);
             // Aloca para a row que será salva
-            data = safe_malloc(row_length);
+            data = safe_malloc(row_length*sizeof(char));
+
             // Lê a row
             fread(data, row_length, 1, table_file);
             // Adiciona na lista
             result_list = addResult(result_list, data);
             rows_found++;
+        } else {
+            fseek(table_file, fp+row_length, SEEK_SET);
         }
 
         j++;
@@ -420,6 +429,7 @@ void apReg(TableName table_name) {
 
     // A lista com os resultados
     Result *lista = node->result_list;
+
     // Posição nos dados
     int index = 0;
 
@@ -446,22 +456,21 @@ void apReg(TableName table_name) {
 
         raw = lista->row_raw;
         printf("Reg:\n");
-
-        printf("cols %d\n", cols);
         for (int j = 0; j < cols; j++) {
             // Printa o nome do campo
-            printf("- %s: ", node->meta->fields[j]);
+            printf("- %s: ", (*fields)[j]);
 
             // Verifica o tipo de dado
+
             if (node->meta->types[j] == STR_REP) {
                 memcpy(s, &raw[index], STR_SIZE);
                 printf("%s\n", s);
                 index += STR_SIZE;
-            } else if (node->meta->types[j] == INT_REP) {
+            } else if ((*types)[j] == INT_REP) {
                 memcpy(&i, &raw[index], sizeof(int));
                 printf("%d\n", i);
                 index += sizeof(int);
-            } else if (node->meta->types[j] == FLT_REP) {
+            } else if ((*types)[j] == FLT_REP) {
                 memcpy(&f, &raw[index], sizeof(float));
                 printf("%f\n", f);
                 index += sizeof(float);
@@ -469,6 +478,8 @@ void apReg(TableName table_name) {
                 memcpy(&b, &raw[index], BIN_SIZE); // BIN_SIZE = sizeof(long int)
                 printf("%ld\n", b);
                 index += BIN_SIZE;
+            } else {
+                raiseError(UNSUPORTED_TYPE);
             }
         }
 
