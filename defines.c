@@ -20,3 +20,6 @@ char PARAMETER_SCANF[16];
 char FIELD_NAME_VALUE_SCANF[16] = "%[^:]%*c%[^\n]";
 char TYPE_FIELD_SCANF[32] = "%[^:^;]%*c%[^;^:]%*c%[^\n]";
 char VALUE_SCANF[16] = "%[^;]%*c%[^\n]";
+
+// Tamanho de um campo binário
+long int BIN_SIZE = sizeof (long int);

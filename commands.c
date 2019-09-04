@@ -172,18 +172,43 @@ void includeReg(Row *row) {
         raiseError(DIFF_PARAM_NUMB);
     }
 
-    // Tamanho de uma row
-    int row_length = meta->row_bytes_size;
-
     // Lê o número de rows
     int qt_row = 0;
     fseek(table_file, sizeof(TableWRep), SEEK_CUR);
     fread(&qt_row, sizeof(int), 1, table_file);
 
-    // Muda o ponteiro para o lugar onde a row será salva, ignora possíveis dados que foram salvos anteriormente e falharam
-    fseek(table_file, sizeof(int)+sizeof(TableWRep)+qt_row*row_length, SEEK_SET);
+    // Muda o ponteiro para o lugar onde a row será salva: no final do arquivo
+    fseek(table_file, 0, SEEK_END);
 
-    // Grava cada valor
+    long int row_len;
+
+    // Conta o tamanho total da row em bytes
+    for (int i = 0; i < row->size; i++) {
+        if (meta->types[i] == STR_REP) {
+            row_len += STR_SIZE;
+        } else if (meta->types[i] == INT_REP) {
+            row_len += sizeof(int);
+        } else if (meta->types[i] == FLT_REP) {
+            row_len += sizeof(float);
+        } else if (meta->types[i] == BIN_REP) {
+            char bin[BIN_SIZE] = "";
+            if (sscanf(row->values[i], "%[^\n]", bin) == 1) {
+                FILE * binary_file;
+                binary_file = fopen(bin, "rb");
+                fseek(binary_file, 0, SEEK_END);
+                row_len += ftell(binary_file);
+                fclose(binary_file);
+            } else {
+                raiseError(WRONG_VALUE);
+            }
+
+        }
+    }
+
+    // Escreve o tamanho total da row em bytes, na frente da row
+    fwrite(&row_len, sizeof(long int), 1, table_file);
+
+    // Escreve o registro no arquivo, campo por campo
     for (int i = 0; i < row->size; i++) {
         if (meta->types[i] == STR_REP) {
             char str[STR_SIZE] = "";
@@ -207,14 +232,31 @@ void includeReg(Row *row) {
                 raiseError(WRONG_VALUE);
             }
         } else if (meta->types[i] == BIN_REP) {
-            char bin[BIN_SIZE] = "";
-            if (sscanf(row->values[i], "%[^\n]", bin) == 1) {        
-                fwrite(bin, BIN_SIZE * sizeof(char), 1, table_file);
+            char bin[BIN_FILE_NAME_SIZE] = "";
+            if (sscanf(row->values[i], "%[^\n]", bin) == 1) {    
+                // Lê os dados do arquivo binaŕio e escreve no campo da row  
+                // Escreve o tamanho (em bytes) do campo binário e depois seus dados
+                FILE * binary_file;
+                binary_file = fopen(bin, "rb");
+                fseek(binary_file, 0, SEEK_END);
+                long int file_size = ftell(binary_file);
+                fseek(binary_file, 0, SEEK_SET);
+                char * buffer = (char *) malloc(sizeof(char*) * file_size);
+                fread(buffer, file_size, 1, binary_file);
+                fclose(binary_file);
+                fwrite(&file_size, sizeof(long int), 1, table_file);
+                FILE * binary_table_file = fopen(BINARY_TABLE, "ab");
+                long int pos_in_binary_table_file = ftell(binary_table_file);
+                fwrite(&pos_in_binary_table_file, sizeof(long int), 1, table_file);
+                fwrite(buffer, file_size, 1, binary_table_file);
+                fclose(binary_table_file);
+
             } else {
                 raiseError(WRONG_VALUE);
             }
         }
     }
+
 
     // Aumenta o número de row
     qt_row++;
@@ -283,12 +325,16 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
     // Flag de igualdade
     int equal;
 
+    // Quantidade de bytes em um campo binário
+    long int bin_len;
+
+    // Guarda se o atual campo da row é um campo binário
+    int is_bin = 0;
 
     // Lê os dados das rows e salva os matchings
     int j = 0;
     while (j < qt_row && rows_found < matchings) {
         equal = 0;
-
         // Salva a posição no arquivo
         fp = ftell(table_file);
 
@@ -331,14 +377,6 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
             if (f == v) {
                 equal = 1;
             }
-        } else if (field_type == BIN_REP) {
-            // Lê o campo
-            fread(b, BIN_SIZE, 1, table_file);
-
-            // Compara
-            if (!strcmp(b, value)) {
-                equal = 1;
-            }
         } else {
             raiseError(UNSUPORTED_TYPE);
         }
@@ -346,13 +384,10 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
         if (equal) {
             // Reseta a posição no arquivo para o começo de uma row
             fseek(table_file, fp, SEEK_SET);
-
             // Aloca para a row que será salva
             data = safe_malloc(row_length);
-
             // Lê a row
             fread(data, row_length, 1, table_file);
-
             // Adiciona na lista
             result_list = addResult(result_list, data);
             rows_found++;
@@ -392,7 +427,7 @@ void apReg(TableName table_name) {
     char *s = safe_malloc(STR_SIZE);
     int i;
     float f;
-    char *b = safe_malloc(BIN_SIZE);
+    long int b;
 
     // Número de colunas
     int cols = node->meta->cols;
@@ -418,7 +453,7 @@ void apReg(TableName table_name) {
             printf("- %s: ", node->meta->fields[j]);
 
             // Verifica o tipo de dado
-            if (*types[j] == STR_REP) {
+            if (node->meta->types[j] == STR_REP) {
                 memcpy(s, &raw[index], STR_SIZE);
                 printf("%s\n", s);
                 index += STR_SIZE;
@@ -431,8 +466,8 @@ void apReg(TableName table_name) {
                 printf("%f\n", f);
                 index += sizeof(float);
             } else if (node->meta->types[j] == BIN_REP) {
-                memcpy(b, &raw[index], BIN_SIZE);
-                printf("%s\n", b);
+                memcpy(&b, &raw[index], BIN_SIZE); // BIN_SIZE = sizeof(long int)
+                printf("%ld\n", b);
                 index += BIN_SIZE;
             }
         }
@@ -442,7 +477,6 @@ void apReg(TableName table_name) {
     }
 
     free(s);
-    free(b);
 }
 
 // Remove registro da tabela

@@ -30,7 +30,8 @@
 #define VALUE_MAX 32      // Tamanho máximo de um valor
 #define NUMBER_COLUMNS 32 // Número máximo de colunas
 #define STR_SIZE 256      // Número máximo de colunas
-#define BIN_SIZE 256      // Número máximo de colunas
+#define BIN_FILE_NAME_SIZE 256      // Número máximo de colunas
+
 
 // Typedefs
 typedef char TableName[TABLE_NAME_MAX];
@@ -70,6 +71,7 @@ typedef struct {
 #define TABLES_INDEX "table_index.tbli" // Arquivo de indexação das colunas
 #define TABLES_DIR "tables_dir/" // Diretório dos arquivos de colunas
 #define TABLE_EXTENSION ".tbl" // Extenção de arquivo um arquivo de tabela
+#define BINARY_TABLE "binary_data.bin"
 
 // Tipos
 extern const char STR[4];
@@ -81,6 +83,10 @@ extern const char STR_REP;
 extern const char BIN_REP;
 extern const char INT_REP;
 extern const char FLT_REP;
+
+
+// BIN_SIZE = tamanho de um long int -> Posição do valor no arquivo de binários
+extern const long int BIN_SIZE;
 
 // Scanf Strings
 
