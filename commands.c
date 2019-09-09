@@ -333,7 +333,10 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
     // Lê os dados das rows e salva os matchings
     int j = 0;
     while (j < qt_row && rows_found < matchings) {
+
+        // Pula o long int que representa o tamanho da row em bytes
         fseek(table_file, sizeof(long int), SEEK_CUR);
+
         equal = 0;
 
         // Salva a posição no arquivo
