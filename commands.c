@@ -301,7 +301,8 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
     int qt_row = 0;
     fseek(table_file, sizeof(TableWRep), SEEK_CUR);
     fread(&qt_row, sizeof(int), 1, table_file);
-
+    fread(&qt_row, sizeof(int), 1, table_file);
+    printf("%d<\n", qt_row);
     // Offset, tamanho e tipo do campo
     int *field_info = getOffset(meta, field_name);
     int offset = field_info[0];
@@ -330,17 +331,11 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
     // Flag de igualdade
     int equal;
 
-    // Quantidade de bytes em um campo binário
-    long int bin_len;
-
-    // Guarda se o atual campo da row é um campo binário
-    int is_bin = 0;
-
-
     // Lê os dados das rows e salva os matchings
     int j = 0;
     while (j < qt_row && rows_found < matchings) {
         equal = 0;
+
         // Salva a posição no arquivo
         fp = ftell(table_file);
 
@@ -364,6 +359,7 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
             if (sscanf(value, "%d", &v) != 1) {
                 raiseError(NOT_INT);
             }
+            printf("%d\n", i);
 
             // Compara
             if (i == v) {
@@ -383,6 +379,14 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
             if (f == v) {
                 equal = 1;
             }
+        } else if (field_type == BIN_REP) { // todo
+            // Lê o campo
+            fread(b, BIN_SIZE, 1, table_file);
+
+            // Compara
+            if (!strcmp(b, value)) {
+                equal = 1;
+            }
         } else {
             raiseError(UNSUPORTED_TYPE);
         }
@@ -390,11 +394,13 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
         if (equal) {
             // Reseta a posição no arquivo para o começo de uma row
             fseek(table_file, fp, SEEK_SET);
+
             // Aloca para a row que será salva
             data = safe_malloc(row_length*sizeof(char));
 
             // Lê a row
             fread(data, row_length, 1, table_file);
+
             // Adiciona na lista
             result_list = addResult(result_list, data);
             rows_found++;
@@ -415,7 +421,6 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
 
     fclose(table_file);
 }
-
 // Apresenta registros pesquisados da tabela
 // table_name: Nome da tabela
 void apReg(TableName table_name) {
