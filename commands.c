@@ -301,8 +301,7 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
     int qt_row = 0;
     fseek(table_file, sizeof(TableWRep), SEEK_CUR);
     fread(&qt_row, sizeof(int), 1, table_file);
-    fread(&qt_row, sizeof(int), 1, table_file);
-    printf("%d<\n", qt_row);
+
     // Offset, tamanho e tipo do campo
     int *field_info = getOffset(meta, field_name);
     int offset = field_info[0];
@@ -359,7 +358,7 @@ void busReg(TableName table_name, Field field_name, Value value, int matchings) 
             if (sscanf(value, "%d", &v) != 1) {
                 raiseError(NOT_INT);
             }
-            printf("%d\n", i);
+
 
             // Compara
             if (i == v) {
