@@ -89,7 +89,6 @@ extern const char FLT_REP;
 extern const long int BIN_SIZE;
 
 // Scanf Strings
-
 extern char CMD_SCANF[16];
 extern char TBL_NAME_SCANF[16];
 extern char FIELD_NAME_SCANF[16];
@@ -97,5 +96,9 @@ extern char PARAMETER_SCANF[16];
 extern char FIELD_NAME_VALUE_SCANF[16];
 extern char TYPE_FIELD_SCANF[32];
 extern char VALUE_SCANF[16];
+
+// Mensagens
+extern const *char msg_space_elim;
+extern const *char msg_space_field;
 
 #endif /* DEFINES_H */

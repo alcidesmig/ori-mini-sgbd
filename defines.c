@@ -23,3 +23,7 @@ char VALUE_SCANF[16] = "%[^;]%*c%[^\n]";
 
 // Tamanho de um campo binário
 const long int BIN_SIZE = sizeof (long int);
+
+// Mensagens
+const *char msg_space_elim = "Espaços foram eliminados do tipo:";
+const *char msg_space_field = "Espaços foram eliminados do campo:";

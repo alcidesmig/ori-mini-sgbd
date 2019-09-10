@@ -51,8 +51,12 @@ char *safe_strcat(char *dest, char *src) {
 int read_qt_tables(FILE *tables_index) {
     int qt_tables = 0;
 
+    // Vai para o começo do arquivo
+    fseek(tables_index, 0, SEEK_SET);
+
+    // Lê um int
     if(!fread(&qt_tables, sizeof(int), 1, tables_index)) {
-        qt_tables = 0;
+        // No caso de erro ao ler, significa que o arquivo estava vazio, então zero é gravado
         fwrite(&qt_tables, sizeof(int), 1, tables_index);
     }
 
@@ -76,6 +80,8 @@ TableName *read_tables_names(FILE *tables_index, int qt_tables) {
 
     // Pula o número de tabelas
     fseek(tables_index, sizeof(int), SEEK_SET);
+
+    // Lê os nomes
     fread(names, sizeof(TableName), qt_tables, tables_index);
 
     return names;
@@ -187,25 +193,36 @@ int glueChars(char *str, char c) {
 // name: Nome da tabela
 // return: 1 se a tabela existe
 int tableNameExists(TableName *names, char *name, int qt_tables) {
-    for (int i = 0; i < qt_tables; i++) {
-        if(strcmp(names[i], name) == 0) {
+    int i = 0;
+
+    while (i < qt_tables) {
+        if(!strcmp(names[i], name)) {
             return 1;
         }
+
+        i++;
     }
 
     return 0;
 }
 
 // Converte uma TableWType para uma TableWRep
+// tableR: Ponteiro para tabela resultado
+// tableT: Ponteiro para tabela de entrada
 // return: 1 em sucesso
 int convertToRep(TableWRep *tableR, TableWType *tableT) {
-    strncpy((*tableR).name, (*tableT).name, sizeof(TableName));
-    (*tableR).cols = (*tableT).cols;
-    (*tableR).row_bytes_size = 0;
+    // Quantidade de colunas da tabela de entrada
+    int t_cols = tableT->cols;
 
-    int s = (*tableT).cols;
+    // Copia o nome
+    strncpy(tableR->name, tableT->name, sizeof(TableName));
+    // Atribui a quantidade de colunas
+    tableR->cols = t_cols
+    // Define o tamanho estático da row
+    tableR->row_bytes_size = 0;
 
-    for (int i = 0; i < s; i++) {
+    // Faz a converçãos dos tipos
+    for (int i = 0; i < t_cols; i++) {
         if(strcmp((*tableT).types[i], STR) == 0) {
             (*tableR).row_bytes_size += STR_SIZE;
             (*tableR).types[i] = STR_REP;

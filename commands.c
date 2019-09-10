@@ -11,24 +11,34 @@ Dnode *search_dict = NULL; // Árvore com os resultados das pesquisas
 // Cria tabela
 // table: Struct com as informações para crira uma tabela
 void createTable(TableWType *table) {
+    // Novo nome a ser comparado
+    char *novo = table->name;
+
+    // Abre o arquivo de index das tabelas
     tables_index = safe_fopen(TABLES_INDEX, "rb+");
+
+    // Lê a quantidade de tabelas
     qt_tables = read_qt_tables(tables_index);
 
-    //  Verifica se o nome já existe
+    // Se existir alguma tabela
     if (qt_tables) {
+        //  Verifica se o nome já existe
+
+        // Pega todos os nomes das tabelas
         TableName *names = read_tables_names(tables_index, qt_tables);
 
-        if (tableNameExists(names, table->name, qt_tables)) {
+        if (tableNameExists(names, novo, qt_tables)) {
             raiseError(TABLE_EXISTS);
         }
 
         free(names);
     }
 
+    // Nesse ponto o novo nome não existe
+
     // Converte a tabela
     TableWRep tableData;
 
-    // Converte a tabela
     if(!convertToRep(&tableData, table)) {
         raiseError(UNSUPORTED_TYPE);
     }
