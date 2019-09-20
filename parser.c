@@ -161,43 +161,29 @@ ParsedData *parser(char * line) {
             fprintf(stderr, "Nenhuma coluna foi encontrada.\n");
             return NULL;
         }
-    } else if (!strncmp(*cmd, BR, CMD_LIMIT)
-            || !strncmp(*cmd, CI, CMD_LIMIT)
-            || !strncmp(*cmd, RI, CMD_LIMIT)
-            || !strncmp(*cmd, GI, CMD_LIMIT)) {
-
-        int br = !strncmp(*cmd, BR, CMD_LIMIT);
-        int ci = !strncmp(*cmd, CI, CMD_LIMIT);
-
+    } else if (!strncmp(*cmd, BR, CMD_LIMIT)) {
         // Ponteiro para a seleção
         Selection *selection = &(pData->data.selection);
 
-        char *ptr = NULL;
+        // Ponteiro auxiliar, pega o parâmetro
+        char *ptr = strtok(NULL, " ");
 
-        if (br || ci) {
-            // Ponteiro auxiliar, pega o parâmetro
-            ptr = strtok(NULL, " ");
-
-            // Verifica se há parâmetro
-            if (!ptr) {
-                fprintf(stderr, "O parâmetro não foi encontrado.\n");
-                return NULL;
-            }
-
-            // Salva o parâmetro
-            toUpperCase(ptr);
-
-            // Verifica o parâmetro
-            if ((br && strncmp(ptr, U, PARAMETER_LIMIT) && strncmp(ptr, N, PARAMETER_LIMIT))
-                ||
-                (ci && strncmp(ptr, H, PARAMETER_LIMIT) && strncmp(ptr, A, PARAMETER_LIMIT))) {
-
-                fprintf(stderr, "O parâmetro não foi reconhecido\n");
-                return NULL;
-            }
-
-            selection->parameter = ptr[0];
+        // Verifica se há parâmetro
+        if (!ptr) {
+            fprintf(stderr, "O parâmetro não foi encontrado.\n");
+            return NULL;
         }
+
+        // Verifica o parâmetro
+        toUpperCase(ptr);
+
+        if (strncmp(ptr, U, PARAMETER_LIMIT) && strncmp(ptr, N, PARAMETER_LIMIT)) {
+            fprintf(stderr, "O parâmetro não foi reconhecido\n");
+            return NULL;
+        }
+
+        // Salva o parâmetro
+        selection->parameter = ptr[0];
         
         // Pega o nome da tabela
         ptr = strtok(NULL, " ");
@@ -221,21 +207,102 @@ ParsedData *parser(char * line) {
         }
 
         // Salva o nome do campo
+        if(replaceSpace(ptr, '_')) {
+            printf("Espaços foram substituídos no nome do campo: %s.\n", ptr);
+        }
         selection->field = ptr;
 
-        if (!strncmp(*cmd, BR, CMD_LIMIT)) {
-            // Pega o valor
-            ptr = strtok(NULL, "\0");
+        // Pega o valor
+        ptr = strtok(NULL, "\0");
 
-            // Verifica se há valor
-            if (!ptr) {
-                fprintf(stderr, "O valor não foi encontrado.\n");
-                return NULL;
-            }
-
-            // Salva o valor
-            selection->value = ptr;
+        // Verifica se há valor
+        if (!ptr) {
+            fprintf(stderr, "O valor não foi encontrado.\n");
+            return NULL;
         }
+
+        // Salva o valor
+        selection->value = ptr;
+    } else if (!strncmp(*cmd, CI, CMD_LIMIT)) {
+        // Ponteiro para a seleção
+        Selection *selection = &(pData->data.selection);
+
+        // Ponteiro auxiliar, pega o parâmetro
+        char *ptr = strtok(NULL, " ");
+
+        // Verifica se há parâmetro
+        if (!ptr) {
+            fprintf(stderr, "O parâmetro não foi encontrado.\n");
+            return NULL;
+        }
+
+        // Verifica o parâmetro
+        toUpperCase(ptr);
+
+        if (strncmp(ptr, H, PARAMETER_LIMIT) && strncmp(ptr, A, PARAMETER_LIMIT)) {
+            fprintf(stderr, "O parâmetro não foi reconhecido\n");
+            return NULL;
+        }
+
+        // Salva o parâmetro
+        selection->parameter = ptr[0];
+        
+        // Pega o nome da tabela
+        ptr = strtok(NULL, " ");
+        
+        // Verifica se há nome da tabela
+        if (!ptr) {
+            fprintf(stderr, "O nome da tabela não foi encontrado.\n");
+            return NULL;
+        }
+
+        // Salva o nome da tabela
+        selection->tableName = ptr;
+
+        // Pega o nome do campo
+        ptr = strtok(NULL, "\0");
+
+        // Verifica se há nome do campo
+        if (!ptr) {
+            fprintf(stderr, "O nome do campo não foi encontrado.\n");
+            return NULL;
+        }
+
+        // Salva o nome do campo
+        if(replaceSpace(ptr, '_')) {
+            printf("Espaços foram substituídos no nome do campo: %s.\n", ptr);
+        }
+        selection->field = ptr;
+    } else if (!strncmp(*cmd, RI, CMD_LIMIT) || !strncmp(*cmd, GI, CMD_LIMIT)) {
+        // Ponteiro para a seleção
+        Selection *selection = &(pData->data.selection);
+
+        // Ponteiro auxiliar, pega o nome da tabela
+        char *ptr = strtok(NULL, " ");
+        
+        // Verifica se há nome da tabela
+        if (!ptr) {
+            fprintf(stderr, "O nome da tabela não foi encontrado.\n");
+            return NULL;
+        }
+
+        // Salva o nome da tabela
+        selection->tableName = ptr;
+
+        // Pega o nome do campo
+        ptr = strtok(NULL, "\0");
+
+        // Verifica se há nome do campo
+        if (!ptr) {
+            fprintf(stderr, "O nome do campo não foi encontrado.\n");
+            return NULL;
+        }
+
+        // Salva o nome do campo
+        if(replaceSpace(ptr, '_')) {
+            printf("Espaços foram substituídos no nome do campo: %s.\n", ptr);
+        }
+        selection->field = ptr;
     } else if (!strncmp(*cmd, EB, CMD_LIMIT)) {
         printf("Saindo...\n");
         exit(0);
