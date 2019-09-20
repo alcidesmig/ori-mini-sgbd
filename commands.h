@@ -16,7 +16,6 @@ extern const char EB[];
 
 extern const char U[];
 extern const char N[];
-
 extern const char A[];
 extern const char H[];
 
