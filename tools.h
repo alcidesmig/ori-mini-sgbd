@@ -4,6 +4,7 @@
 #include <string.h>
 #include "linenoise/linenoise.h"
 #include "commands.h"
+#include "defines.h"
 
 // Função auxilidar para auto-compleate dos comandos (uso interno da linenoise)
 // prefix: string a ser completada
