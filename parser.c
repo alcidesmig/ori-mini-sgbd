@@ -31,7 +31,7 @@ ParsedData *parser(char * line) {
 
         // Verifica se há nome
         if (!ptr) {
-            fprintf(stderr, "Erro de sintax.\n");
+            fprintf(stderr, "Nome da tabela não encontrado.\n");
             return NULL;
         }
 
@@ -56,7 +56,7 @@ ParsedData *parser(char * line) {
 
         // Verifica se há pelo menos uma coluna
         if (!(*cols)) {
-            fprintf(stderr, "Erro de sintax.\n");
+            fprintf(stderr, "Nenhuma coluna foi encontrada.\n");
             return NULL;
         }
 
@@ -68,7 +68,7 @@ ParsedData *parser(char * line) {
             // Valida o tipo
             char c = validateType(ptr);
             if (!c) {
-                fprintf(stderr, "Erro de sintax.\n");
+                fprintf(stderr, "Tipo de dado não suportado.\n");
                 return NULL;
             }
             // Salva o tipo
@@ -78,7 +78,7 @@ ParsedData *parser(char * line) {
             ptr = strtok(NULL, "\0");
             // Verifica o nome
             if (!ptr) {
-                fprintf(stderr, "Erro de sintax.\n");
+                fprintf(stderr, "O nome do campo não foi encontrado.\n");
                 return NULL;
             }
             // Salva o nome
@@ -100,19 +100,26 @@ ParsedData *parser(char * line) {
 
         // Verifica se há nome
         if (!ptr) {
-            fprintf(stderr, "Erro de sintax.\n");
+            fprintf(stderr, "O nome da tabela não foi encontrado.\n");
             return NULL;
         }
 
         // Salva o nome
         table->name = ptr;
+
+        // Verifica se há mais na linha
+        ptr = strtok(NULL, "\0");
+        if (ptr) {
+            fprintf(stderr, "A estrutura do comando não foi reconhecida.\n");
+            return NULL;
+        }
     } else if (!strncmp(*cmd, LT, CMD_LIMIT)) {
         // Ponteiro auxiliar, pega o nome da tabela
-        char *ptr = strtok(NULL, " ");
+        char *ptr = strtok(NULL, "\0");
 
-        // Verifica se não há nome
+        // Verifica se há mais na linha
         if (ptr) {
-            fprintf(stderr, "Erro de sintax.\n");
+            fprintf(stderr, "A estrutura do comando não foi reconhecida.\n");
             return NULL;
         }
     } else if (!strncmp(*cmd, IR, CMD_LIMIT)) {
@@ -128,7 +135,7 @@ ParsedData *parser(char * line) {
 
         // Verifica se há nome
         if (!ptr) {
-            fprintf(stderr, "Erro de sintax.\n");
+            fprintf(stderr, "O nome da tabela não foi encontrado.\n");
             return NULL;
         }
 
@@ -151,7 +158,7 @@ ParsedData *parser(char * line) {
 
         // Verifica se há pelo menos uma coluna
         if (!(*cols)) {
-            fprintf(stderr, "Erro de sintax.\n");
+            fprintf(stderr, "Nenhuma coluna foi encontrada.\n");
             return NULL;
         }
     } else if (!strncmp(*cmd, BR, CMD_LIMIT)
@@ -173,7 +180,7 @@ ParsedData *parser(char * line) {
 
             // Verifica se há parâmetro
             if (!ptr) {
-                fprintf(stderr, "Erro de sintax.\n");
+                fprintf(stderr, "O parâmetro não foi encontrado.\n");
                 return NULL;
             }
 
@@ -185,7 +192,7 @@ ParsedData *parser(char * line) {
                 ||
                 (ci && strncmp(ptr, H, PARAMETER_LIMIT) && strncmp(ptr, A, PARAMETER_LIMIT))) {
 
-                fprintf(stderr, "Erro de sintax.\n");
+                fprintf(stderr, "O parâmetro não foi reconhecido\n");
                 return NULL;
             }
 
@@ -197,7 +204,7 @@ ParsedData *parser(char * line) {
         
         // Verifica se há nome da tabela
         if (!ptr) {
-            fprintf(stderr, "Erro de sintax.\n");
+            fprintf(stderr, "O nome da tabela não foi encontrado.\n");
             return NULL;
         }
 
@@ -209,7 +216,7 @@ ParsedData *parser(char * line) {
 
         // Verifica se há nome do campo
         if (!ptr) {
-            fprintf(stderr, "Erro de sintax.\n");
+            fprintf(stderr, "O nome do campo não foi encontrado.\n");
             return NULL;
         }
 
@@ -222,7 +229,7 @@ ParsedData *parser(char * line) {
 
             // Verifica se há valor
             if (!ptr) {
-                fprintf(stderr, "Erro de sintax.\n");
+                fprintf(stderr, "O valor não foi encontrado.\n");
                 return NULL;
             }
 
@@ -233,7 +240,7 @@ ParsedData *parser(char * line) {
         printf("Saindo...\n");
         exit(0);
     } else {
-        fprintf(stderr, "Comando não reconhecido.\n");
+        fprintf(stderr, "O comando não foi reconhecido.\n");
         return NULL;
     }
 
