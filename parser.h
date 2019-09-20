@@ -1,33 +1,14 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-
-#include "defines.h"
-#include "tools.h"
 #include "commands.h"
-#include "error.h"
+#include "utils.h"
+#include "defines.h"
 
-// Erro global de interpretação de comandos
-extern Error CMD_ERROR_CODE;
-
-// Marca a posição corrente no buffer de comando
-extern char *parsing;
-
-// Buffers: Nome da tabela, nome do campo(chave) e valor
-// Usados em comando com único parâmetro
-extern char table_name[TABLE_NAME_MAX];
-extern char field_name[FIELD_MAX];
-extern char value[VALUE_MAX];
-
-// Buffer de tabela
-extern TableWType table;
-
-// Identifica o comando
-// command: String com a linha de comando em questão
-// Lógica básica: Procura o comando e pula o ponteiro para após o mesmo, lê o nome da tabela, outro parâmetro até o ':' e outro até o ';' ou fim, repete
-void parser(char *command);
+char validateType(char *type);
+ParsedData *parser(char *line);
 
 #endif /* PARSER_H */

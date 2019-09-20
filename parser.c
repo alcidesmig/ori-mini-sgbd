@@ -1,173 +1,101 @@
 #include "parser.h"
 
-// Buffers: Nome da tabela, nome do campo(chave) e valor
-// Usados em comando com único parâmetro
-TableName table_name;
-Field field_name;
-Value value;
+char validateType(char *type) {
+    if (!strncmp(type, INT, TYPE_LIMIT)) {
+        return 'i';
+    } else if (!strncmp(type, STR, TYPE_LIMIT)) {
+        return 's';
+    } else if (!strncmp(type, FLT,TYPE_LIMIT)) {
+        return 'f';
+    } else if (!strncmp(type, BIN, TYPE_LIMIT)) {
+        return 'b';
+    } else {
+        return '\0';
+    }
+}
 
-// Buffer de tabela
-TableWType table;
-Row row;
+ParsedData *parser(char * line) {
+    ParsedData *pData = (ParsedData *)safe_malloc(sizeof(ParsedData));
 
-// Identifica o comando
-// line: String com a linha de comando em questão
-void parser(char * line) {
-    table.cols = 0;
-    row.size = 0;
+    // Ponteiro para o comando
+    char **cmd = &(pData->command);
 
-    // Buffer do comando
-    char cmd[CMD_MAX];
-
-    // Buffer do parâmetro do comando
-    char parameter[PARAMETER_MAX];
-
-    // Auxiliar
-    int scaned = 0;
-
-    // Lê o comando
-    sscanf(line, CMD_SCANF, cmd, line);
-    toUpperCase(cmd);
+    // Salva o comando
+    *cmd = strtok(line, " ");
+    toUpperCase(*cmd);
 
     // Identifica o comando
-    if (!strcmp(cmd, CT)) {
-        // Lê o nome da tabela
-        if (sscanf(line, TBL_NAME_SCANF, table.name, line) == 2) {
-            toUpperCase(table.name);
+    if (!strncmp(*cmd, CT, CMD_LIMIT)) {
+        // Ponteiro para a tabela
+        Table *table = &(pData->data.table);
+        // Ponteiro para os tipos
+        TypeArr *types = &(table->types);
+        // Ponteiro para os campos
+        FieldArr *fields = &(table->fields);
+        // Ponteiro para o número de colunas
+        int *cols = &(table->cols);
 
-            // Lê um par de tipo de campo e nome de campo
-            scaned = sscanf(line, TYPE_FIELD_SCANF, table.types[table.cols], table.fields[table.cols], line);
-            toUpperCase(table.types[table.cols]);
+        // Auxiliar para guardar o tipo e o nome das colunas
+        char *aux[NUMBER_COLUMNS_LIMIT];
+        // Ponteiro auxiliar, pega o nome da tabela
+        char *ptr = strtok(NULL, " ");
 
-            // Verifica por espaços nessas variáveis
-            if (glueChars(table.types[table.cols], ' ')) printf("%s %s\n", msg_space_elim, table.types[table.cols]);
-            if (replaceSpace(table.fields[table.cols], '_')) printf("%s %s\n", msg_space_field, table.fields[table.cols]);
-            table.cols++;
+        // Verifica se há nome
+        if (!ptr) {
+            fprintf(stderr, "Erro de sintax.\n");
+            return NULL;
+        }
 
-            // Continua a leitura          
-            if (scaned == 2 || scaned == 3) {
-                // Se ainda há o que ler
-                while (scaned == 3) {
-                    // Lê um par de tipo de campo e nome de campo
-                    scaned = sscanf(line, TYPE_FIELD_SCANF, table.types[table.cols], table.fields[table.cols], line);
-                    toUpperCase(table.types[table.cols]);
+        // Salva o nome
+        table->name = ptr;
+        // Seta o número de rows
+        table->rows = 0;
+        // Seta o número de colunas
+        *cols = 0;
+        
+        // Pega o bloco de informações de uma coluna
+        ptr = strtok(NULL, ";");
+        
+        while (ptr) {
+            // Salva o bloco no vetor auxiliar
+            aux[*cols] = ptr;
+            // Incrementa o número de colunas
+            (*cols)++;
+            // Pega o próximo bloco
+            ptr = strtok(NULL, ";");
+        }
 
-                    // Verifica por espaços nessas variáveis
-                    if (glueChars(table.types[table.cols], ' ')) printf("%s %s\n", msg_space_elim, table.types[table.cols]);
-                    if (replaceSpace(table.fields[table.cols], '_')) printf("%s %s\n", msg_space_field, table.fields[table.cols]);
-                    table.cols++;
-                }
-                createTable(&table); return;
+        // Separa os blocos de informação das colunas
+        for (int i = 0; i < *cols; i++) {
+            // Pega o tipo
+            ptr = strtok(aux[i], ":");
+            toUpperCase(ptr);
+            // Valida o tipo
+            char c = validateType(ptr);
+            if (!c) {
+                fprintf(stderr, "Erro de sintax.\n");
+                return NULL;
             }
-        }
-        raiseError(WRONG_SINTAX);
-    } else if (!strcmp(cmd, RT)) {
-        // Lê o nome da tabela
-        if (sscanf(line, TBL_NAME_SCANF, table.name, line) == 1) {
-            toUpperCase(table.name);
-            removeTable(table.name); return;
-        }
-        raiseError(WRONG_SINTAX);
-    } else if (!strcmp(cmd, AT)) {
-        // Lê o nome da tabela
-        if (sscanf(line, TBL_NAME_SCANF, table.name, line) == 1) {
-            toUpperCase(table.name);
-            apTable(table.name); return;
-        }
-        raiseError(WRONG_SINTAX);
-    } else if (!strcmp(cmd, LT)) {
-        listTables(); return;
-    } else if (!strcmp(cmd, IR)) {
-        // Lê o nome da tabela
-        if (sscanf(line, TBL_NAME_SCANF, row.table_name, line) == 2) {
-            toUpperCase(row.table_name);
+            // Salva o tipo
+            (*types)[i] = c;
 
-            // Lê o primeiro valor
-            scaned = sscanf(line, VALUE_SCANF, row.values[row.size], line);
-            row.size++;
-            
-            // Continua a leitura
-            if (scaned == 1 || scaned == 2) {
-                // Se ainda há o que ler
-                while (scaned == 2) {
-                    scaned = sscanf(line, VALUE_SCANF, row.values[row.size], line);
-                    row.size++;
-                }
-                includeReg(&row); return;
+            // Pega o nome do campo
+            ptr = strtok(NULL, "\0");
+            // Verifica o nome
+            if (!ptr) {
+                fprintf(stderr, "Erro de sintax.\n");
+                return NULL;
             }
-        }
-        raiseError(WRONG_SINTAX);
-    } else if (!strcmp(cmd, BR)) {
-        if (sscanf(line, PARAMETER_SCANF, parameter, line) == 2) {
-            if (sscanf(line, TBL_NAME_SCANF, table_name, line) == 2) {
-                if (sscanf(line, FIELD_NAME_VALUE_SCANF, field_name, value) == 2) {
-                    toUpperCase(table_name);
-                    toUpperCase(parameter);
-                    if (replaceSpace(field_name, '_')) printf("%s %s\n", msg_space_field, field_name);
-
-                    if (!strcmp(parameter, U)) {
-                        busReg(table_name, field_name, value, 1); return;
-                    } else if (!strcmp(parameter, N)) {
-                        busReg(table_name, field_name, value, 2147483647); return;
-                    } else {
-                        raiseError(WRONG_PARAMETER);
-                    }
-                }
+            // Salva o nome
+            if(replaceSpace(ptr, '_')) {
+                printf("Espaços foram substituídos no nome do campo: %s.\n", ptr);
             }
+            (*fields)[i] = ptr;
         }
-        raiseError(WRONG_SINTAX);
-    } else if (!strcmp(cmd, AR)) {
-        if (sscanf(line, TBL_NAME_SCANF, table_name, line) == 1) {
-            toUpperCase(table_name);
-            apReg(table_name); return;
-        }
-        raiseError(WRONG_SINTAX);
-    } else if (!strcmp(cmd, RR)) {
-        if (sscanf(line, TBL_NAME_SCANF, table_name, line) == 1) {
-            toUpperCase(table_name);
-            removeReg(table_name); return;
-        }
-        raiseError(WRONG_SINTAX);
-    } else if (!strcmp(cmd, CI)) {
-        if (sscanf(line, PARAMETER_SCANF, parameter, line) == 2) {
-            if (sscanf(line, TBL_NAME_SCANF, table_name, line) == 2) {
-                if (sscanf(line, FIELD_NAME_SCANF, field_name) == 1) {
-                    toUpperCase(table_name);
-                    toUpperCase(parameter);
-                    if (replaceSpace(field_name, '_')) printf("%s %s\n", msg_space_field, field_name);
-
-                    if (!strcmp(parameter, A)) {
-                        createIndexA(table_name, field_name); return;
-                    } else if (!strcmp(parameter, H)) {
-                        createIndexH(table_name, field_name); return;
-                    } else {
-                        raiseError(WRONG_PARAMETER);
-                    }
-                }
-            }
-        }
-        raiseError(WRONG_SINTAX);
-    } else if (!strcmp(cmd, RI)) {
-        if (sscanf(line, TBL_NAME_SCANF, table_name, line) == 2) {
-            if (sscanf(line, FIELD_NAME_SCANF, field_name) == 1) {
-                toUpperCase(table_name);
-                if (replaceSpace(field_name, '_')) printf("%s %s\n", msg_space_field, field_name);
-                removeIndex(table_name, field_name); return;
-            }
-        }
-        raiseError(WRONG_SINTAX);
-    } else if (!strcmp(cmd, GI)) {
-        if (sscanf(line, TBL_NAME_SCANF, table_name, line) == 2) {
-            if (sscanf(line, FIELD_NAME_SCANF, field_name) == 1) {
-                toUpperCase(table_name);
-                if (replaceSpace(field_name, '_')) printf("%s %s\n", msg_space_field, field_name);
-                genIndex(table_name, field_name); return;
-            }
-        }
-        raiseError(WRONG_SINTAX);
-    } else if (!strcmp(cmd, EB)) {
-        raiseError(EXIT);
     } else {
-        raiseError(NO_COMMAND);
+        fprintf(stderr, "Comando não reconhecido.\n");
+        return NULL;
     }
+
+    return pData;
 }
