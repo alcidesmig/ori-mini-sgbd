@@ -114,7 +114,7 @@ ParsedData *parser(char * line) {
             return NULL;
         }
     } else if (!strncmp(*cmd, LT, CMD_LIMIT)) {
-        // Ponteiro auxiliar, pega o nome da tabela
+        // Ponteiro auxiliar
         char *ptr = strtok(NULL, "\0");
 
         // Verifica se há mais na linha
@@ -304,8 +304,14 @@ ParsedData *parser(char * line) {
         }
         selection->field = ptr;
     } else if (!strncmp(*cmd, EB, CMD_LIMIT)) {
-        printf("Saindo...\n");
-        exit(0);
+        // Ponteiro auxiliar
+        char *ptr = strtok(NULL, "\0");
+
+        // Verifica se há mais na linha
+        if (ptr) {
+            fprintf(stderr, "A estrutura do comando não foi reconhecida.\n");
+            return NULL;
+        }
     } else {
         fprintf(stderr, "O comando não foi reconhecido.\n");
         return NULL;
