@@ -6,6 +6,7 @@
 #include <string.h>
 #include "commands.h"
 #include "utils.h"
+#include "tools.h"
 #include "defines.h"
 
 // Transforma uma linha de comando em uma struct com os dados
