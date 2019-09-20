@@ -6,6 +6,7 @@
 
 #include "commands.h"
 
+// Printa os comandos
 void menu();
 
 #endif /* MENU_H */

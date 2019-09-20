@@ -43,6 +43,8 @@ int main(int argc, char *argv[]) {
                         printf("%c %s\n", pData->data.table.types[i], pData->data.table.fields[i]);
                     }
                 }
+
+                free(pData);
             }
             
             free(line);

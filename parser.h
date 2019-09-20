@@ -8,7 +8,9 @@
 #include "utils.h"
 #include "defines.h"
 
-char validateType(char *type);
+// Transforma uma linha de comando em uma struct com os dados
+// line: linha de comando
+// return: ponteiro para a struct com os dados
 ParsedData *parser(char *line);
 
 #endif /* PARSER_H */

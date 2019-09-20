@@ -1,19 +1,8 @@
 #include "parser.h"
 
-char validateType(char *type) {
-    if (!strncmp(type, INT, TYPE_LIMIT)) {
-        return 'i';
-    } else if (!strncmp(type, STR, TYPE_LIMIT)) {
-        return 's';
-    } else if (!strncmp(type, FLT,TYPE_LIMIT)) {
-        return 'f';
-    } else if (!strncmp(type, BIN, TYPE_LIMIT)) {
-        return 'b';
-    } else {
-        return '\0';
-    }
-}
-
+// Transforma uma linha de comando em uma struct com os dados
+// line: linha de comando
+// return: ponteiro para a struct com os dados
 ParsedData *parser(char * line) {
     ParsedData *pData = (ParsedData *)safe_malloc(sizeof(ParsedData));
 
