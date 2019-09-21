@@ -48,7 +48,7 @@ int replaceSpace(char *str, char c) {
 }
 
 char *glueString(int n_args, ...) {
-    char **args = safe_malloc(n_args * sizeof(char*));
+    char **args = (char **)mallocSafe(n_args * sizeof(char*));
     int size = 0;
 
     va_list ap;
@@ -64,7 +64,7 @@ char *glueString(int n_args, ...) {
     va_end(ap);
     
     size++;
-    char *r = safe_malloc(size * sizeof(char));
+    char *r = (char *)mallocSafe(size * sizeof(char));
 
     int k = 0;
     for (int i = 0; i < n_args; i++) {

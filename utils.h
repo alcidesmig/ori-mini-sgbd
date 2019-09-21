@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include<errno.h>
+#include <stdarg.h>
 
 void *mallocSafe(size_t s);
 void createFile(const char *path);

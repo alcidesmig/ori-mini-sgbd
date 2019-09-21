@@ -30,7 +30,7 @@ int PARAMETER_LIMIT = 2;
 
 FILE *tablesIndex = NULL;
 
-int start() {
+void start() {
 	mkdir(TABLES_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 	createFile(TABLES_INDEX);
@@ -42,7 +42,30 @@ void end() {
 }
 
 void criarTabela(Table *table) {
-	
+	printf("%s\n", table->name);
+	printf("%d\n", table->cols);
+	printf("%d\n", table->rows);
+
+	for (int i = 0; i < table->cols; i++) {
+		printf("%c %s\n", table->types[i], table->fields[i]);
+	}
+
+	int qtTables = 0;
+
+	fread(&qtTables, sizeof(int), 1, tablesIndex);
+
+	printf("%d\n", qtTables);
+
+	qtTables++;
+
+	fseek(tablesIndex, 0, SEEK_SET);
+
+	fwrite(&qtTables, sizeof(int), 1, tablesIndex);
+
+	fseek(tablesIndex, 0, SEEK_END);
+
+	printf("%ld\n", strlen(table->name));
+	fwrite(table->name, strlen(table->name), 1, tablesIndex);
 }
 
 void removerTabela(Table *table) {

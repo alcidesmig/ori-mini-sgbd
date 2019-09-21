@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -37,7 +38,7 @@ extern int PARAMETER_LIMIT;
 
 extern FILE *tablesIndex;
 
-int start();
+void start();
 void end();
 void criarTabela(Table *table);
 void removerTabela(Table *table);
