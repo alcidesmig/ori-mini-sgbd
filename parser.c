@@ -4,7 +4,7 @@
 // line: linha de comando
 // return: ponteiro para a struct com os dados
 ParsedData *parser(char * line) {
-    ParsedData *pData = (ParsedData *)safe_malloc(sizeof(ParsedData));
+    ParsedData *pData = (ParsedData *)mallocSafe(sizeof(ParsedData));
 
     // Ponteiro para o comando
     char **cmd = &(pData->command);

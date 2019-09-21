@@ -1,9 +1,6 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-#define HISTORY_FILE "./.history"
-#define PROMPT "\x1b[1;32mSGBD\x1b[0m> "
-
 #define NUMBER_COLUMNS_LIMIT 32
 
 typedef char *TableName;
@@ -34,15 +31,6 @@ typedef struct Selection {
     Field field;
     Value value;
 } Selection;
-
-typedef struct {
-    char *command;
-    union {
-        Table table;
-        Row row;
-        Selection selection;
-    } data;
-} ParsedData;
 
 extern const char INT[];
 extern const char STR[];

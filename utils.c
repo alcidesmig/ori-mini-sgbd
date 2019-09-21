@@ -1,11 +1,31 @@
 #include "utils.h"
 
-void *safe_malloc(size_t s) {
+void *mallocSafe(size_t s) {
     void *p = malloc(s);
     if (p)
         return p;
     fprintf(stderr, "Malloc ERROR!\n");
     exit(1);
+}
+
+void createFile(const char *path) {
+    FILE *fp = fopen(path, "ab+");
+    if (fp) {
+        fclose(fp);
+    } else {
+        fprintf(stderr, "Erro ao abrir arquivo: %s\n", path);
+        exit(1);
+    }
+}
+
+FILE *fopenSafe(const char *path) {
+    FILE *fp = fopen(path, "rb+");
+    if (fp) {
+        return fp;
+    } else {
+        fprintf(stderr, "Erro ao abrir arquivo: %s\n", path);
+        exit(1);
+    }
 }
 
 void toUpperCase(char *str) {
@@ -25,4 +45,35 @@ int replaceSpace(char *str, char c) {
     }
 
     return flag;
+}
+
+char *glueString(int n_args, ...) {
+    char **args = safe_malloc(n_args * sizeof(char*));
+    int size = 0;
+
+    va_list ap;
+    va_start(ap, n_args);
+
+    for (int i = 0; i < n_args; i++) {
+        args[i] = va_arg(ap, char *);
+        for (int j = 0; args[i][j]; j++) {
+            size++;
+        }
+    }
+    
+    va_end(ap);
+    
+    size++;
+    char *r = safe_malloc(size * sizeof(char));
+
+    int k = 0;
+    for (int i = 0; i < n_args; i++) {
+        for (int j = 0; args[i][j]; j++) {
+            r[k++] = args[i][j];
+        }
+    }
+    r[k] = '\0';
+
+    free(args);
+    return r;
 }

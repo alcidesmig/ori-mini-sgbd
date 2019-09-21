@@ -3,8 +3,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include<errno.h>
 
-void *safe_malloc(size_t s);
+void *mallocSafe(size_t s);
+void createFile(const char *path);
+FILE *fopenSafe(const char *path);
 void toUpperCase(char *str);
 int replaceSpace(char *str, char c);
 

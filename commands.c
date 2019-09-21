@@ -1,5 +1,8 @@
 #include "commands.h"
 
+const char TABLES_INDEX[] = "tablesIndex.bin";
+const char TABLES_DIR[] = "tables";
+
 const char CT[] = "CT";
 const char RT[] = "RT";
 const char AT[] = "AT";
@@ -25,13 +28,52 @@ const char *commands[] = {
 int CMD_LIMIT = 3;
 int PARAMETER_LIMIT = 2;
 
-// FILE *tables_index = NULL; // Variável global utilizada para manipular arquivos
+FILE *tablesIndex = NULL;
 
-// int qt_tables = 0; // Quantidade de tabelas
+int start() {
+	mkdir(TABLES_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
-// Result *result_list = NULL; // Lista de resultados
+	createFile(TABLES_INDEX);
+	tablesIndex = fopenSafe(TABLES_INDEX);
+}
 
-// Dnode *search_dict = NULL; // Árvore com os resultados das pesquisas
+void end() {
+	fclose(tablesIndex);
+}
+
+void criarTabela(Table *table) {
+	
+}
+
+void removerTabela(Table *table) {
+}
+
+void apresentarTabela(Table *table) {
+}
+
+void listarTabela(Table *table) {
+}
+
+void incluirRegistro(Row *row) {
+}
+
+void buscarRegistros(Row *row) {
+}
+
+void apresentarRegistros(Row *row) {
+}
+
+void removerRegistros(Row *row) {
+}
+
+void criarIndex(Selection *selection) {
+}
+
+void removerIndex(Selection *selection) {
+}
+
+void gerarIndex(Selection *selection) {
+}
 
 // // Cria tabela
 // // table: Struct com as informações para crira uma tabela
