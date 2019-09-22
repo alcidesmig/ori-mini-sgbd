@@ -1,6 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+#define BLOCK_SIZE 8
 #define NUMBER_COLUMNS_LIMIT 32
 
 typedef char *TableName;

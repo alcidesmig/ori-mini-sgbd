@@ -18,8 +18,8 @@ void createFile(const char *path) {
     }
 }
 
-FILE *fopenSafe(const char *path) {
-    FILE *fp = fopen(path, "rb+");
+FILE *fopenSafe(const char *path, const char *mode) {
+    FILE *fp = fopen(path, mode);
     if (fp) {
         return fp;
     } else {

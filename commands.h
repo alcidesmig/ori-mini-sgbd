@@ -38,8 +38,6 @@ extern int PARAMETER_LIMIT;
 
 extern FILE *tablesIndex;
 
-void start();
-void end();
 void criarTabela(Table *table);
 void removerTabela(Table *table);
 void apresentarTabela(Table *table);
@@ -51,5 +49,9 @@ void removerRegistros(Row *row);
 void criarIndex(Selection *selection);
 void removerIndex(Selection *selection);
 void gerarIndex(Selection *selection);
+void start();
+void end();
+int tableNameIsUnique(int qtTables, char *name, long int *marker);
+void addTableName(int qtTables, char *name);
 
 #endif /* COMMANDS_H */

@@ -1,7 +1,7 @@
 #include "commands.h"
 
 const char TABLES_INDEX[] = "tablesIndex.bin";
-const char TABLES_DIR[] = "tables";
+const char TABLES_DIR[] = "tables/";
 
 const char CT[] = "CT";
 const char RT[] = "RT";
@@ -30,45 +30,85 @@ int PARAMETER_LIMIT = 2;
 
 FILE *tablesIndex = NULL;
 
-void start() {
-	mkdir(TABLES_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
-	createFile(TABLES_INDEX);
-	tablesIndex = fopenSafe(TABLES_INDEX);
-}
-
-void end() {
-	fclose(tablesIndex);
-}
-
 void criarTabela(Table *table) {
-	printf("%s\n", table->name);
-	printf("%d\n", table->cols);
-	printf("%d\n", table->rows);
-
-	for (int i = 0; i < table->cols; i++) {
-		printf("%c %s\n", table->types[i], table->fields[i]);
-	}
-
+	// Ponteiro para o nome
+	char *newName = table->name;
+	// Quantidade de tabelas
 	int qtTables = 0;
 
+	// Pula para o começo do arquivo
+	fseek(tablesIndex, 0, SEEK_SET);
+	// Lê a quantidade de tabelas
 	fread(&qtTables, sizeof(int), 1, tablesIndex);
 
-	printf("%d\n", qtTables);
+	int i = 0;
+	// Para cada tabela
+	if (i < qtTables) {
+		// Verifica se o nome é unico
+		int unique = tableNameIsUnique(qtTables, newName, NULL);
 
-	qtTables++;
+		// Se o novo nome é diferente
+		if (unique) {
+			goto criar;
+		} else {
+			fprintf(stderr, "Uma tabela com o mesmo nome já existe!\n");
+		}
+	// Se não existem tabelas
+	} else {
+		goto criar;
+	}
 
-	fseek(tablesIndex, 0, SEEK_SET);
+	return;
 
-	fwrite(&qtTables, sizeof(int), 1, tablesIndex);
-
-	fseek(tablesIndex, 0, SEEK_END);
-
-	printf("%ld\n", strlen(table->name));
-	fwrite(table->name, strlen(table->name), 1, tablesIndex);
+	// GOTO??????????
+	// Bloco de criação
+	criar:
+		// Path do arquivo da tabela
+		char *path = glueString(2, TABLES_DIR, newName);
+		// O novo nome é colocado no index
+		addTableName(qtTables, newName);
+		// É criado o arquivo da tabela
+		createFile(path);
+			
+		printf("Tabela %s criada\n", newName);
 }
 
 void removerTabela(Table *table) {
+	// Ponteiro para o nome
+	char *newName = table->name;
+	// Quantidade de tabelas
+	int qtTables = 0;
+
+	// Pula para o começo do arquivo
+	fseek(tablesIndex, 0, SEEK_SET);
+	// Lê a quantidade de tabelas
+	fread(&qtTables, sizeof(int), 1, tablesIndex);
+	
+	// Marcador da posição do igual
+	long int marker = 0;
+	// Número de blocos
+	int blocks = 0;
+
+	// Verifica e pega a posição do igual
+	tableNameIsUnique(qtTables, newName, &marker);
+
+	// Se o marcador é válido
+	if (marker) {
+		// Pula para a posição do marcador
+		fseek(tablesIndex, marker, SEEK_SET);
+		// Lê o número de blocos
+		fread(&blocks, sizeof(int), 1, tablesIndex);
+		// Invalida os blocos
+		blocks *= -1;
+		// Pula para a posição do marcador
+		fseek(tablesIndex, marker, SEEK_SET);
+		// Escreve o número de blocos inválidados
+		fwrite(&blocks, sizeof(int), 1, tablesIndex);
+
+		printf("Tabela %s removida\n", newName);
+	} else {
+		fprintf(stderr, "Tabela não encontrada!\n");
+	}
 }
 
 void apresentarTabela(Table *table) {
@@ -96,6 +136,85 @@ void removerIndex(Selection *selection) {
 }
 
 void gerarIndex(Selection *selection) {
+}
+
+void start() {
+	mkdir(TABLES_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+	createFile(TABLES_INDEX);
+	tablesIndex = fopenSafe(TABLES_INDEX, "rb+");
+}
+
+void end() {
+	fclose(tablesIndex);
+}
+
+int tableNameIsUnique(int qtTables, char *name, long int *marker) {
+	// Flag, novo nome é diferente
+	int diff = 1;
+
+	// Pula para o começo dos nomes
+	fseek(tablesIndex, sizeof(int), SEEK_SET);
+
+	int i = 0;
+	// Para cada tabela enquanto é diferente
+	while (diff != 0 && i < qtTables) {
+		// Número de blocos
+		int blocks = 0;
+
+		// Marcador da posição do igual
+		if (marker) {
+			*marker = ftell(tablesIndex);
+		}
+
+		// Lê o número de blocos
+		fread(&blocks, sizeof(int), 1, tablesIndex);
+
+		// Se o espaço possuí informações válidas
+		if (blocks > 0) {
+			// Tamanho real do nome
+			int size = blocks*BLOCK_SIZE;
+			char *buf = (char *)mallocSafe(size);
+
+			// Lê o nome
+			fread(buf, size, 1, tablesIndex);
+
+			// Compara com o novo nome
+			diff = strcmp(buf, name);
+
+			free(buf);
+		} else {
+			// Pula o espaço no caso de informações inválidas
+			blocks *= -1;
+			fseek(tablesIndex, blocks*BLOCK_SIZE, SEEK_CUR);
+		}
+
+		i++;
+	}
+
+	return diff;
+}
+
+void addTableName(int qtTables, char *name) {
+    qtTables++;
+
+    // Pula para o começo do arquivo
+    fseek(tablesIndex, 0, SEEK_SET);
+    // Escreve o novo valor
+    fwrite(&qtTables, sizeof(int), 1, tablesIndex);
+
+    // Pula para o fim do arquivo
+    fseek(tablesIndex, 0, SEEK_END);
+
+    // Tamanho da string
+    int length = strlen(name);
+    // Quantidade de blocos
+    int blocks = length/BLOCK_SIZE + (length%BLOCK_SIZE != 0 ? 1 : 0);
+
+    // Escreve a quantidade de blocos
+    fwrite(&blocks, sizeof(int), 1, tablesIndex);
+    // Escreve a strign
+    fwrite(name, blocks*BLOCK_SIZE, 1, tablesIndex);
 }
 
 // // Cria tabela
