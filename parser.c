@@ -23,6 +23,8 @@ ParsedData *parser(char * line) {
         FieldArr *fields = &(table->fields);
         // Ponteiro para o número de colunas
         int *cols = &(table->cols);
+        // Tamanho do registro da tabela
+        int *length = &(table->length);
 
         // Auxiliar para guardar o tipo e o nome das colunas
         char *aux[NUMBER_COLUMNS_LIMIT];
@@ -47,6 +49,8 @@ ParsedData *parser(char * line) {
         table->rows = 0;
         // Seta o número de colunas
         *cols = 0;
+        // Seta o tamanho de um registro
+        *length = 0;
         
         // Pega o bloco de informações de uma coluna
         ptr = strtok(NULL, ";");
@@ -76,7 +80,16 @@ ParsedData *parser(char * line) {
             if (!c) {
                 fprintf(stderr, "Tipo de dado não suportado.\n");
                 return NULL;
+            } else if (c == 'i') {
+                *length += sizeof(int);
+            } else if (c == 's') {
+                *length += sizeof(long int);
+            } else if (c == 'f') {
+                *length += sizeof(float);
+            } else if (c == 'b') {
+                *length += sizeof(long int);
             }
+
             // Salva o tipo
             (*types)[i] = c;
 

@@ -1,6 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+// Pelo menos >= sizeof(long int)
 #define BLOCK_SIZE 8
 #define NUMBER_COLUMNS_LIMIT 32
 #define TABLE_NAME_LIMIT 32
@@ -17,6 +18,7 @@ typedef Value ValueArr[NUMBER_COLUMNS_LIMIT];
 typedef struct Table {
     int cols;
     int rows;
+    int length;
     TableName name;
     TypeArr types;
     FieldArr fields;
