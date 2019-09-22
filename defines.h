@@ -3,6 +3,8 @@
 
 #define BLOCK_SIZE 8
 #define NUMBER_COLUMNS_LIMIT 32
+#define TABLE_NAME_LIMIT 32
+#define FIELD_NAME_LIMIT 32
 
 typedef char *TableName;
 typedef char Type;

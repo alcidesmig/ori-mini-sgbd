@@ -35,6 +35,12 @@ ParsedData *parser(char * line) {
             return NULL;
         }
 
+        // Verifica o tamanho do nome
+        if (strlen(ptr) >= TABLE_NAME_LIMIT) {
+            fprintf(stderr, "Nome da tabela é muito longo.\n");
+            return NULL;
+        }
+
         // Salva o nome
         table->name = ptr;
         // Seta o número de rows
@@ -81,6 +87,11 @@ ParsedData *parser(char * line) {
                 fprintf(stderr, "O nome do campo não foi encontrado.\n");
                 return NULL;
             }
+            // Verifica o tamanho do dome do campo
+            if (strlen(ptr) >= FIELD_NAME_LIMIT) {
+                fprintf(stderr, "O nome do campo é muito longo.\n");
+                return NULL;
+            }
             // Salva o nome
             if(replaceSpace(ptr, '_')) {
                 printf("Espaços foram substituídos no nome do campo: %s.\n", ptr);
@@ -101,6 +112,12 @@ ParsedData *parser(char * line) {
         // Verifica se há nome
         if (!ptr) {
             fprintf(stderr, "O nome da tabela não foi encontrado.\n");
+            return NULL;
+        }
+
+        // Verifica o tamanho do nome
+        if (strlen(ptr) >= TABLE_NAME_LIMIT) {
+            fprintf(stderr, "Nome da tabela é muito longo.\n");
             return NULL;
         }
 
@@ -136,6 +153,12 @@ ParsedData *parser(char * line) {
         // Verifica se há nome
         if (!ptr) {
             fprintf(stderr, "O nome da tabela não foi encontrado.\n");
+            return NULL;
+        }
+
+        // Verifica o tamanho do nome
+        if (strlen(ptr) >= TABLE_NAME_LIMIT) {
+            fprintf(stderr, "Nome da tabela é muito longo.\n");
             return NULL;
         }
 
@@ -194,6 +217,12 @@ ParsedData *parser(char * line) {
             return NULL;
         }
 
+        // Verifica o tamanho do nome
+        if (strlen(ptr) >= TABLE_NAME_LIMIT) {
+            fprintf(stderr, "Nome da tabela é muito longo.\n");
+            return NULL;
+        }
+
         // Salva o nome da tabela
         selection->tableName = ptr;
 
@@ -203,6 +232,12 @@ ParsedData *parser(char * line) {
         // Verifica se há nome do campo
         if (!ptr) {
             fprintf(stderr, "O nome do campo não foi encontrado.\n");
+            return NULL;
+        }
+
+        // Verifica o tamanho do nome do campo
+        if (strlen(ptr) >= FIELD_NAME_LIMIT) {
+            fprintf(stderr, "Nome do campo é muito longo.\n");
             return NULL;
         }
 
@@ -256,6 +291,12 @@ ParsedData *parser(char * line) {
             return NULL;
         }
 
+        // Verifica o tamanho do nome
+        if (strlen(ptr) >= TABLE_NAME_LIMIT) {
+            fprintf(stderr, "Nome da tabela é muito longo.\n");
+            return NULL;
+        }
+
         // Salva o nome da tabela
         selection->tableName = ptr;
 
@@ -265,6 +306,12 @@ ParsedData *parser(char * line) {
         // Verifica se há nome do campo
         if (!ptr) {
             fprintf(stderr, "O nome do campo não foi encontrado.\n");
+            return NULL;
+        }
+
+        // Verifica o tamanho do nome do campo
+        if (strlen(ptr) >= FIELD_NAME_LIMIT) {
+            fprintf(stderr, "Nome do campo é muito longo.\n");
             return NULL;
         }
 
@@ -286,6 +333,12 @@ ParsedData *parser(char * line) {
             return NULL;
         }
 
+        // Verifica o tamanho do nome
+        if (strlen(ptr) >= TABLE_NAME_LIMIT) {
+            fprintf(stderr, "Nome da tabela é muito longo.\n");
+            return NULL;
+        }
+
         // Salva o nome da tabela
         selection->tableName = ptr;
 
@@ -295,6 +348,12 @@ ParsedData *parser(char * line) {
         // Verifica se há nome do campo
         if (!ptr) {
             fprintf(stderr, "O nome do campo não foi encontrado.\n");
+            return NULL;
+        }
+
+        // Verifica o tamanho do nome do campo
+        if (strlen(ptr) >= FIELD_NAME_LIMIT) {
+            fprintf(stderr, "Nome do campo é muito longo.\n");
             return NULL;
         }
 

@@ -13,7 +13,7 @@ void createFile(const char *path) {
     if (fp) {
         fclose(fp);
     } else {
-        fprintf(stderr, "Erro ao abrir arquivo: %s\n", path);
+        fprintf(stderr, "Erro ao abrir arquivo: %s!\n", path);
         exit(1);
     }
 }
@@ -23,7 +23,14 @@ FILE *fopenSafe(const char *path, const char *mode) {
     if (fp) {
         return fp;
     } else {
-        fprintf(stderr, "Erro ao abrir arquivo: %s\n", path);
+        fprintf(stderr, "Erro ao abrir arquivo: %s!\n", path);
+        exit(1);
+    }
+}
+
+void removeFile(char *path) {
+    if (remove(path)) {
+        fprintf(stderr, "Erro ao remover arquivo: %s!\n", path);
         exit(1);
     }
 }
