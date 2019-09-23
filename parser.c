@@ -49,8 +49,8 @@ ParsedData *parser(char * line) {
         table->rows = 0;
         // Seta o número de colunas
         *cols = 0;
-        // Seta o tamanho de um registro, 4 para o bit de validade
-        *length = 4;
+        // Seta o tamanho de um registro
+        *length = 0;
         
         // Pega o bloco de informações de uma coluna
         ptr = strtok(NULL, ";");

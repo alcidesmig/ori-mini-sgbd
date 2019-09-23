@@ -97,6 +97,10 @@ void removerTabela(Table *table) {
         char *path = glueString(2, TABLES_DIR, table->name);
         // Remove o arquivo da tabela
         removeFile(path);
+        // Path do arquivo de blocos deletados
+        path = glueString(2, path, ".empty");
+        // Remove o arquivo de blocos deletados
+        removeFile(path);
         free(path);
         // Decrementa o número de tabelas
         qtTables--;
@@ -264,8 +268,8 @@ void incluirRegistro(Row *row) {
             // Lê o endereço da row livre
             fread(&openRow, sizeof(long int), 1, tableFileEmpty);
         } else {
-            // Pula outros registros
-            fseek(tableFile, table.rows * table.length, SEEK_CUR);
+            // Pula outros registros, mais as flags de validade
+            fseek(tableFile, table.rows * (table.length + sizeof(int)), SEEK_CUR);
         }
 
         // Verifica o número de valores
@@ -438,25 +442,28 @@ void buscarRegistros(Selection *selection) {
         float selNumbF;
 
         // Converte os valores
-        if (sscanf((char *)selection->value, "%d %[^\n]", &selNumbI, rest) != 1) {
-            fprintf(stderr, "Erro ao converter o valor %s para inteiro!", (char *)selection->value);
-            // Libera o resto, se leu a mais
-            if (rest) {
-                free(rest);
+        if (fieldType == 'i') {
+            if(sscanf((char *)selection->value, "%d %[^\n]", &selNumbI, rest) != 1) {
+                fprintf(stderr, "Erro ao converter o valor %s para inteiro!", (char *)selection->value);
+                // Libera o resto, se leu a mais
+                if (rest) {
+                    free(rest);
+                }
+                // Fecha o arquivo
+                fclose(tableFile);
+                return;
             }
-            // Fecha o arquivo
-            fclose(tableFile);
-            return;
-        }
-        if (sscanf((char *)selection->value, "%f %[^\n]", &selNumbF, rest) != 1) {
-            fprintf(stderr, "Erro ao converter o valor %s para ponto flutuante!", (char *)selection->value);
-            // Libera o resto, se leu a mais
-            if (rest) {
-                free(rest);
+        } else if (fieldType == 'f') {
+            if (sscanf((char *)selection->value, "%f %[^\n]", &selNumbF, rest) != 1) {
+                fprintf(stderr, "Erro ao converter o valor %s para ponto flutuante!", (char *)selection->value);
+                // Libera o resto, se leu a mais
+                if (rest) {
+                    free(rest);
+                }
+                // Fecha o arquivo
+                fclose(tableFile);
+                return;
             }
-            // Fecha o arquivo
-            fclose(tableFile);
-            return;
         }
 
         // Auxiliar, bytes lidos
@@ -485,6 +492,7 @@ void buscarRegistros(Selection *selection) {
                 // Pula o offset
                 fseek(tableFile, offset, SEEK_CUR);
 
+
                 // Lê o campo
                 if (fieldType == 'i') {
                     // Bytes lidos
@@ -498,8 +506,10 @@ void buscarRegistros(Selection *selection) {
                         addToResultList(&resultList, rowPos);
                     }
                 } else if (fieldType == 's') {
+                    // Bytes lidos
+                    read = sizeof(long int);
                     // Lê a posição da string
-                    fread(&pos, sizeof(long int), 1, tableFile);
+                    fread(&pos, read, 1, tableFile);
                     // Pula para posição da string
                     fseek(stringsFile, pos, SEEK_SET);
                     // Lê o tamanho
@@ -510,8 +520,6 @@ void buscarRegistros(Selection *selection) {
                     fread(str, strSize, 1, stringsFile);
                     // Termina a string
                     str[strSize] = '\0';
-                    // Bytes lidos
-                    read = strSize;
 
                     // Compara com o valor pesquisado
                     if (!strcmp(str, (char *)selection->value)) {
@@ -539,19 +547,23 @@ void buscarRegistros(Selection *selection) {
                 }
 
                 // Pula os campos restantes
-                fseek(tableFile, table.length-offset-read-sizeof(int), SEEK_CUR);
+                fseek(tableFile, table.length-offset-read, SEEK_CUR);
             } else {
                 // Pula o registro
-                fseek(tableFile, table.length-sizeof(int), SEEK_CUR);
+                fseek(tableFile, table.length, SEEK_CUR);
             }
 
             i++;
         }
 
-        // Adiciona o resultado à arvore de resultados
-        addToResultTree(&resultTree, resultList, selection->tableName);
+        if (resultList) {
+            // Adiciona o resultado à arvore de resultados
+            addToResultTree(&resultTree, resultList, selection->tableName);
 
-        apresentarRegistros(selection);
+            apresentarRegistros(selection);
+        } else {
+            printf("Nenhum resultado para %s\n", selection->tableName);
+        }
 
         // Fecha o arquivo
         fclose(tableFile);
@@ -613,8 +625,9 @@ void apresentarRegistros(Selection *selection) {
             for (int i = 0; i < table.cols; i++) {
                 printf("- %s: ", table.fields[i]);
                 if (table.types[i] == 'i') {
+                    // Lê o número
                     fread(&numbI, sizeof(int), 1, tableFile);
-
+                    // Printa o número
                     printf("%d\n", numbI);
                 } else if (table.types[i] == 's') {
                     // Lê a posição da string
@@ -629,23 +642,25 @@ void apresentarRegistros(Selection *selection) {
                     fread(str, strSize, 1, stringsFile);
                     // Termina a string
                     str[strSize] = '\0';
-
+                    // Printa a string
                     printf("%s\n", str);
-
                     free(str);
                 } else if (table.types[i] == 'f') {
+                    // Lê o número
                     fread(&numbF, sizeof(int), 1, tableFile);
-
+                    // Printa o número
                     printf("%f\n", numbF);
                 } else if (table.types[i] == 'b') {
+                    // Print simbólico do arquivo
                     printf("**BINARY**\n");
+                    // Pula o tamanho do endereço para 
+                    fseek(tableFile, sizeof(long int), SEEK_CUR);
                 }
             }
+            printf("\n");
 
             list = list->next;
         }
-
-        printf("\n");
 
         // Fecha o arquivo
         fclose(tableFile);
@@ -677,10 +692,14 @@ void removerRegistros(Selection *selection) {
         ResultList *list = searchResultList(resultTree, selection->tableName);
 
         if (list) {
+            // Tabela em questão
+            Table table;
             // Path do arquivo da tabela
             char *path = glueString(2, TABLES_DIR, selection->tableName);
             // Abre o arquivo da tabela
             FILE *tableFile = fopenSafe(path, "rb+");
+            // Lê os metadados
+            fread(&table, sizeof(Table), 1, tableFile);
             // Path do arquivo de blocos deletados da tabela
             path = glueString(2, path, ".empty");
             // Abre o arquivo de blocos deletados da tabela
@@ -700,6 +719,24 @@ void removerRegistros(Selection *selection) {
                 fseek(tableFile, list->pos, SEEK_SET);
                 // Invalida o registro
                 fwrite(&invalido, sizeof(int), 1, tableFile);
+
+                // Posição da string ou binário
+                long int pos;
+                // Remove as strings e binários
+                for (int i = 0; i < table.cols; i++) {
+                    if (table.types[i] == 'i') {
+                        fseek(tableFile, sizeof(int), SEEK_CUR);
+                    } else if (table.types[i] == 's') {
+                        fread(&pos, sizeof(long int), 1, tableFile);
+                        removeFromExFile(pos, stringsFile, &stringEBlocks);
+                    } else if (table.types[i] == 'f') {
+                        fseek(tableFile, sizeof(float), SEEK_CUR);
+                    } else if (table.types[i] == 'b') {
+                        fread(&pos, sizeof(long int), 1, tableFile);
+                        removeFromExFile(pos, binariesFile, &binaryEBlocks);
+                    }
+                }
+
                 // Incrementa
                 empty++;
                 // Avança na lista
