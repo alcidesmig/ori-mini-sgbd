@@ -1,40 +1,17 @@
 #include "commands.h"
 
+// Cria uma tabela no banco
+// table: ponteiro para tabela
 void criarTabela(Table *table) {
-    // Quantidade de tabelas
-    int qtTables = 0;
+    // Verifica se o nome é unico
+    int unique = tableNameIsUnique(qtTables, table->name, NULL);
 
-    // Pula para o começo do arquivo
-    fseek(tablesIndex, 0, SEEK_SET);
-    // Lê a quantidade de tabelas
-    fread(&qtTables, sizeof(int), 1, tablesIndex);
-
-    int i = 0;
-    // Para cada tabela
-    if (i < qtTables) {
-        // Verifica se o nome é unico
-        int unique = tableNameIsUnique(qtTables, table->name, NULL);
-
-        // Se o novo nome é diferente
-        if (unique) {
-            goto criar;
-        } else {
-            fprintf(stderr, "Uma tabela com o mesmo nome já existe!\n");
-        }
-    // Se não existem tabelas
-    } else {
-        goto criar;
-    }
-
-    return;
-
-    // GOTO??????????
-    // Bloco de criação
-    criar:
+    // Se a tabela é unica
+    if (unique) {
         // Path do arquivo da tabela
         char *path = glueString(2, TABLES_DIR, table->name);
         // O novo nome é colocado no index
-        addTableName(qtTables, table->name);
+        addTableName(qtTables, table->name); qtTables++;
         // É criado o arquivo da tabela
         createFile(path);
         // Arquivo da tabela
@@ -57,17 +34,15 @@ void criarTabela(Table *table) {
         free(path);
 
         printf("Tabela %s criada\n", table->name);
+    } else {
+        fprintf(stderr, "Uma tabela com o mesmo nome já existe!\n");
+    }
 }
 
+// Remove uma tabela do banco
+// table: ponteiro para tabela
 void removerTabela(Table *table) {
-    // Quantidade de tabelas
-    int qtTables = 0;
-
-    // Pula para o começo do arquivo
-    fseek(tablesIndex, 0, SEEK_SET);
-    // Lê a quantidade de tabelas
-    fread(&qtTables, sizeof(int), 1, tablesIndex);
-    
+    // Verifica se existem tabelas
     if (!qtTables) {
         printf("Não existem tabelas!\n");
         return;
@@ -93,8 +68,50 @@ void removerTabela(Table *table) {
         fseek(tablesIndex, marker, SEEK_SET);
         // Escreve o número de blocos inválidados
         fwrite(&blocks, sizeof(int), 1, tablesIndex);
+
         // Path do arquivo da tabela
         char *path = glueString(2, TABLES_DIR, table->name);
+        // Abre o arquivo da tabela
+        FILE *tableFile = fopenSafe(path, "rb+");
+        // Lê os metadados
+        fread(table, sizeof(Table), 1, tableFile);
+
+        // Flag de validade
+        int valido = 0;
+        // Posição da string ou binário
+        long int pos;
+        // Remove as strings e binários
+        printf("rows %d\n", table->rows);
+        for (int i = 0; i < table->rows; i++) {
+            printf("p %ld\n", ftell(tableFile));
+            // Lê a flag de validade
+            fread(&valido, sizeof(int), 1, tableFile);
+            printf("valido %d\n", valido);
+            if (valido) {
+                for (int i = 0; i < table->cols; i++) {
+                printf("type %c %d\n", table->types[i], table->types[i]);
+                    if (table->types[i] == 'i') {
+                        fseek(tableFile, sizeof(int), SEEK_CUR);
+                    } else if (table->types[i] == 's') {
+                        fread(&pos, sizeof(long int), 1, tableFile);
+                        printf("pos %ld\n", pos);
+                        removeFromExFile(pos, stringsFile, &stringEBlocks);
+                    } else if (table->types[i] == 'f') {
+                        fseek(tableFile, sizeof(float), SEEK_CUR);
+                    } else if (table->types[i] == 'b') {
+                        fread(&pos, sizeof(long int), 1, tableFile);
+                        printf("pos %ld\n", pos);
+                        removeFromExFile(pos, binariesFile, &binaryEBlocks);
+                    } else {
+                        printf("else\n");
+                    }
+                }
+            } else {
+                fseek(tableFile, table->length, SEEK_CUR);
+            }
+        }
+        // Fecha o arquivo
+        fclose(tableFile);
         // Remove o arquivo da tabela
         removeFile(path);
         // Path do arquivo de blocos deletados
@@ -104,10 +121,6 @@ void removerTabela(Table *table) {
         free(path);
         // Decrementa o número de tabelas
         qtTables--;
-        // Pula para o começo do arquivo
-        fseek(tablesIndex, 0, SEEK_SET);
-        // Escreve o novo número de tabelas
-        fwrite(&qtTables, sizeof(int), 1, tablesIndex);
 
         printf("Tabela %s removida\n", table->name);
     } else {
@@ -115,15 +128,10 @@ void removerTabela(Table *table) {
     }
 }
 
+// Mostra os dados de uma tabela
+// table: ponteiro para tabela
 void apresentarTabela(Table *table) {
-    // Quantidade de tabelas
-    int qtTables = 0;
-
-    // Pula para o começo do arquivo
-    fseek(tablesIndex, 0, SEEK_SET);
-    // Lê a quantidade de tabelas
-    fread(&qtTables, sizeof(int), 1, tablesIndex);
-    
+    // Verifica se existem tabelas
     if (!qtTables) {
         printf("Não existem tabelas!\n");
         return;
@@ -136,7 +144,6 @@ void apresentarTabela(Table *table) {
     if (exists) {
         // Path do arquivo da tabela
         char *path = glueString(2, TABLES_DIR, table->name);
-
         // Abre o arquivo da tabela
         FILE *tableFile = fopenSafe(path, "rb+");
         // Lê os metadados
@@ -174,15 +181,9 @@ void apresentarTabela(Table *table) {
     }
 }
 
+// Lista as tabelas do banco
 void listarTabela() {
-    // Quantidade de tabelas
-    int qtTables = 0;
-
-    // Pula para o começo do arquivo
-    fseek(tablesIndex, 0, SEEK_SET);
-    // Lê a quantidade de tabelas
-    fread(&qtTables, sizeof(int), 1, tablesIndex);
-
+    // Verifica se existem tabelas
     if (!qtTables) {
         printf("Não existem tabelas!\n");
         return;
@@ -218,15 +219,10 @@ void listarTabela() {
     }
 }
 
+// Incluí um registro em uma tabela
+// row: ponteiro para um regitro
 void incluirRegistro(Row *row) {
-    // Quantidade de tabelas
-    int qtTables = 0;
-
-    // Pula para o começo do arquivo
-    fseek(tablesIndex, 0, SEEK_SET);
-    // Lê a quantidade de tabelas
-    fread(&qtTables, sizeof(int), 1, tablesIndex);
-
+    // Verifica se existem tabelas
     if (!qtTables) {
         printf("Não existem tabelas!\n");
         return;
@@ -363,17 +359,13 @@ void incluirRegistro(Row *row) {
     }
 }
 
+// Busca um ou mais registros em uma tabela
+// selection: ponteiro para uma seleção
 void buscarRegistros(Selection *selection) {
     // Limite de busca
     int searchLimit = (selection->parameter == 'U' ? 1 : 2147483647);
-    // Quantidade de tabelas
-    int qtTables = 0;
-
-    // Pula para o começo do arquivo
-    fseek(tablesIndex, 0, SEEK_SET);
-    // Lê a quantidade de tabelas
-    fread(&qtTables, sizeof(int), 1, tablesIndex);
     
+    // Verifica se existem tabelas
     if (!qtTables) {
         printf("Não existem tabelas!\n");
         return;
@@ -492,7 +484,6 @@ void buscarRegistros(Selection *selection) {
                 // Pula o offset
                 fseek(tableFile, offset, SEEK_CUR);
 
-
                 // Lê o campo
                 if (fieldType == 'i') {
                     // Bytes lidos
@@ -559,8 +550,6 @@ void buscarRegistros(Selection *selection) {
         if (resultList) {
             // Adiciona o resultado à arvore de resultados
             addToResultTree(&resultTree, resultList, selection->tableName);
-
-            apresentarRegistros(selection);
         } else {
             printf("Nenhum resultado para %s\n", selection->tableName);
         }
@@ -572,15 +561,10 @@ void buscarRegistros(Selection *selection) {
     }
 }
 
+// Apresenta os resultados de uma busca
+// selection: ponteiro para uma seleção
 void apresentarRegistros(Selection *selection) {
-    // Quantidade de tabelas
-    int qtTables = 0;
-
-    // Pula para o começo do arquivo
-    fseek(tablesIndex, 0, SEEK_SET);
-    // Lê a quantidade de tabelas
-    fread(&qtTables, sizeof(int), 1, tablesIndex);
-    
+    // Verifica se existem tabelas
     if (!qtTables) {
         printf("Não existem tabelas!\n");
         return;
@@ -669,6 +653,8 @@ void apresentarRegistros(Selection *selection) {
     }
 }
 
+// Remove os registros da última busca
+// selection: ponteiro para uma seleção
 void removerRegistros(Selection *selection) {
     // Quantidade de tabelas
     int qtTables = 0;
@@ -768,31 +754,47 @@ void removerIndex(Selection *selection) {
 void gerarIndex(Selection *selection) {
 }
 
+// Prepara o sistema
 void start() {
+    // Cria o diretório dos arquivos das tabelas
     mkdir(TABLES_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
+    // Cria os arquivos de indexação e dados
     createFile(TABLES_INDEX);
     createFile(STRINGS_FILE);
     createFile(STRINGS_EMPTY_LIST);
     createFile(BINARIES_FILE);
     createFile(BINARIES_EMPTY_LIST);
 
+    // Abre os arquivos de indexação e dados
     tablesIndex = fopenSafe(TABLES_INDEX, "rb+");
     stringsFile = fopenSafe(STRINGS_FILE, "rb+");
     stringsEmptyList = fopenSafe(STRINGS_EMPTY_LIST, "rb+");
     binariesFile = fopenSafe(BINARIES_FILE, "rb+");
     binariesEmptyList = fopenSafe(BINARIES_EMPTY_LIST, "rb+");
 
+    // Cria as listas de blocos vazios
     loadEmptyList(stringsEmptyList, &stringEBlocks);
     loadEmptyList(binariesEmptyList, &binaryEBlocks);
+
+    // Pula para o começo do arquivo
+    fseek(tablesIndex, 0, SEEK_SET);
+    // Lê a quantidade de tabelas
+    fread(&qtTables, sizeof(int), 1, tablesIndex);
 }
 
+// Encerra o sistema
 void end() {
-    printf("save 1\n");
+    // Pula para o começo do arquivo
+    fseek(tablesIndex, 0, SEEK_SET);
+    // Escreve o novo número de tabelas
+    fwrite(&qtTables, sizeof(int), 1, tablesIndex);
+
+    // Salva as listas de blocos vazios
     saveEmptyList(stringsEmptyList, &stringEBlocks);
     saveEmptyList(binariesEmptyList, &binaryEBlocks);
-    printf("save 2\n");
 
+    // Fecha os arquivos de indexação e dados
     fclose(tablesIndex);
     fclose(stringsFile);
     fclose(stringsEmptyList);

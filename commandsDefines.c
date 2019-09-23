@@ -29,6 +29,8 @@ const char *commands[] = {
     CT, RT, AT, LT, IR, BR, AR, RR, CI, RI, GI, EB
 };
 
+int qtTables = 0;
+
 int CMD_LIMIT = 3;
 int PARAMETER_LIMIT = 2;
 

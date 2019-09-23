@@ -50,6 +50,8 @@ extern const char H[];
 
 extern const char *commands[];
 
+extern int qtTables;
+
 extern int CMD_LIMIT;
 extern int PARAMETER_LIMIT;
 
