@@ -7,10 +7,10 @@
 #define TABLE_NAME_LIMIT 32
 #define FIELD_NAME_LIMIT 32
 
-typedef char *TableName;
+typedef char TableName[TABLE_NAME_LIMIT];
 typedef char Type;
 typedef Type TypeArr[NUMBER_COLUMNS_LIMIT];
-typedef char *Field;
+typedef char Field[FIELD_NAME_LIMIT];
 typedef Field FieldArr[NUMBER_COLUMNS_LIMIT];
 typedef void *Value;
 typedef Value ValueArr[NUMBER_COLUMNS_LIMIT];

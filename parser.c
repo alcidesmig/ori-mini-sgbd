@@ -44,7 +44,7 @@ ParsedData *parser(char * line) {
         }
 
         // Salva o nome
-        table->name = ptr;
+        strncpy(table->name, ptr, TABLE_NAME_LIMIT);
         // Seta o número de rows
         table->rows = 0;
         // Seta o número de colunas
@@ -95,21 +95,24 @@ ParsedData *parser(char * line) {
 
             // Pega o nome do campo
             ptr = strtok(NULL, "\0");
+
             // Verifica o nome
             if (!ptr) {
                 fprintf(stderr, "O nome do campo não foi encontrado.\n");
                 return NULL;
             }
+
             // Verifica o tamanho do dome do campo
             if (strlen(ptr) >= FIELD_NAME_LIMIT) {
                 fprintf(stderr, "O nome do campo é muito longo.\n");
                 return NULL;
             }
+
             // Salva o nome
             if(replaceSpace(ptr, '_')) {
                 printf("Espaços foram substituídos no nome do campo: %s.\n", ptr);
             }
-            (*fields)[i] = ptr;
+            strncpy((*fields)[i], ptr, FIELD_NAME_LIMIT);
         }
     } else if (!strncmp(*cmd, RT, CMD_LIMIT)
             || !strncmp(*cmd, AT, CMD_LIMIT)
@@ -135,7 +138,7 @@ ParsedData *parser(char * line) {
         }
 
         // Salva o nome
-        table->name = ptr;
+        strncpy(table->name, ptr, TABLE_NAME_LIMIT);
 
         // Verifica se há mais na linha
         ptr = strtok(NULL, "\0");
@@ -176,7 +179,7 @@ ParsedData *parser(char * line) {
         }
 
         // Salva o nome
-        row->tableName = ptr;
+        strncpy(row->tableName, ptr, TABLE_NAME_LIMIT);
         // Seta o número de colunas
         *cols = 0;
         
@@ -237,7 +240,7 @@ ParsedData *parser(char * line) {
         }
 
         // Salva o nome da tabela
-        selection->tableName = ptr;
+        strncpy(selection->tableName, ptr, TABLE_NAME_LIMIT);
 
         // Pega o nome do campo
         ptr = strtok(NULL, ":");
@@ -258,7 +261,7 @@ ParsedData *parser(char * line) {
         if(replaceSpace(ptr, '_')) {
             printf("Espaços foram substituídos no nome do campo: %s.\n", ptr);
         }
-        selection->field = ptr;
+        strncpy(selection->field, ptr, FIELD_NAME_LIMIT);
 
         // Pega o valor
         ptr = strtok(NULL, "\0");
@@ -311,7 +314,7 @@ ParsedData *parser(char * line) {
         }
 
         // Salva o nome da tabela
-        selection->tableName = ptr;
+        strncpy(selection->tableName, ptr, TABLE_NAME_LIMIT);
 
         // Pega o nome do campo
         ptr = strtok(NULL, "\0");
@@ -332,7 +335,7 @@ ParsedData *parser(char * line) {
         if(replaceSpace(ptr, '_')) {
             printf("Espaços foram substituídos no nome do campo: %s.\n", ptr);
         }
-        selection->field = ptr;
+        strncpy(selection->field, ptr, FIELD_NAME_LIMIT);
     } else if (!strncmp(*cmd, RI, CMD_LIMIT) || !strncmp(*cmd, GI, CMD_LIMIT)) {
         // Ponteiro para a seleção
         Selection *selection = &(pData->data.selection);
@@ -353,7 +356,7 @@ ParsedData *parser(char * line) {
         }
 
         // Salva o nome da tabela
-        selection->tableName = ptr;
+        strncpy(selection->tableName, ptr, TABLE_NAME_LIMIT);
 
         // Pega o nome do campo
         ptr = strtok(NULL, "\0");
@@ -374,7 +377,7 @@ ParsedData *parser(char * line) {
         if(replaceSpace(ptr, '_')) {
             printf("Espaços foram substituídos no nome do campo: %s.\n", ptr);
         }
-        selection->field = ptr;
+        strncpy(selection->field, ptr, FIELD_NAME_LIMIT);
     } else if (!strncmp(*cmd, EB, CMD_LIMIT)) {
         // Ponteiro auxiliar
         char *ptr = strtok(NULL, "\0");

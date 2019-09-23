@@ -4,15 +4,16 @@
 // prefix: string a ser completada
 // lc: vetor de possibilidades
 void completionHook (char const* prefix, linenoiseCompletions* lc) {
-    size_t i = 0;
-    const char *ptr = commands[i];
+    int i = 0;
 
-    while (ptr) {
-        if (!strncmp(prefix, ptr, strlen(prefix))) {
-            linenoiseAddCompletion(lc, ptr);
+    while (i < NUM_COMMANDS) {
+        char *prefixU = strdup(prefix);
+        toUpperCase(prefixU);
+        if (!strncmp(prefixU, commands[i], strlen(prefix))) {
+            linenoiseAddCompletion(lc, commands[i]);
         }
         i++;
-        ptr = commands[i];
+        free(prefixU);
     }
 }
 

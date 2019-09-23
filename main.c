@@ -44,14 +44,6 @@ int main(int argc, char *argv[]) {
                         break;
                     }
 
-                    // printf("%s\n", pData->data.table.name);
-                    // printf("%d\n", pData->data.table.cols);
-
-                    // for (int i = 0; i < pData->data.table.cols; i++) {
-                    //     printf("%c\n", pData->data.table.types[i]);
-                    //     printf("%s\n", pData->data.table.fields[i]);
-                    // }
-
                     execute(pData);
                 }
 

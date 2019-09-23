@@ -38,9 +38,10 @@ FILE *stringsEmptyList = NULL;
 FILE *binariesFile = NULL;
 FILE *binariesEmptyList = NULL;
 
+EmptyBlockList *stringEBlocks = NULL;
+EmptyBlockList *binaryEBlocks = NULL;
+
 void criarTabela(Table *table) {
-    // Ponteiro para o nome
-    char *newName = table->name;
     // Quantidade de tabelas
     int qtTables = 0;
 
@@ -53,7 +54,7 @@ void criarTabela(Table *table) {
     // Para cada tabela
     if (i < qtTables) {
         // Verifica se o nome é unico
-        int unique = tableNameIsUnique(qtTables, newName, NULL);
+        int unique = tableNameIsUnique(qtTables, table->name, NULL);
 
         // Se o novo nome é diferente
         if (unique) {
@@ -72,34 +73,24 @@ void criarTabela(Table *table) {
     // Bloco de criação
     criar:
         // Path do arquivo da tabela
-        char *path = glueString(2, TABLES_DIR, newName);
+        char *path = glueString(2, TABLES_DIR, table->name);
         // O novo nome é colocado no index
-        addTableName(qtTables, newName);
+        addTableName(qtTables, table->name);
         // É criado o arquivo da tabela
         createFile(path);
         // Arquivo da tabela
         FILE *tableFile = fopenSafe(path, "rb+");
-        // Salva o número de colunas
-        fwrite(&(table->cols), sizeof(int), 1, tableFile);
-        // Salva o número de rows
-        fwrite(&(table->rows), sizeof(int), 1, tableFile);
-        // Salva o tamanho de um registro
-        fwrite(&(table->length), sizeof(int), 1, tableFile);
-        // Salva o vetor de tipos
-        fwrite(table->types, sizeof(TypeArr), 1, tableFile);
-        // Salva os nomes dos campos
-        for (int i = 0; i < table->cols; i++) {
-            fwrite(table->fields[i], FIELD_NAME_LIMIT, 1, tableFile);
-        }
-
+        // Salva os metadados
+        fwrite(table, sizeof(Table), 1, tableFile);
+        // Fecha o arquivo
         fclose(tableFile);
-            
-        printf("Tabela %s criada\n", newName);
+
+        free(path);
+
+        printf("Tabela %s criada\n", table->name);
 }
 
 void removerTabela(Table *table) {
-    // Ponteiro para o nome
-    char *newName = table->name;
     // Quantidade de tabelas
     int qtTables = 0;
 
@@ -114,14 +105,14 @@ void removerTabela(Table *table) {
     }
 
     // Marcador da posição do igual ou última
-    long int marker = 0;
+    long int marker;
     // Número de blocos
-    int blocks = 0;
+    int blocks;
 
     // Verifica e pega a posição do igual
-    int exists = !tableNameIsUnique(qtTables, newName, &marker);
+    int exists = !tableNameIsUnique(qtTables, table->name, &marker);
 
-    // Se o marcador é válido
+    // Se a tabela existe
     if (exists) {
         // Pula para a posição do marcador
         fseek(tablesIndex, marker, SEEK_SET);
@@ -134,19 +125,24 @@ void removerTabela(Table *table) {
         // Escreve o número de blocos inválidados
         fwrite(&blocks, sizeof(int), 1, tablesIndex);
         // Path do arquivo da tabela
-        char *path = glueString(2, TABLES_DIR, newName);
+        char *path = glueString(2, TABLES_DIR, table->name);
         // Remove o arquivo da tabela
         removeFile(path);
+        free(path);
+        // Decrementa o número de tabelas
+        qtTables--;
+        // Pula para o começo do arquivo
+        fseek(tablesIndex, 0, SEEK_SET);
+        // Escreve o novo número de tabelas
+        fwrite(&qtTables, sizeof(int), 1, tablesIndex);
 
-        printf("Tabela %s removida\n", newName);
+        printf("Tabela %s removida\n", table->name);
     } else {
         fprintf(stderr, "Tabela não encontrada!\n");
     }
 }
 
 void apresentarTabela(Table *table) {
-    // Ponteiro para o nome
-    char *newName = table->name;
     // Quantidade de tabelas
     int qtTables = 0;
 
@@ -161,70 +157,44 @@ void apresentarTabela(Table *table) {
     }
 
     // Verifica se a tabela existe
-    int exists = !tableNameIsUnique(qtTables, newName, NULL);
+    int exists = !tableNameIsUnique(qtTables, table->name, NULL);
 
-    // Se o marcador é válido
+    // Se a tabela existe
     if (exists) {
         // Path do arquivo da tabela
-        char *path = glueString(2, TABLES_DIR, newName);
+        char *path = glueString(2, TABLES_DIR, table->name);
 
         // Abre o arquivo da tabela
         FILE *tableFile = fopenSafe(path, "rb+");
-        // Lê o número de colunas
-        int cols;
-        fread(&cols, sizeof(int), 1, tableFile);
-        // Lê o número de rows
-        int rows;
-        fread(&rows, sizeof(int), 1, tableFile);
-        // Lê o número de rows
-        int length;
-        fread(&length, sizeof(int), 1, tableFile);
-        // Lê o vetor de tipos
-        TypeArr types;
-        fread(&types, sizeof(TypeArr), 1, tableFile);
-
-        // Lê os nomes dos campos
-        FieldArr fields;
-        // Buffer auxiliar
-        char *buf;
-        for (int i = 0; i < cols; i++) {
-            buf = (char *)mallocSafe(FIELD_NAME_LIMIT);
-            fread(buf, FIELD_NAME_LIMIT, 1, tableFile);
-            fields[i] = buf;
-        }
-
+        // Lê os metadados
+        fread(table, sizeof(Table), 1, tableFile);
         // Fecha o arquivo
         fclose(tableFile);
 
         // Printa o nome da tabela
-        printf("Mostrando tabela: %s\n", newName);
+        printf("Mostrando tabela: %s\n", table->name);
         // Printa a quantidade de registros
-        if (rows) {
-            printf("> Registros: %d\n", rows);
+        if (table->rows) {
+            printf("> Registros: %d\n", table->rows);
         } else {
             printf("> Nenhum registro\n");
         }
 
-        printf("Tamanho do registro: %d\n", length);
+        printf("> Tamanho do registro: %d\n", table->length);
 
         // Printa as colunas
-        for (int i = 0; i < cols; i++) {
-            if (types[i] == 'i') {
+        for (int i = 0; i < table->cols; i++) {
+            if (table->types[i] == 'i') {
                 printf("- INT ");
-            } else if (types[i] == 's') {
+            } else if (table->types[i] == 's') {
                 printf("- STR ");
-            } else if (types[i] == 'f') {
+            } else if (table->types[i] == 'f') {
                 printf("- FLT ");
-            } else if (types[i] == 'b') {
+            } else if (table->types[i] == 'b') {
                 printf("- BIN ");
             }
 
-            printf("%s\n", fields[i]);
-        }
-
-        // Libera os nomes dos campos
-        for (int i = 0; i < cols; i++) {
-            free(fields[i]);
+            printf("%s\n", table->fields[i]);
         }
     } else {
         fprintf(stderr, "Tabela não encontrada!\n");
@@ -247,8 +217,6 @@ void listarTabela(Table *table) {
 
     printf("Mostrando tabelas:\n");
 
-    int blocks = 0;
-
     int i = 0;
     while (i < qtTables) {
         // Número de blocos
@@ -262,21 +230,18 @@ void listarTabela(Table *table) {
             // Tamanho real do nome
             int size = blocks*BLOCK_SIZE;
             char *buf = (char *)mallocSafe(size);
-
             // Lê o nome
             fread(buf, size, 1, tablesIndex);
-
             // Printa o nome
             printf("- %s\n", buf);
-
             free(buf);
+            // Incrementa só se a tabela é válida
+            i++;
         } else {
             // Pula o espaço no caso de informações inválidas
             blocks *= -1;
             fseek(tablesIndex, blocks*BLOCK_SIZE, SEEK_CUR);
         }
-
-        i++;
     }
 }
 
@@ -294,8 +259,12 @@ void incluirRegistro(Row *row) {
         return;
     }
 
+    printf("%s\n", row->tableName);
+
     // Verifica se a tabela existe
     int exists = !tableNameIsUnique(qtTables, row->tableName, NULL);
+
+    printf("%d\n", exists);
 
     // Se o marcador é válido
     if (exists) {
@@ -304,79 +273,46 @@ void incluirRegistro(Row *row) {
 
         // Abre o arquivo da tabela
         FILE *tableFile = fopenSafe(path, "rb+");
-        // Lê o número de colunas
-        int cols;
-        fread(&cols, sizeof(int), 1, tableFile);
-        // Lê o número de rows
-        int rows;
-        fread(&rows, sizeof(int), 1, tableFile);
-        // Lê o tamanho de um registro
-        int length;
-        fread(&length, sizeof(int), 1, tableFile);
-        // Lê o vetor de tipos
-        TypeArr types;
-        fread(&types, sizeof(TypeArr), 1, tableFile);
+        // Lê os metadados
+        Table table;
+        fread(&table, sizeof(Table), 1, tableFile);
 
-        // Lê os nomes dos campos
-        FieldArr fields;
-        // Buffer auxiliar
-        char *buf;
-        for (int i = 0; i < cols; i++) {
-            buf = (char *)mallocSafe(FIELD_NAME_LIMIT);
-            fread(buf, FIELD_NAME_LIMIT, 1, tableFile);
-            fields[i] = buf;
-        }
-
-        // Pula cols, rows e length
-        fseek(tableFile, 3 * sizeof(int), SEEK_SET);
-        // Pula types
-        fseek(tableFile, sizeof(TypeArr), SEEK_CUR);
-        // Pula fields
-        fseek(tableFile, cols * FIELD_NAME_LIMIT, SEEK_CUR);
         // Pula outros registros
-        fseek(tableFile, rows * length, SEEK_CUR);
+        fseek(tableFile, table.rows * table.length, SEEK_CUR);
 
         // Verifica o número de valores
-        if (row->cols == cols) {
+        if (row->cols == table.cols) {
             // Para cada coluna
-            for (int i = 0; i < cols; i++) {
+            for (int i = 0; i < table.cols; i++) {
                 // Verifica o tipo de dado da coluna
-                if (types[i] == 'i') {
+                if (table.types[i] == 'i') {
                     // Auxiliares
-                    int aux;
+                    int numb;
                     char *rest;
                     // Converte o dado
-                    if (sscanf((char *)row->values[i], "%d %[^\n]", &aux, rest) != 1) {
-                        fprintf(stderr, "O valor %s não corresponde ao tipo da coluna %s!\n", row->values[i], fields[i]);
+                    if (sscanf((char *)row->values[i], "%d %[^\n]", &numb, rest) != 1) {
+                        fprintf(stderr, "O valor %s não corresponde ao tipo da coluna %s!\n", (char *)row->values[i], table.fields[i]);
                         return;
                     }
                     // Escreve no arquivo da tabela
-                    fwrite(&aux, sizeof(int), 1, tableFile);
-                } else if (types[i] == 's') {
-                    // Pula para o fim do arquivo de strings
-                    fseek(stringsFile, 0, SEEK_END);
-                    // Salva a posição que a string será escrita
-                    long int pos = ftell(stringsFile);
-                    // Tamanho da string
-                    int strLength = strlen((char *)row->values[i]);
-                    // Escreve o tamanho da string no arquivo de strings
-                    fwrite(&strLength, sizeof(int), 1, stringsFile);
+                    fwrite(&numb, sizeof(int), 1, tableFile);
+                } else if (table.types[i] == 's') {
                     // Escreve a string no arquivo de strings
-                    fwrite(row->values[i], strLength, 1, stringsFile);
+                    long int pos = addToExFile((char *)row->values[i], stringsFile, &stringEBlocks);
                     // Escreve a posição da string no arquivo da tabela
                     fwrite(&pos, sizeof(long int), 1, tableFile);
-                } else if (types[i] == 'f') {
+                } else if (table.types[i] == 'f') {
                     // Auxiliares
-                    float aux;
+                    float numb;
                     char *rest;
                     // Converte o dado
-                    if (sscanf((char *)row->values[i], "%f %[^\n]", &aux, rest) != 1) {
-                        fprintf(stderr, "O valor %s não corresponde ao tipo da coluna %s!\n", row->values[i], fields[i]);
+                    if (sscanf((char *)row->values[i], "%f %[^\n]", &numb, rest) != 1) {
+                        fprintf(stderr, "O valor %s não corresponde ao tipo da coluna %s!\n", (char *)row->values[i], table.fields[i]);
                         return;
                     }
                     // Escreve no arquivo da tabela
-                    fwrite(&aux, sizeof(float), 1, tableFile);
-                } else if (types[i] == 'b') {
+                    fwrite(&numb, sizeof(float), 1, tableFile);
+                } else if (table.types[i] == 'b') {
                     // Abre o arquivo de dados
                     FILE *inputFile = fopenSafe((char *)row->values[i], "rb");
                     // Pula para o fim
@@ -392,65 +328,10 @@ void incluirRegistro(Row *row) {
                     // Fecha o arquivo de dados
                     fclose(inputFile);
 
-                    // Posição vazia no arquivo de binários
-                    long int empty = 0;
-                    // Próxima posição vazia no arquivo de binários
-                    long int next = 0;
-                    // Tamanho da posição vazia
-                    int emptySize = 0;
-                    // Pula para o começo do arquivo de binários
-                    fseek(binariesFile, 0, SEEK_SET);
-                    // Lê a primeira posição vazia
-                    fread(&empty, sizeof(long int), 1, binariesFile);
-                    // Pula para a primeira posição vazia
-                    fseek(binariesFile, empty, SEEK_SET);
-                    // Lê o tamanho do bloco vazio
-                    fread(&emptySize, sizeof(int), 1, binariesFile);
-                    // Lê o tamanho do bloco vazio
-                    fread(&emptySize, sizeof(int), 1, binariesFile);
-
-                    // Verifica se o tamanho do bloco é suficiente
-                    if (emptySize >= inputSize) {
-                        // Então escreve os dados
-                        // Salva a posição que os dados binários serão escritos
-                        long int pos = ftell(binariesFile);
-                        // Escreve o tamanho dos dados binários
-                        fwrite(&inputSize, sizeof(int), 1, binariesFile);
-                        // Escreve os dados do arquivo binário
-                        fwrite(data, inputSize, 1, binariesFile);
-                        // Escreve a posição dos dados binários no arquivo da tabela
-                        fwrite(&pos, sizeof(long int), 1, tableFile);
-
-                        // Caso sobre espaço
-                        emptySize -= inputSize;
-                        if (emptySize) {
-                            fwrite(&emptySize, sizeof(int), 1, binariesFile);
-                        }
-
-                    // Se não for, pula para o fim do arquivo
-                    } else {
-                        // Pula para o fim do arquivo de binários
-                        fseek(binariesFile, 0, SEEK_END);
-                        // Salva a posição que os dados binários serão escritos
-                        long int pos = ftell(binariesFile);
-                        // Escreve o tamanho dos dados binários
-                        fwrite(&inputSize, sizeof(int), 1, binariesFile);
-                        // Escreve os dados do arquivo binário
-                        fwrite(data, inputSize, 1, binariesFile);
-                        // Escreve a posição dos dados binários no arquivo da tabela
-                        fwrite(&pos, sizeof(long int), 1, tableFile);
-                    }
-                    
-                    // Salva a posição que os dados binários serão escritos
-                    long int pos = ftell(binariesFile);
-                    // Escreve o tamanho dos dados binários
-                    fwrite(&inputSize, sizeof(int), 1, binariesFile);
-                    // Escreve os dados do arquivo binário
-                    fwrite(data, inputSize, 1, binariesFile);
-                    // Escreve a posição dos dados binários no arquivo da tabela
+                    // Escreve a string no arquivo de strings
+                    long int pos = addToExFile(data, binariesFile, &binaryEBlocks);
+                    // Escreve a posição da string no arquivo da tabela
                     fwrite(&pos, sizeof(long int), 1, tableFile);
-
-                    free(data);
                 }
             }
         } else {
@@ -459,17 +340,13 @@ void incluirRegistro(Row *row) {
         }
 
         // Incrementa o número de registros
-        rows++;
+        table.rows++;
+        // Pula o número de colunas
         fseek(tableFile, sizeof(int), SEEK_SET);
-        fwrite(&rows, sizeof(int), 1, tableFile);
-
+        // Salva o número de registros
+        fwrite(&(table.rows), sizeof(int), 1, tableFile);
         // Fecha o arquivo
         fclose(tableFile);
-
-        // Libera os nomes dos campos
-        for (int i = 0; i < cols; i++) {
-            free(fields[i]);
-        }
     } else {
         fprintf(stderr, "Tabela não encontrada!\n");
     }
@@ -501,14 +378,21 @@ void start() {
     createFile(STRINGS_EMPTY_LIST);
     createFile(BINARIES_FILE);
     createFile(BINARIES_EMPTY_LIST);
+
     tablesIndex = fopenSafe(TABLES_INDEX, "rb+");
     stringsFile = fopenSafe(STRINGS_FILE, "rb+");
     stringsEmptyList = fopenSafe(STRINGS_EMPTY_LIST, "rb+");
     binariesFile = fopenSafe(BINARIES_FILE, "rb+");
     binariesEmptyList = fopenSafe(BINARIES_EMPTY_LIST, "rb+");
+
+    loadEmptyList(stringsEmptyList, &stringEBlocks);
+    loadEmptyList(binariesEmptyList, &binaryEBlocks);
 }
 
 void end() {
+    saveEmptyList(stringsEmptyList, &stringEBlocks);
+    saveEmptyList(binariesEmptyList, &binaryEBlocks);
+
     fclose(tablesIndex);
     fclose(stringsFile);
     fclose(stringsEmptyList);
@@ -524,7 +408,7 @@ int tableNameIsUnique(int qtTables, char *name, long int *marker) {
     fseek(tablesIndex, sizeof(int), SEEK_SET);
 
     int i = 0;
-    // Para cada tabela enquanto é diferente
+    // Para cada tabela, enquanto é diferente
     while (diff != 0 && i < qtTables) {
         // Número de blocos
         int blocks = 0;
@@ -550,13 +434,14 @@ int tableNameIsUnique(int qtTables, char *name, long int *marker) {
             diff = strcmp(buf, name);
 
             free(buf);
+
+            // Incrementa só se a tabela é válida
+            i++;
         } else {
             // Pula o espaço no caso de informações inválidas
             blocks *= -1;
             fseek(tablesIndex, blocks*BLOCK_SIZE, SEEK_CUR);
         }
-
-        i++;
     }
 
     return diff;
@@ -584,284 +469,145 @@ void addTableName(int qtTables, char *name) {
     fwrite(name, blocks*BLOCK_SIZE, 1, tablesIndex);
 }
 
-// // Cria tabela
-// // table: Struct com as informações para crira uma tabela
-// void createTable(TableWType *table) {
-//     // Novo nome a ser comparado
-//     char *novo = table->name;
+void loadEmptyList(FILE *eListFile, EmptyBlockList **list) {
+    int qt = 0;
 
-//     // Abre o arquivo de index das tabelas
-//     tables_index = safe_fopen(TABLES_INDEX, "rb+");
+    fseek(eListFile, 0, SEEK_SET);
+    fread(&qt, sizeof(int), 1, eListFile);
 
-//     // Lê a quantidade de tabelas
-//     qt_tables = read_qt_tables(tables_index);
+    EmptyBlock *block;
 
-//     // Se existir alguma tabela
-//     if (qt_tables) {
-//         //  Verifica se o nome já existe
+    for (int i = 0; i < qt; i++) {
+        block = (EmptyBlock *)mallocSafe(sizeof(EmptyBlock));
 
-//         // Pega todos os nomes das tabelas
-//         TableName *names = read_tables_names(tables_index, qt_tables);
+        fread(block, sizeof(EmptyBlock), 1, eListFile);
+        
+        if (*list) {
+            EmptyBlockList *temp = *list;
+            
+            while (temp->next) {
+                temp = temp->next;
+            }
 
-//         if (tableNameExists(names, novo, qt_tables)) {
-//             raiseError(TABLE_EXISTS);
-//         }
+            temp->next = (EmptyBlockList *)mallocSafe(sizeof(EmptyBlockList));
+            temp = temp->next;
+            temp->next = NULL;
+            temp->data = block;
+        } else {
+            *list = (EmptyBlockList *)mallocSafe(sizeof(EmptyBlockList));
+            (*list)->next = NULL;
+            (*list)->data = block;
+        }
+    }
+}
 
-//         free(names);
-//     }
+void saveEmptyList(FILE *eListFile, EmptyBlockList **list) {
+    int qt = 0;
 
-//     // Nesse ponto o novo nome não existe
+    fseek(eListFile, sizeof(int), SEEK_SET);
 
-//     // Converte a tabela
-//     TableWRep tableData;
+    while (*list) {
+        fwrite((*list)->data, sizeof(EmptyBlock), 1, eListFile);
+        free((*list)->data);
+        EmptyBlockList *aux = *list;
+        *list = (*list)->next;
+        free(aux);
+        qt++;
+        printf("%d\n", qt);
+    }
 
-//     if(!convertToRep(&tableData, table)) {
-//         raiseError(UNSUPORTED_TYPE);
-//     }
+    fseek(eListFile, 0, SEEK_SET);
+    fwrite(&qt, sizeof(int), 1, eListFile);
+}
 
-//     // Escreve a tabela no arquivo
-//     write_table_metadata(tables_index, &tableData, qt_tables);
+long int addToExFile(char *str, FILE *dataFile, EmptyBlockList **list) {
+    // Posição que a string foi escrita
+    long int pos;
+    // Tamanho da string
+    int size = strlen(str);
 
-//     qt_tables++;
+    // Se a lista não está vazia e se o meior elemento é maior que a string
+    if (*list && (*list)->data->size >= size) {
+        // Pula para posição vazia
+        fseek(dataFile, (*list)->data->pos, SEEK_SET);
+        // Salva a posição da string
+        pos = ftell(dataFile);
+        // Escreve o tamanho da string
+        fwrite(&size, sizeof(int), 1, dataFile);
+        // Escreve a string
+        fwrite(str, size, 1, dataFile);
+        // Bloco removido
+        EmptyBlockList *removed = *list;
+        // Tira o primeiro bloco da lista
+        *list = (*list)->next;
+        // Atualiza o tamanho do bloco remanescente
+        removed->data->size -= size;
 
-//     // Salva o novo número de tabelas
-//     write_qt_tables(tables_index, qt_tables);
+        // Se o bloco ainda possuí espaço
+        if (removed->data->size) {
+            // Atualiza a posição
+            removed->data->pos += size + sizeof(int);
+            // Grava o novo tamanho, logo após a última string
+            fwrite(&(removed->data->size), sizeof(int), 1, dataFile);
+            // Coloca o bloco na lista
+            addInOrderToEBList(list, removed->data->pos, removed->data->size);
+        }
+        // Libera o bloco de qualquer forma
+        free(removed->data);
+        free(removed);
+    // Se a lista está vazia ou o maior bloco não é suficiente
+    } else {
+        // Pula para o fim
+        fseek(dataFile, 0, SEEK_END);
+        // Salva a posição da string
+        pos = ftell(dataFile);
+        // Escreve o tamanho da string
+        fwrite(&size, sizeof(int), 1, dataFile);
+        // Escreve a string
+        fwrite(str, size, 1, dataFile);
+    }
 
-//     fclose(tables_index);
+    return pos;
+}
 
-//     printf("Criando tabela %s.\n\n", table->name);
-// }
+void removeFromExFile(long int pos, FILE *dataFile, EmptyBlockList **list) {
+    // Tamanho do bloco
+    int size;
+    // Pula para o bloco que será removida
+    fseek(dataFile, pos, SEEK_SET);
+    // Salva o tamanho do bloco
+    fread(&size, sizeof(int), 1, dataFile);
 
-// // Remove tabela
-// // table_name: Nome da tabela
-// // OBS: remove o nome da lista de index e salva o último no lugar, a menos que seja o último esteja sendo removido
-// void removeTable(TableName table_name) {
-//     tables_index = safe_fopen(TABLES_INDEX, "rb+");
+    // Coloca o bloco na lista
+    addInOrderToEBList(list, pos, size);
+}
 
-//     qt_tables = read_qt_tables(tables_index);
+void addInOrderToEBList(EmptyBlockList **list, long int pos, int size) {
+    EmptyBlockList *newBlock = (EmptyBlockList *)mallocSafe(sizeof(EmptyBlockList));
+    newBlock->data = (EmptyBlock *)mallocSafe(sizeof(EmptyBlock));
+    newBlock->data->pos = pos;
+    newBlock->data->size = size;
 
-//     if (!qt_tables) {
-//         printf("Nenhuma tabela no sistema.\n");
-//         fclose(tables_index);
-//         return;
-//     }
+    if (*list) {
+        EmptyBlockList *parent = NULL;
+        EmptyBlockList *temp = *list;
 
-//     TableName *names = read_tables_names(tables_index, qt_tables);
+        while (temp && temp->data->size > newBlock->data->size) {
+            parent = temp;
+            temp = temp->next;
+        }
 
-//     // Procura o nome da tabela
-//     int i = 0;
-//     while (i < qt_tables) {
-//         if (!strcmp(names[i], table_name)) {
-//             break;
-//         }
-//         i++;
-//     }
-
-//     // Verifica se a tabela foi achada
-//     if (i == qt_tables) {
-//         raiseError(CANT_FIND_TABLE);
-//     }
-
-//     printf("Removendo a tabela %s.\n", table_name);
-
-//     qt_tables--;
-
-//     // Arruma os nomes colocando o último no lugar do que foi removido
-//     if (i != qt_tables) {
-//         strncpy(names[i], names[qt_tables], sizeof(TableName));
-//         write_tables_names(tables_index, names, qt_tables);
-//     }
-
-//     // Salva o novo número de tabelas
-//     write_qt_tables(tables_index, qt_tables);
-
-//     // Deleta o arquivo da tabela
-//     char *path = glueString(3, TABLES_DIR, table_name, TABLE_EXTENSION);
-
-//     safe_remove(path);
-
-//     free(names);
-
-//     fclose(tables_index);
-// }
-
-// // Apresenta tabela tabela
-// // table_name: Nome da tabela
-// void apTable(TableName table_name) {
-//     TableWRep *tableData = read_table_metadata(table_name);
-
-//     if (!tableData) {
-//         raiseError(CANT_FIND_TABLE);
-//     }
-
-//     // Converte a tabela
-//     TableWType *table = safe_malloc(sizeof(TableWType));
-
-//     convertToType(table, tableData);
-
-//     printf("Mostrando a tabela %s.\n\n", table_name);
-
-//     printf("%s\n", table->name);
-
-//     for (int j = 0; j < table->cols; j++) {
-//         printf("- %s:%s\n", table->types[j], table->fields[j]);
-//     }
-
-//     free(tableData);
-//     free(table);
-// }
-
-// // Lista tabelas
-// void listTables() {
-//     tables_index = safe_fopen(TABLES_INDEX, "rb+");
-
-//     qt_tables = read_qt_tables(tables_index);
-
-//     if (!qt_tables) {
-//         printf("Nenhuma tabela no sistema.\n");
-//         fclose(tables_index);
-//         return;
-//     }
-
-//     printf("Listando %d tabelas.\n", qt_tables);
-
-//     // Pega os nomes das tabelas
-//     TableName *names = read_tables_names(tables_index, qt_tables);
-
-//     for (int i = 0; i < qt_tables; i++) {
-//         printf("- %s\n", names[i]);
-//     }
-
-//     free(names);
-
-//     fclose(tables_index);
-
-//     printf("\n");
-// }
-
-// // Inclui registro na tabela
-// // row: Struct com os valores de um registro
-// void includeReg(Row *row) {
-//     // Lê a tabela
-//     TableWRep *meta = read_table_metadata(row->table_name);
-//     if (!meta) {
-//         raiseError(CANT_FIND_TABLE);
-//     }
-
-//     // Abre o arquivo da tabela
-//     char *path = glueString(3, TABLES_DIR, row->table_name, TABLE_EXTENSION);
-
-//     FILE *table_file = safe_fopen(path, "rb+");
-
-//     // Confere o número de valores
-//     if (meta->cols != row->size) {
-//         raiseError(DIFF_PARAM_NUMB);
-//     }
-
-//     // Lê o número de rows
-//     int qt_row = 0;
-//     fseek(table_file, sizeof(TableWRep), SEEK_CUR);
-//     fread(&qt_row, sizeof(int), 1, table_file);
-
-//     // Muda o ponteiro para o lugar onde a row será salva: no final do arquivo
-//     fseek(table_file, 0, SEEK_END);
-
-//     long int row_len;
-
-//     // Conta o tamanho total da row em bytes
-//     for (int i = 0; i < row->size; i++) {
-//         if (meta->types[i] == STR_REP) {
-//             row_len += STR_SIZE;
-//         } else if (meta->types[i] == INT_REP) {
-//             row_len += sizeof(int);
-//         } else if (meta->types[i] == FLT_REP) {
-//             row_len += sizeof(float);
-//         } else if (meta->types[i] == BIN_REP) {
-//             char bin[BIN_FILE_NAME_SIZE] = "";
-//             if (sscanf(row->values[i], "%[^\n]", bin) == 1) {
-//                 FILE * binary_file;
-//                 binary_file = fopen(bin, "rb");
-//                 fseek(binary_file, 0, SEEK_END);
-//                 row_len += ftell(binary_file);
-//                 fclose(binary_file);
-//             } else {
-//                 raiseError(WRONG_VALUE);
-//             }
-
-//         }
-//     }
-
-//     // Escreve o tamanho total da row em bytes, na frente da row
-//     fwrite(&row_len, sizeof(long int), 1, table_file);
-
-//     // Escreve o registro no arquivo, campo por campo
-//     for (int i = 0; i < row->size; i++) {
-//         if (meta->types[i] == STR_REP) {
-//             char str[STR_SIZE] = "";
-//             if (sscanf(row->values[i], "%[^\n]", str) == 1) {        
-//                 fwrite(str, STR_SIZE * sizeof(char), 1, table_file);
-//             } else {
-//                 raiseError(WRONG_VALUE);
-//             }
-//         } else if (meta->types[i] == INT_REP) {
-//             int i = 0;
-//             if (sscanf(row->values[i], "%d", &i) == 1) {        
-//                 fwrite(&i, sizeof(int), 1, table_file);
-//             } else {
-//                 raiseError(WRONG_VALUE);
-//             }
-//         } else if (meta->types[i] == FLT_REP) {
-//             float f = 0.0;
-//             if (sscanf(row->values[i], "%f", &f) == 1) {        
-//                 fwrite(&f, sizeof(float), 1, table_file);
-//             } else {
-//                 raiseError(WRONG_VALUE);
-//             }
-//         } else if (meta->types[i] == BIN_REP) {
-//             char bin[BIN_FILE_NAME_SIZE] = "";
-//             if (sscanf(row->values[i], "%[^\n]", bin) == 1) {    
-//                 // Lê os dados do arquivo binaŕio e escreve no campo da row  
-//                 // Escreve o tamanho (em bytes) do campo binário e depois seus dados
-//                 FILE * binary_file;
-//                 binary_file = fopen(bin, "rb");
-//                 fseek(binary_file, 0, SEEK_END);
-//                 long int file_size = ftell(binary_file);
-//                 fseek(binary_file, 0, SEEK_SET);
-//                 char * buffer = (char *) malloc(sizeof(char*) * file_size);
-//                 fread(buffer, file_size, 1, binary_file);
-//                 fclose(binary_file);
-//                 fwrite(&file_size, sizeof(long int), 1, table_file);
-//                 FILE * binary_table_file = fopen(BINARY_TABLE, "ab");
-//                 long int pos_in_binary_table_file = ftell(binary_table_file);
-//                 fwrite(&pos_in_binary_table_file, sizeof(long int), 1, table_file);
-//                 fwrite(buffer, file_size, 1, binary_table_file);
-//                 fclose(binary_table_file);
-
-//             } else {
-//                 raiseError(WRONG_VALUE);
-//             }
-//         }
-//     }
-
-
-//     // Aumenta o número de row
-//     qt_row++;
-//     // Pula os metadados
-//     fseek(table_file, sizeof(TableWRep), SEEK_SET);
-//     fwrite(&qt_row, sizeof(int), 1, table_file);
-
-//     printf("Novo registro na tabela %s.\n", row->table_name);
-
-//     for (int i = 0; i < row->size; i++) {
-//         printf("- %s\n", row->values[i]);
-//     }
-//     printf("\n");
-
-//     free(path);
-//     free(meta);
-
-//     fclose(table_file);
-// }
+        if (parent) {
+            newBlock->next = parent->next;
+            parent->next = newBlock;
+        } else {
+            newBlock->next = temp;
+            *list = newBlock;
+        }
+    } else {
+        *list = newBlock;
+    }
+}
 
 // // Busca registros na tabela
 // // table_name: Nome da tabela
@@ -1081,48 +827,4 @@ void addTableName(int qtTables, char *name) {
 //     }
 
 //     free(s);
-// }
-
-// // Remove registro da tabela
-// // table_name: Nome da tabela
-// void removeReg(TableName table_name) {
-//     printf("Registros removidos de %s.\n", table_name);
-
-//     raiseError(TODO);
-// }
-
-// // Cria index da tabela, árvore
-// // table_name: Nome da tabela
-// // field_name: Nome da campo(chave) a ser usado
-// void createIndexA(TableName table_name, Field field_name) {
-//     printf("Criado um índice com árvore para %s usando a coluna %s.\n", table_name, field_name);
-
-//     raiseError(TODO);
-// }
-
-// // Cria index da tabela, heap
-// // table_name: Nome da tabela
-// // field_name: Nome da campo(chave) a ser usado
-// void createIndexH(TableName table_name, Field field_name) {
-//     printf("Criado um índice com heap para %s usando a coluna %s.\n", table_name, field_name);
-
-//     raiseError(TODO);
-// }
-
-// // Remove index da tabela
-// // table_name: Nome da tabela
-// // field_name: Nome da campo(chave) a ser usado
-// void removeIndex(TableName table_name, Field field_name) {
-//     printf("Removendo o índice de %s referente a chave %s.\n", table_name, field_name);
-
-//     raiseError(TODO);
-// }
-
-// // Gera index
-// // table_name: Nome da tabela
-// // field_name: Nome da campo(chave) a ser usado
-// void genIndex(TableName table_name, Field field_name) {
-//     printf("Gerando um índice com %s para %s usando a coluna %s.\n", "-recuperar-", table_name, field_name);
-
-//     raiseError(TODO);
 // }

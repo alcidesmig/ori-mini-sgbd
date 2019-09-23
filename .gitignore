@@ -2,3 +2,7 @@ main
 .history
 tablesIndex.bin
 tables/*
+strings.bin
+stringsEmptyList.bin
+binaries.bin
+binariesEmptyList.bin

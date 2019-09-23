@@ -10,6 +10,18 @@
 #include "defines.h"
 #include "utils.h"
 
+#define NUM_COMMANDS 12
+
+typedef struct {
+	long int pos;
+	int size;
+} EmptyBlock;
+
+typedef struct EmptyBlockList {
+	struct EmptyBlockList *next;
+	EmptyBlock *data;
+} EmptyBlockList;
+
 extern const char TABLES_INDEX[];
 extern const char TABLES_DIR[];
 
@@ -53,5 +65,10 @@ void start();
 void end();
 int tableNameIsUnique(int qtTables, char *name, long int *marker);
 void addTableName(int qtTables, char *name);
+void loadEmptyList(FILE *fp, EmptyBlockList **list);
+void saveEmptyList(FILE *fp, EmptyBlockList **list);
+long int addToExFile(char *str, FILE *dataFile, EmptyBlockList **list);
+void removeFromExFile(long int pos, FILE *dataFile, EmptyBlockList **list);
+void addInOrderToEBList(EmptyBlockList **list, long int pos, int size);
 
 #endif /* COMMANDS_H */
