@@ -103,20 +103,30 @@ void loadEmptyList(FILE *eListFile, EmptyBlockList **list) {
 
 void saveEmptyList(FILE *eListFile, EmptyBlockList **list) {
     int qt = 0;
-
+    printf("1\n");
     fseek(eListFile, sizeof(int), SEEK_SET);
+    printf("2\n");
 
     while (*list) {
+    printf("3\n");
         fwrite((*list)->data, sizeof(EmptyBlock), 1, eListFile);
+    printf("4\n");
         free((*list)->data);
+    printf("5\n");
         EmptyBlockList *aux = *list;
+    printf("6\n");
         *list = (*list)->next;
+    printf("7\n");
         free(aux);
+    printf("8\n");
         qt++;
     }
+    printf("9\n");
 
     fseek(eListFile, 0, SEEK_SET);
+    printf("10\n");
     fwrite(&qt, sizeof(int), 1, eListFile);
+    printf("11\n");
 }
 
 long int addToExFile(char *str, FILE *dataFile, EmptyBlockList **list) {

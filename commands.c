@@ -788,8 +788,10 @@ void start() {
 }
 
 void end() {
+    printf("save 1\n");
     saveEmptyList(stringsEmptyList, &stringEBlocks);
     saveEmptyList(binariesEmptyList, &binaryEBlocks);
+    printf("save 2\n");
 
     fclose(tablesIndex);
     fclose(stringsFile);
