@@ -113,7 +113,6 @@ void saveEmptyList(FILE *eListFile, EmptyBlockList **list) {
         *list = (*list)->next;
         free(aux);
         qt++;
-        printf("%d\n", qt);
     }
 
     fseek(eListFile, 0, SEEK_SET);

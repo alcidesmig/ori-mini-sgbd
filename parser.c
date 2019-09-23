@@ -49,8 +49,8 @@ ParsedData *parser(char * line) {
         table->rows = 0;
         // Seta o número de colunas
         *cols = 0;
-        // Seta o tamanho de um registro
-        *length = 0;
+        // Seta o tamanho de um registro, 4 para o bit de validade
+        *length = 4;
         
         // Pega o bloco de informações de uma coluna
         ptr = strtok(NULL, ";");
@@ -114,10 +114,7 @@ ParsedData *parser(char * line) {
             }
             strncpy((*fields)[i], ptr, FIELD_NAME_LIMIT);
         }
-    } else if (!strncmp(*cmd, RT, CMD_LIMIT)
-            || !strncmp(*cmd, AT, CMD_LIMIT)
-            || !strncmp(*cmd, AR, CMD_LIMIT)
-            || !strncmp(*cmd, RR, CMD_LIMIT)) {
+    } else if (!strncmp(*cmd, RT, CMD_LIMIT) || !strncmp(*cmd, AT, CMD_LIMIT)) {
 
         // Ponteiro para a tabela
         Table *table = &(pData->data.table);
@@ -274,6 +271,34 @@ ParsedData *parser(char * line) {
 
         // Salva o valor
         selection->value = ptr;
+    } else if (!strncmp(*cmd, AR, CMD_LIMIT) || !strncmp(*cmd, RR, CMD_LIMIT)) {
+        // Ponteiro para a seleção
+        Selection *selection = &(pData->data.selection);
+
+        // Ponteiro auxiliar, pega o nome da tabela
+        char *ptr = strtok(NULL, " ");
+        
+        // Verifica se há nome da tabela
+        if (!ptr) {
+            fprintf(stderr, "O nome da tabela não foi encontrado.\n");
+            return NULL;
+        }
+
+        // Verifica o tamanho do nome
+        if (strlen(ptr) >= TABLE_NAME_LIMIT) {
+            fprintf(stderr, "Nome da tabela é muito longo.\n");
+            return NULL;
+        }
+
+        // Salva o nome da tabela
+        strncpy(selection->tableName, ptr, TABLE_NAME_LIMIT);
+
+        // Verifica se há mais na linha
+        ptr = strtok(NULL, "\0");
+        if (ptr) {
+            fprintf(stderr, "A estrutura do comando não foi reconhecida.\n");
+            return NULL;
+        }
     } else if (!strncmp(*cmd, CI, CMD_LIMIT)) {
         // Ponteiro para a seleção
         Selection *selection = &(pData->data.selection);

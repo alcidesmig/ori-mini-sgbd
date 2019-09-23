@@ -44,4 +44,8 @@ extern const char BIN[];
 
 extern int TYPE_LIMIT;
 
+extern const int zero;
+extern const int valido;
+extern const int invalido;
+
 #endif /* DEFINES_H */

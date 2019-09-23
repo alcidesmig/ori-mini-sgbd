@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include "defines.h"
 #include "utils.h"
+#include "searchStructs.h"
 
 #define NUM_COMMANDS 12
 
@@ -60,5 +61,7 @@ extern FILE *binariesEmptyList;
 
 extern EmptyBlockList *stringEBlocks;
 extern EmptyBlockList *binaryEBlocks;
+
+extern ResultNode *resultTree;
 
 #endif /* COMMANDS_DEFINES_H */

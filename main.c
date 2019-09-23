@@ -76,15 +76,15 @@ void execute(ParsedData *pData) {
     } else if (!strncmp(cmd, AT, CMD_LIMIT)) {
         apresentarTabela(&(pData->data.table));
     } else if (!strncmp(cmd, LT, CMD_LIMIT)) {
-        listarTabela(&(pData->data.table));
+        listarTabela();
     } else if (!strncmp(cmd, IR, CMD_LIMIT)) {
         incluirRegistro(&(pData->data.row));
     } else if (!strncmp(cmd, BR, CMD_LIMIT)) {
-        buscarRegistros(&(pData->data.row));
+        buscarRegistros(&(pData->data.selection));
     } else if (!strncmp(cmd, AR, CMD_LIMIT)) {
-        apresentarRegistros(&(pData->data.row));
+        apresentarRegistros(&(pData->data.selection));
     } else if (!strncmp(cmd, RR, CMD_LIMIT)) {
-        removerRegistros(&(pData->data.row));
+        removerRegistros(&(pData->data.selection));
     } else if (!strncmp(cmd, CI, CMD_LIMIT)) {
         criarIndex(&(pData->data.selection));
     } else if (!strncmp(cmd, RI, CMD_LIMIT)) {

@@ -11,15 +11,16 @@
 #include "utils.h"
 #include "commandsDefines.h"
 #include "commandsTools.h"
+#include "searchStructs.h"
 
 void criarTabela(Table *table);
 void removerTabela(Table *table);
 void apresentarTabela(Table *table);
-void listarTabela(Table *table);
+void listarTabela();
 void incluirRegistro(Row *row);
-void buscarRegistros(Row *row);
-void apresentarRegistros(Row *row);
-void removerRegistros(Row *row);
+void buscarRegistros(Selection *selection);
+void apresentarRegistros(Selection *selection);
+void removerRegistros(Selection *selection);
 void criarIndex(Selection *selection);
 void removerIndex(Selection *selection);
 void gerarIndex(Selection *selection);

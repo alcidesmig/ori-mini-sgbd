@@ -40,3 +40,5 @@ FILE *binariesEmptyList = NULL;
 
 EmptyBlockList *stringEBlocks = NULL;
 EmptyBlockList *binaryEBlocks = NULL;
+
+ResultNode *resultTree = NULL;

@@ -43,6 +43,16 @@ void criarTabela(Table *table) {
         fwrite(table, sizeof(Table), 1, tableFile);
         // Fecha o arquivo
         fclose(tableFile);
+        // Path do arquivo de blocos deletados
+        path = glueString(2, path, ".empty");
+        // É criado o arquivo de blocos deletados
+        createFile(path);
+        // Arquivo de blocos deletados
+        tableFile = fopenSafe(path, "rb+");
+        // Grava zero
+        fwrite(&zero, sizeof(int), 1, tableFile);
+        // Fecha o arquivo
+        fclose(tableFile);
 
         free(path);
 
@@ -160,7 +170,7 @@ void apresentarTabela(Table *table) {
     }
 }
 
-void listarTabela(Table *table) {
+void listarTabela() {
     // Quantidade de tabelas
     int qtTables = 0;
 
@@ -218,29 +228,50 @@ void incluirRegistro(Row *row) {
         return;
     }
 
-    printf("%s\n", row->tableName);
-
     // Verifica se a tabela existe
     int exists = !tableNameIsUnique(qtTables, row->tableName, NULL);
-
-    printf("%d\n", exists);
 
     // Se o marcador é válido
     if (exists) {
         // Path do arquivo da tabela
         char *path = glueString(2, TABLES_DIR, row->tableName);
-
         // Abre o arquivo da tabela
         FILE *tableFile = fopenSafe(path, "rb+");
+        // Path do arquivo de blocos deletados
+        path = glueString(2, path, ".empty");
+        // Abre o arquivo de blocos deletados
+        FILE *tableFileEmpty = fopenSafe(path, "rb+");
         // Lê os metadados
         Table table;
         fread(&table, sizeof(Table), 1, tableFile);
 
-        // Pula outros registros
-        fseek(tableFile, table.rows * table.length, SEEK_CUR);
+        // Quantidade de blocos deletados
+        int qtOpenRow = 0;
+        // Endereço da row livre
+        long int openRow = 0;
+        // Lê a quantidade de blocos deletados
+        fread(&qtOpenRow, sizeof(int), 1, tableFileEmpty);
+
+        // Se existem blocos deletados
+        if (qtOpenRow) {
+            qtOpenRow--;
+            // Pula para o começo
+            fseek(tableFileEmpty, 0, SEEK_SET);
+            // Escreve o novo valor
+            fwrite(&qtOpenRow, sizeof(int), 1, tableFileEmpty);
+            // Pula para o último endereço
+            fseek(tableFileEmpty, sizeof(int) + qtOpenRow*sizeof(long int), SEEK_SET);
+            // Lê o endereço da row livre
+            fread(&openRow, sizeof(long int), 1, tableFileEmpty);
+        } else {
+            // Pula outros registros
+            fseek(tableFile, table.rows * table.length, SEEK_CUR);
+        }
 
         // Verifica o número de valores
         if (row->cols == table.cols) {
+            // Bit de validade
+            fwrite(&valido, sizeof(int), 1, tableFile);
             // Para cada coluna
             for (int i = 0; i < table.cols; i++) {
                 // Verifica o tipo de dado da coluna
@@ -251,6 +282,9 @@ void incluirRegistro(Row *row) {
                     // Converte o dado
                     if (sscanf((char *)row->values[i], "%d %[^\n]", &numb, rest) != 1) {
                         fprintf(stderr, "O valor %s não corresponde ao tipo da coluna %s!\n", (char *)row->values[i], table.fields[i]);
+                        // Fecha os arquivos
+                        fclose(tableFile);
+                        fclose(tableFileEmpty);
                         return;
                     }
                     // Escreve no arquivo da tabela
@@ -267,6 +301,9 @@ void incluirRegistro(Row *row) {
                     // Converte o dado
                     if (sscanf((char *)row->values[i], "%f %[^\n]", &numb, rest) != 1) {
                         fprintf(stderr, "O valor %s não corresponde ao tipo da coluna %s!\n", (char *)row->values[i], table.fields[i]);
+                        // Fecha os arquivos
+                        fclose(tableFile);
+                        fclose(tableFileEmpty);
                         return;
                     }
                     // Escreve no arquivo da tabela
@@ -293,8 +330,18 @@ void incluirRegistro(Row *row) {
                     fwrite(&pos, sizeof(long int), 1, tableFile);
                 }
             }
+
+            // Printa a mensagem de sucesso
+            printf("Registro criado: ");
+            for (int i = 0; i < table.cols; i++) {
+                printf("%s ", (char *)row->values[i]);
+            }
+            printf("\n");
         } else {
             fprintf(stderr, "O número de valores não corresponde ao número de colunas da tabela!\n");
+            // Fecha os arquivos
+            fclose(tableFile);
+            fclose(tableFileEmpty);
             return;
         }
 
@@ -304,6 +351,208 @@ void incluirRegistro(Row *row) {
         fseek(tableFile, sizeof(int), SEEK_SET);
         // Salva o número de registros
         fwrite(&(table.rows), sizeof(int), 1, tableFile);
+        // Fecha os arquivos
+        fclose(tableFile);
+        fclose(tableFileEmpty);
+    } else {
+        fprintf(stderr, "Tabela não encontrada!\n");
+    }
+}
+
+void buscarRegistros(Selection *selection) {
+    // Limite de busca
+    int searchLimit = (selection->parameter == 'U' ? 1 : 2147483647);
+    // Quantidade de tabelas
+    int qtTables = 0;
+
+    // Pula para o começo do arquivo
+    fseek(tablesIndex, 0, SEEK_SET);
+    // Lê a quantidade de tabelas
+    fread(&qtTables, sizeof(int), 1, tablesIndex);
+    
+    if (!qtTables) {
+        printf("Não existem tabelas!\n");
+        return;
+    }
+
+    // Verifica se a tabela existe
+    int exists = !tableNameIsUnique(qtTables, selection->tableName, NULL);
+
+    // Se a tabela existe
+    if (exists) {
+        // Tabela em questão
+        Table table;
+        // Path do arquivo da tabela
+        char *path = glueString(2, TABLES_DIR, selection->tableName);
+        // Abre o arquivo da tabela
+        FILE *tableFile = fopenSafe(path, "rb+");
+        // Lê os metadados
+        fread(&table, sizeof(Table), 1, tableFile);
+
+        // Offset do campo nos dados
+        int offset = 0;
+        // Tipo do campo
+        char fieldType = '\0';
+
+        int i = 0;
+        // Procura o campo da busca
+        while (i < table.cols && !fieldType) {
+            // Se o campo foi encontrado
+            if (!strcmp(table.fields[i], selection->field)) {
+                // É definido o tipo do campo
+                fieldType = table.types[i];
+                break;
+            // Se não for encontrado
+            } else {
+                // É incrementado o offset
+                if (table.types[i] == 'i') {
+                    offset += sizeof(int);
+                } else if (table.types[i] == 's') {
+                    offset += sizeof(long int);
+                } else if (table.types[i] == 'f') {
+                    offset += sizeof(float);
+                } else if (table.types[i] == 'b') {
+                    offset += sizeof(long int);
+                }
+            }
+
+            i++;
+        }
+
+        // Se o campo não for encontrado
+        if (i == table.cols) {
+            fprintf(stderr, "Campo %s não encontrado!\n", selection->field);
+            // Fecha o arquivo
+            fclose(tableFile);
+            return;
+        }
+
+        // Posição do registro
+        long int rowPos = 0;
+
+        // Resto do sscanf
+        char *rest = NULL;
+
+        // Auxiliar, conversão do valor de pesquisa
+        int selNumbI;
+        float selNumbF;
+
+        // Converte os valores
+        if (sscanf((char *)selection->value, "%d %[^\n]", &selNumbI, rest) != 1) {
+            fprintf(stderr, "Erro ao converter o valor %s para inteiro!", (char *)selection->value);
+            // Libera o resto, se leu a mais
+            if (rest) {
+                free(rest);
+            }
+            // Fecha o arquivo
+            fclose(tableFile);
+            return;
+        }
+        if (sscanf((char *)selection->value, "%f %[^\n]", &selNumbF, rest) != 1) {
+            fprintf(stderr, "Erro ao converter o valor %s para ponto flutuante!", (char *)selection->value);
+            // Libera o resto, se leu a mais
+            if (rest) {
+                free(rest);
+            }
+            // Fecha o arquivo
+            fclose(tableFile);
+            return;
+        }
+
+        // Auxiliar, bytes lidos
+        int read = 0;
+        // Auxiliar de leitura
+        int numbI;
+        float numbF;
+        long int pos;
+        int strSize;
+        char *str;
+        // Flag de validade
+        int valido = 0;
+
+        // Lista de resultados
+        ResultList *resultList = NULL;
+
+        // Compara os registros
+        i = 0;
+        while (i < table.rows && i < searchLimit) {
+            // Salva a posição do registro
+            rowPos = ftell(tableFile);
+            // Lê a flag de validade
+            fread(&valido, sizeof(int), 1, tableFile);
+
+            if (valido) {
+                // Pula o offset
+                fseek(tableFile, offset, SEEK_CUR);
+
+                // Lê o campo
+                if (fieldType == 'i') {
+                    // Bytes lidos
+                    read = sizeof(int);
+                    // Lê o número
+                    fread(&numbI, read, 1, tableFile);
+
+                    // Compara com o valor pesquisado
+                    if (numbI == selNumbI) {
+                        // Adiciona a posição a lista de resultados
+                        addToResultList(&resultList, rowPos);
+                    }
+                } else if (fieldType == 's') {
+                    // Lê a posição da string
+                    fread(&pos, sizeof(long int), 1, tableFile);
+                    // Pula para posição da string
+                    fseek(stringsFile, pos, SEEK_SET);
+                    // Lê o tamanho
+                    fread(&strSize, sizeof(int), 1, stringsFile);
+                    // Aloca memória para string
+                    str = (char *)mallocSafe(strSize+1);
+                    // Lê a string
+                    fread(str, strSize, 1, stringsFile);
+                    // Termina a string
+                    str[strSize] = '\0';
+                    // Bytes lidos
+                    read = strSize;
+
+                    // Compara com o valor pesquisado
+                    if (!strcmp(str, (char *)selection->value)) {
+                        // Adiciona a posição a lista de resultados
+                        addToResultList(&resultList, rowPos);
+                    }
+                    
+                    free(str);
+                } else if (fieldType == 'f') {
+                    // Bytes lidos
+                    read = sizeof(float);
+                    // Lê o número
+                    fread(&numbF, read, 1, tableFile);
+
+                    // Compara com o valor pesquisado
+                    if (numbF == selNumbF) {
+                        // Adiciona a posição a lista de resultados
+                        addToResultList(&resultList, rowPos);
+                    }
+                } else if (fieldType == 'b') {
+                    fprintf(stderr, "Busca em campos binários não é suportada!\n");
+                    // Fecha o arquivo
+                    fclose(tableFile);
+                    return;
+                }
+
+                // Pula os campos restantes
+                fseek(tableFile, table.length-offset-read-sizeof(int), SEEK_CUR);
+            } else {
+                // Pula o registro
+                fseek(tableFile, table.length-sizeof(int), SEEK_CUR);
+            }
+
+            i++;
+        }
+
+        // Adiciona o resultado à arvore de resultados
+        addToResultTree(&resultTree, resultList, selection->tableName);
+
+        apresentarRegistros(selection);
+
         // Fecha o arquivo
         fclose(tableFile);
     } else {
@@ -311,13 +560,166 @@ void incluirRegistro(Row *row) {
     }
 }
 
-void buscarRegistros(Row *row) {
+void apresentarRegistros(Selection *selection) {
+    // Quantidade de tabelas
+    int qtTables = 0;
+
+    // Pula para o começo do arquivo
+    fseek(tablesIndex, 0, SEEK_SET);
+    // Lê a quantidade de tabelas
+    fread(&qtTables, sizeof(int), 1, tablesIndex);
+    
+    if (!qtTables) {
+        printf("Não existem tabelas!\n");
+        return;
+    }
+
+    // Verifica se a tabela existe
+    int exists = !tableNameIsUnique(qtTables, selection->tableName, NULL);
+
+    // Se a tabela existe
+    if (exists) {
+        // Recupera a pesquisa
+        ResultList *list = searchResultList(resultTree, selection->tableName);
+
+        // Tabela em questão
+        Table table;
+        // Path do arquivo da tabela
+        char *path = glueString(2, TABLES_DIR, selection->tableName);
+        // Abre o arquivo da tabela
+        FILE *tableFile = fopenSafe(path, "rb+");
+        // Lê os metadados
+        fread(&table, sizeof(Table), 1, tableFile);
+
+        // Auxiliar de leitura
+        int numbI;
+        float numbF;
+        long int pos;
+        int strSize;
+        char *str;
+
+        if (list) {
+            printf("Mostrando resultado para %s\n", selection->tableName);
+        } else {
+            printf("Nenhum resultado para %s\n", selection->tableName);
+        }
+        
+        // Printa os registros
+        while (list) {
+            // Pula para posição, mais a flag de validade
+            fseek(tableFile, list->pos+sizeof(int), SEEK_SET);
+
+            printf("Registro:\n");
+            for (int i = 0; i < table.cols; i++) {
+                printf("- %s: ", table.fields[i]);
+                if (table.types[i] == 'i') {
+                    fread(&numbI, sizeof(int), 1, tableFile);
+
+                    printf("%d\n", numbI);
+                } else if (table.types[i] == 's') {
+                    // Lê a posição da string
+                    fread(&pos, sizeof(long int), 1, tableFile);
+                    // Pula para posição da string
+                    fseek(stringsFile, pos, SEEK_SET);
+                    // Lê o tamanho
+                    fread(&strSize, sizeof(int), 1, stringsFile);
+                    // Aloca memória para string
+                    str = (char *)mallocSafe(strSize+1);
+                    // Lê a string
+                    fread(str, strSize, 1, stringsFile);
+                    // Termina a string
+                    str[strSize] = '\0';
+
+                    printf("%s\n", str);
+
+                    free(str);
+                } else if (table.types[i] == 'f') {
+                    fread(&numbF, sizeof(int), 1, tableFile);
+
+                    printf("%f\n", numbF);
+                } else if (table.types[i] == 'b') {
+                    printf("**BINARY**\n");
+                }
+            }
+
+            list = list->next;
+        }
+
+        printf("\n");
+
+        // Fecha o arquivo
+        fclose(tableFile);
+    } else {
+        fprintf(stderr, "Tabela não encontrada!\n");
+    }
 }
 
-void apresentarRegistros(Row *row) {
-}
+void removerRegistros(Selection *selection) {
+    // Quantidade de tabelas
+    int qtTables = 0;
 
-void removerRegistros(Row *row) {
+    // Pula para o começo do arquivo
+    fseek(tablesIndex, 0, SEEK_SET);
+    // Lê a quantidade de tabelas
+    fread(&qtTables, sizeof(int), 1, tablesIndex);
+    
+    if (!qtTables) {
+        printf("Não existem tabelas!\n");
+        return;
+    }
+
+    // Verifica se a tabela existe
+    int exists = !tableNameIsUnique(qtTables, selection->tableName, NULL);
+
+    // Se a tabela existe
+    if (exists) {
+        // Recupera a pesquisa
+        ResultList *list = searchResultList(resultTree, selection->tableName);
+
+        if (list) {
+            // Path do arquivo da tabela
+            char *path = glueString(2, TABLES_DIR, selection->tableName);
+            // Abre o arquivo da tabela
+            FILE *tableFile = fopenSafe(path, "rb+");
+            // Path do arquivo de blocos deletados da tabela
+            path = glueString(2, path, ".empty");
+            // Abre o arquivo de blocos deletados da tabela
+            FILE *tableFileEmpty = fopenSafe(path, "rb+");
+
+            free(path);
+
+            // Número de blocos deletados
+            int empty = 0;
+            // Lê o número de blocos deletados
+            fread(&empty, sizeof(int), 1, tableFileEmpty);
+
+            while (list) {
+                // Grava a posição deletada
+                fwrite(&(list->pos), sizeof(long int), 1, tableFileEmpty);
+                // Pula para posição
+                fseek(tableFile, list->pos, SEEK_SET);
+                // Invalida o registro
+                fwrite(&invalido, sizeof(int), 1, tableFile);
+                // Incrementa
+                empty++;
+                // Avança na lista
+                list = list->next;
+            }
+
+            // Pula para o começo
+            fseek(tableFileEmpty, 0, SEEK_SET);
+            // Escreve o número de blocos deletados
+            fwrite(&empty, sizeof(int), 1, tableFileEmpty);
+
+            // Fecha os arquivos
+            fclose(tableFile);
+            fclose(tableFileEmpty);
+        } else {
+            fprintf(stderr, "Não existe pesquisa para essa tabela!\n");
+        }
+    } else {
+        fprintf(stderr, "Tabela não encontrada!\n");
+    }
 }
 
 void criarIndex(Selection *selection) {
@@ -357,6 +759,8 @@ void end() {
     fclose(stringsEmptyList);
     fclose(binariesFile);
     fclose(binariesEmptyList);
+
+    freeResultTree(resultTree);
 }
 
 // // Busca registros na tabela
