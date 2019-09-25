@@ -265,7 +265,7 @@ void incluirRegistro(Row *row) {
                 // Lê o endereço da row livre
                 fread(&openRow, sizeof(long int), 1, tableFileEmpty);
                 // Pula para a posição do registro inválido que sera sobrescrito        
-                fseek(tableFile, openRow, SEEK_SET);
+                fseek(tableFile, ++openRow, SEEK_CUR);
             } else {
                 // Pula outros registros, mais as flags de validade
                 fseek(tableFile, table.rows * (table.length + sizeof(int)), SEEK_CUR);
