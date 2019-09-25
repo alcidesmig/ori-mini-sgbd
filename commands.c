@@ -264,13 +264,13 @@ void incluirRegistro(Row *row) {
                 fseek(tableFileEmpty, sizeof(int) + qtOpenRow*sizeof(long int), SEEK_SET);
                 // Lê o endereço da row livre
                 fread(&openRow, sizeof(long int), 1, tableFileEmpty);
+                // Pula para a posição do registro inválido que sera sobrescrito        
+                fseek(tableFile, openRow, SEEK_SET);
             } else {
                 // Pula outros registros, mais as flags de validade
                 fseek(tableFile, table.rows * (table.length + sizeof(int)), SEEK_CUR);
             }
 
-            // Pula para a posição do registro inválido que sera sobrescrito        
-            fseek(tableFile, openRow, SEEK_SET);
             // Bit de validade
             fwrite(&valido, sizeof(int), 1, tableFile);
             // Para cada coluna
