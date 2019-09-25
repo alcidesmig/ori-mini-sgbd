@@ -244,32 +244,33 @@ void incluirRegistro(Row *row) {
         // Lê os metadados
         Table table;
         fread(&table, sizeof(Table), 1, tableFile);
-
-        // Quantidade de blocos deletados
-        int qtOpenRow = 0;
-        // Endereço da row livre
-        long int openRow = 0;
-        // Lê a quantidade de blocos deletados
-        fread(&qtOpenRow, sizeof(int), 1, tableFileEmpty);
-
-        // Se existem blocos deletados
-        if (qtOpenRow) {
-            qtOpenRow--;
-            // Pula para o começo
-            fseek(tableFileEmpty, 0, SEEK_SET);
-            // Escreve o novo valor
-            fwrite(&qtOpenRow, sizeof(int), 1, tableFileEmpty);
-            // Pula para o último endereço
-            fseek(tableFileEmpty, sizeof(int) + qtOpenRow*sizeof(long int), SEEK_SET);
-            // Lê o endereço da row livre
-            fread(&openRow, sizeof(long int), 1, tableFileEmpty);
-        } else {
-            // Pula outros registros, mais as flags de validade
-            fseek(tableFile, table.rows * (table.length + sizeof(int)), SEEK_CUR);
-        }
-
         // Verifica o número de valores
         if (row->cols == table.cols) {
+            // Quantidade de blocos deletados
+            int qtOpenRow = 0;
+            // Endereço da row livre
+            long int openRow = 0;
+            // Lê a quantidade de blocos deletados
+            fread(&qtOpenRow, sizeof(int), 1, tableFileEmpty);
+
+            // Se existem blocos deletados
+            if (qtOpenRow) {
+                qtOpenRow--;
+                // Pula para o começo
+                fseek(tableFileEmpty, 0, SEEK_SET);
+                // Escreve o novo valor
+                fwrite(&qtOpenRow, sizeof(int), 1, tableFileEmpty);
+                // Pula para o último endereço
+                fseek(tableFileEmpty, sizeof(int) + qtOpenRow*sizeof(long int), SEEK_SET);
+                // Lê o endereço da row livre
+                fread(&openRow, sizeof(long int), 1, tableFileEmpty);
+            } else {
+                // Pula outros registros, mais as flags de validade
+                fseek(tableFile, table.rows * (table.length + sizeof(int)), SEEK_CUR);
+            }
+
+            // Pula para a posição do registro inválido que sera sobrescrito        
+            fseek(tableFile, openRow, SEEK_SET);
             // Bit de validade
             fwrite(&valido, sizeof(int), 1, tableFile);
             // Para cada coluna
