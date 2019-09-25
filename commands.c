@@ -237,15 +237,15 @@ void incluirRegistro(Row *row) {
         char *path = glueString(2, TABLES_DIR, row->tableName);
         // Abre o arquivo da tabela
         FILE *tableFile = fopenSafe(path, "rb+");
-        // Path do arquivo de blocos deletados
-        path = glueString(2, path, ".empty");
-        // Abre o arquivo de blocos deletados
-        FILE *tableFileEmpty = fopenSafe(path, "rb+");
         // Lê os metadados
         Table table;
         fread(&table, sizeof(Table), 1, tableFile);
         // Verifica o número de valores
         if (row->cols == table.cols) {
+            // Path do arquivo de blocos deletados
+            path = glueString(2, path, ".empty");
+            // Abre o arquivo de blocos deletados
+            FILE *tableFileEmpty = fopenSafe(path, "rb+");
             // Quantidade de blocos deletados
             int qtOpenRow = 0;
             // Endereço da row livre
@@ -331,7 +331,8 @@ void incluirRegistro(Row *row) {
                     fwrite(&pos, sizeof(long int), 1, tableFile);
                 }
             }
-
+            // Fecha arquivo de blocos deletados
+            fclose(tableFileEmpty);
             // Printa a mensagem de sucesso
             printf("Registro criado: ");
             for (int i = 0; i < table.cols; i++) {
@@ -342,7 +343,6 @@ void incluirRegistro(Row *row) {
             fprintf(stderr, "O número de valores não corresponde ao número de colunas da tabela!\n");
             // Fecha os arquivos
             fclose(tableFile);
-            fclose(tableFileEmpty);
             return;
         }
 
@@ -352,9 +352,8 @@ void incluirRegistro(Row *row) {
         fseek(tableFile, sizeof(int), SEEK_SET);
         // Salva o número de registros
         fwrite(&(table.rows), sizeof(int), 1, tableFile);
-        // Fecha os arquivos
+        // Fecha arquivo da tabela
         fclose(tableFile);
-        fclose(tableFileEmpty);
     } else {
         fprintf(stderr, "Tabela não encontrada!\n");
     }
