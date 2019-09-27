@@ -749,7 +749,7 @@ void criarIndex(Selection *selection) {
     if(tableExists(qtTables, selection->tableName)) {
         if(selection->parameter == 'H') {
             if(fieldExistInTable(selection->tableName, selection->field)){
-                if(strcmp(getFieldType(selection->tableName, selection->field), INT)) {
+                if(getFieldType(selection->tableName, selection->field) != 'i') {
                     fprintf(stderr, "O campo %s não é do tipo INT %s.\n", selection->field);
                     return;
                 }

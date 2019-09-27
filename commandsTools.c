@@ -1,7 +1,7 @@
 #include "commandsTools.h"
 
 // Antes de usar essa função, garanta que o campo exista na tablea utilizando a função fieldExistInTable(...)
-int getFieldType(char *tableName, Field field) {
+Type getFieldType(char *tableName, Field field) {
     // Path do arquivo da tabela
     char *path = glueString(2, TABLES_DIR, tableName);
     // Abre o arquivo da tabela

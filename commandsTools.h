@@ -11,6 +11,7 @@
 #include "utils.h"
 #include "commandsDefines.h"
 
+Type getFieldType(char *tableName, Field field);
 int fieldExistInTable(char *name, Field field);
 int tableExists(int qtTables, char *name);
 int tableNameIsUnique(int qtTables, char *name, long int *marker);
