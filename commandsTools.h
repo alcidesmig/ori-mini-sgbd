@@ -11,6 +11,8 @@
 #include "utils.h"
 #include "commandsDefines.h"
 
+int fieldExistInTable(char *name, Field field);
+int tableExists(int qtTables, char *name);
 int tableNameIsUnique(int qtTables, char *name, long int *marker);
 void addTableName(int qtTables, char *name);
 void loadEmptyList(FILE *fp, EmptyBlockList **list);

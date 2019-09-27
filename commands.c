@@ -138,7 +138,7 @@ void apresentarTabela(Table *table) {
     }
 
     // Verifica se a tabela existe
-    int exists = !tableNameIsUnique(qtTables, table->name, NULL);
+    int exists = tableExists(qtTables, table->name);
 
     // Se a tabela existe
     if (exists) {
@@ -229,7 +229,7 @@ void incluirRegistro(Row *row) {
     }
 
     // Verifica se a tabela existe
-    int exists = !tableNameIsUnique(qtTables, row->tableName, NULL);
+    int exists = tableExists(qtTables, row->tableName);
 
     // Se o marcador é válido
     if (exists) {
@@ -372,7 +372,7 @@ void buscarRegistros(Selection *selection) {
     }
 
     // Verifica se a tabela existe
-    int exists = !tableNameIsUnique(qtTables, selection->tableName, NULL);
+    int exists = tableExists(qtTables, selection->tableName);
 
     // Se a tabela existe
     if (exists) {
@@ -571,7 +571,7 @@ void apresentarRegistros(Selection *selection) {
     }
 
     // Verifica se a tabela existe
-    int exists = !tableNameIsUnique(qtTables, selection->tableName, NULL);
+    int exists = tableExists(qtTables, selection->tableName);
 
     // Se a tabela existe
     if (exists) {
@@ -670,7 +670,7 @@ void removerRegistros(Selection *selection) {
     }
 
     // Verifica se a tabela existe
-    int exists = !tableNameIsUnique(qtTables, selection->tableName, NULL);
+    int exists = tableExists(qtTables, selection->tableName);
 
     // Se a tabela existe
     if (exists) {
@@ -746,6 +746,31 @@ void removerRegistros(Selection *selection) {
 }
 
 void criarIndex(Selection *selection) {
+    if(tableExists(qtTables, selection->tableName)) {
+        if(selection->parameter == 'H') {
+            if(fieldExistInTable(selection->tableName, selection->field)){
+                if(strcmp(getFieldType(selection->tableName, selection->field), INT)) {
+                    fprintf(stderr, "O campo %s não é do tipo INT %s.\n", selection->field);
+                    return;
+                }
+
+                // to continue
+
+            } else {
+                fprintf(stderr, "O campo %s não existe na tabela %s.\n", selection->field, selection->tableName);
+            }
+        } else if (selection->parameter == 'A') {
+            if(fieldExistInTable(selection->tableName, selection->field)){
+                // to do
+            } else {
+                fprintf(stderr, "O campo %s não existe na tabela %s.\n", selection->field, selection->tableName);
+            }
+        } else {
+            fprintf(stderr, "Opção %c inválida.\n", selection->parameter);
+        }
+    } else {
+        fprintf(stderr, "A tabela %s não existe!\n", selection->tableName);
+    }
 }
 
 void removerIndex(Selection *selection) {

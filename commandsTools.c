@@ -1,5 +1,79 @@
 #include "commandsTools.h"
 
+// Antes de usar essa função, garanta que o campo exista na tablea utilizando a função fieldExistInTable(...)
+int getFieldType(char *tableName, Field field) {
+    // Path do arquivo da tabela
+    char *path = glueString(2, TABLES_DIR, tableName);
+    // Abre o arquivo da tabela
+    FILE *tableFile = fopenSafe(path, "rb+");
+    // Lê os metadados
+    Table table;
+    fread(&table, sizeof(Table), 1, tableFile);
+    // Laço de repetição para encontrar a posição do campo desejado
+    int i;
+    for(i = 0; i < table.cols && (strcmp(table.fields[i], tableName)); i++);
+    // Retorna o tipo do campo desejado baseado na sua posição
+    return table.types[i];
+}
+
+int fieldExistInTable(char *name, Field field) {
+    // Path do arquivo da tabela
+    char *path = glueString(2, TABLES_DIR, name);
+    // Abre o arquivo da tabela
+    FILE *tableFile = fopenSafe(path, "rb+");
+    // Lê os metadados
+    Table table;
+    fread(&table, sizeof(Table), 1, tableFile);
+    // Variável que indicará se o campo existe na tabela
+    int exist = 0;
+    for(int i = 0; i < table.cols && !exist; i++) {
+        exist = (strcmp(table.fields[i], name) == 0);
+    }
+    return exist;
+}
+
+int tableExists(int qtTables, char *name) {
+    // Flag que representa a existência da tabela
+    int exists = 0;
+
+    // Pula para o começo dos nomes
+    fseek(tablesIndex, sizeof(int), SEEK_SET);
+
+    int i = 0;
+    // Para cada tabela, enquanto é diferente
+    while (exists == 0 && i < qtTables) {
+        // Número de blocos
+        int blocks = 0;
+
+        // Lê o número de blocos
+        fread(&blocks, sizeof(int), 1, tablesIndex);
+
+        // Se o espaço possuí informações válidas
+        if (blocks > 0) {
+            // Tamanho real do nome
+            int size = blocks*BLOCK_SIZE;
+            char *buf = (char *)mallocSafe(size);
+
+            // Lê o nome
+            fread(buf, size, 1, tablesIndex);
+
+            // Compara com o nome existente
+            exists = (strcmp(buf, name) == 0);
+
+            free(buf);
+
+            // Incrementa só se a tabela é válida
+            i++;
+        } else {
+            // Pula o espaço no caso de informações inválidas
+            blocks *= -1;
+            fseek(tablesIndex, blocks*BLOCK_SIZE, SEEK_CUR);
+        }
+    }
+
+    return exists;
+}
+
 int tableNameIsUnique(int qtTables, char *name, long int *marker) {
     // Flag, novo nome é diferente
     int diff = 1;
@@ -65,7 +139,7 @@ void addTableName(int qtTables, char *name) {
 
     // Escreve a quantidade de blocos
     fwrite(&blocks, sizeof(int), 1, tablesIndex);
-    // Escreve a strign
+    // Escreve a string
     fwrite(name, blocks*BLOCK_SIZE, 1, tablesIndex);
 }
 
@@ -135,7 +209,7 @@ long int addToExFile(char *str, FILE *dataFile, EmptyBlockList **list) {
     // Tamanho da string
     int size = strlen(str);
 
-    // Se a lista não está vazia e se o meior elemento é maior que a string
+    // Se a lista não está vazia e se o maior elemento é maior que a string
     if (*list && (*list)->data->size >= size) {
         // Pula para posição vazia
         fseek(dataFile, (*list)->data->pos, SEEK_SET);
