@@ -1,5 +1,10 @@
 #include "utils.h"
 
+// Função para verificar se um arquivo existe (recebe o path inteiro)
+int fileExist(char * filename) {
+    return access(filename, R_OK);
+}
+
 void *mallocSafe(size_t s) {
     void *p = malloc(s);
     if (p)

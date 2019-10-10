@@ -88,7 +88,7 @@ void execute(ParsedData *pData) {
     } else if (!strncmp(cmd, CI, CMD_LIMIT)) {
         criarIndex(&(pData->data.selection));
     } else if (!strncmp(cmd, RI, CMD_LIMIT)) {
-        removerIndex(&(pData->data.selection));
+        removerIndex(&(pData->data.table.name), 1); // paramêtro 1 = printar log pro usuário
     } else if (!strncmp(cmd, GI, CMD_LIMIT)) {
         gerarIndex(&(pData->data.selection));
     }

@@ -22,7 +22,7 @@ void buscarRegistros(Selection *selection);
 void apresentarRegistros(Selection *selection);
 void removerRegistros(Selection *selection);
 void criarIndex(Selection *selection);
-void removerIndex(Selection *selection);
+void removerIndex(const TableName * tableName, int imprime);
 void gerarIndex(Selection *selection);
 void start();
 void end();

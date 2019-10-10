@@ -118,6 +118,8 @@ void removerTabela(Table *table) {
         path = glueString(2, path, ".empty");
         // Remove o arquivo de blocos deletados
         removeFile(path);
+        // Remove os índices da tabela, sem printar nada
+        removerIndex(table->name, 0);
         free(path);
         // Decrementa o número de tabelas
         qtTables--;
@@ -175,6 +177,36 @@ void apresentarTabela(Table *table) {
             }
 
             printf("%s\n", table->fields[i]);
+        }
+
+        // Printa os índices existentes
+        printf("Índices existentes:\n");
+
+        // Hash
+        // elabora o nome do arquivo de index: hash
+        char * filename = glueString(3, "tables_index/", table->name, "_hash.index"); 
+        FILE * aux_index;
+        if(fileExist(filename)) { // verifica se o arquivo existe = tem índice
+            aux_index = fopen(filename, "rb");
+            TableName tableName;
+            fread(tableName, sizeof(TableName), 1, aux_index); // lê o nome do campo indexado
+            printf("Hash: índice para o campo %s do tipo: INT\n", tableName);
+            fclose(aux_index);
+        } else {
+            printf("Hash: não existem índices\n");
+        }
+
+        // Tree
+        // elabora o nome do arquivo de index: árvores
+        filename = glueString(3, "tables_index/", table->name, "_tree.index"); 
+        if(fileExist(filename)) { // verifica se o arquivo existe = tem índice
+            aux_index = fopen(filename, "rb");
+            TableName tableName;
+            fread(tableName, sizeof(TableName), 1, aux_index); // lê o nome do campo indexado
+            printf("Árvore: índice para o campo %s do tipo: INT\n", tableName);
+            fclose(aux_index);
+        } else {
+            printf("Árvore: não existem índices\n");
         }
     } else {
         fprintf(stderr, "Tabela não encontrada!\n");
@@ -333,6 +365,10 @@ void incluirRegistro(Row *row) {
             }
             // Fecha arquivo de blocos deletados
             fclose(tableFileEmpty);
+
+            // Adiciona o registro nos índices
+            // #to do
+
             // Printa a mensagem de sucesso
             printf("Registro criado: ");
             for (int i = 0; i < table.cols; i++) {
@@ -737,6 +773,10 @@ void removerRegistros(Selection *selection) {
             // Fecha os arquivos
             fclose(tableFile);
             fclose(tableFileEmpty);
+
+            // Remove o registro nos índices
+            // #to do
+
         } else {
             fprintf(stderr, "Não existe pesquisa para essa tabela!\n");
         }
@@ -749,18 +789,24 @@ void criarIndex(Selection *selection) {
     if(tableExists(qtTables, selection->tableName)) {
         if(selection->parameter == 'H') { // se for index do tipo hash
             if(fieldExistInTable(selection->tableName, selection->field)){ // verifica se o campo a ser indexado existe na tabela
+                
                 if(getFieldType(selection->tableName, selection->field) != 'i') { // verifica se o campo a ser indexado é do tipo inteiro
                     fprintf(stderr, "O campo %s não é do tipo INT %s.\n", selection->field);
                     return;
                 }
+
                 char * filename = glueString(3, "tables_index/", selection->tableName, "_hash.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
-                FILE * aux;
-                if(aux = fopen(filename, "rb") != NULL) { // verifica se o arquivo do index já existe
+                
+                if(fileExist(filename)) { // verifica se já existe um index hash para a tabela (=> arquivo já existe)
                     fprintf(stderr, "O campo %s já é indexado na tabela %s.\n", selection->field, selection->tableName);
-                    fclose(aux);
                     return;
                 }
-                fclose(fopen(filename, "ab+")); // cria o arquivo do index
+
+                FILE * tabela_index = fopen(filename, "wb+"); // cria o arquivo do index
+
+                fwrite(selection->field, sizeof(Field), 1, tabela_index); // escreve o nome do campo que será indexado
+
+                fclose(tabela_index);
                 // to continue
 
             } else {
@@ -768,20 +814,25 @@ void criarIndex(Selection *selection) {
             }
         } else if (selection->parameter == 'A') { // se for index do tipo árvore
             if(fieldExistInTable(selection->tableName, selection->field)){ // verifica se o campo a ser indexado existe na tabela
+                
                 if(getFieldType(selection->tableName, selection->field) != 'i') { // verifica se o campo a ser indexado é do tipo inteiro
                     fprintf(stderr, "O campo %s não é do tipo INT %s.\n", selection->field);
                     return;
                 }
+
                 char * filename = glueString(4, "tables_index/", selection->tableName, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
-                FILE * aux;
-                if(aux = fopen(filename, "rb") != NULL) { // verifica se o arquivo do index já existe
+                
+                if(fileExist(filename)) { // verifica se já existe um index tree para a tabela (=> arquivo já existe)
                     fprintf(stderr, "O campo %s já é indexado na tabela %s.\n", selection->field, selection->tableName);
-                    fclose(aux);
                     return;
                 }
-                fclose(fopen(filename, "ab+")); // cria o arquivo do index
-                // to continue
 
+                FILE * tabela_index = fopen(filename, "wb+"); // cria o arquivo do index
+
+                fwrite(selection->field, sizeof(Field), 1, tabela_index); // escreve o nome do campo que será indexado
+
+                fclose(tabela_index);
+                // to continue
             } else {
                 fprintf(stderr, "O campo %s não existe na tabela %s.\n", selection->field, selection->tableName);
             }
@@ -793,7 +844,18 @@ void criarIndex(Selection *selection) {
     }
 }
 
-void removerIndex(Selection *selection) {
+void removerIndex(const TableName * tableName, int imprime) { // recebe o nome da tabela e um booleano que indica a impressão dos logs para o usuário
+    char * filename_tree = glueString(3, "tables_index/", *tableName, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
+    char * filename_hash = glueString(3, "tables_index/", *tableName, "_hash.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
+    if(fileExist(filename_tree)) { // remove o árquivo de índice (árvore), caso ele exista
+        removeFile(filename_tree);
+        if(imprime) printf("Índice (árvore) removido.");
+    }
+    if(fileExist(filename_hash)) { // remove o árquivo de índice (hash), caso ele exista
+        removeFile(filename_hash);
+        if(imprime) printf("Índice (hash) removido.");
+    }
+    return;
 }
 
 void gerarIndex(Selection *selection) {

@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <unistd.h>
 
+int fileExist(char * filename);
 void *mallocSafe(size_t s);
 void createFile(const char *path);
 FILE *fopenSafe(const char *path,const char *mode);
