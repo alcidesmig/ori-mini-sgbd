@@ -747,21 +747,41 @@ void removerRegistros(Selection *selection) {
 
 void criarIndex(Selection *selection) {
     if(tableExists(qtTables, selection->tableName)) {
-        if(selection->parameter == 'H') {
-            if(fieldExistInTable(selection->tableName, selection->field)){
-                if(getFieldType(selection->tableName, selection->field) != 'i') {
+        if(selection->parameter == 'H') { // se for index do tipo hash
+            if(fieldExistInTable(selection->tableName, selection->field)){ // verifica se o campo a ser indexado existe na tabela
+                if(getFieldType(selection->tableName, selection->field) != 'i') { // verifica se o campo a ser indexado é do tipo inteiro
                     fprintf(stderr, "O campo %s não é do tipo INT %s.\n", selection->field);
                     return;
                 }
-
+                char * filename = glueString(3, "tables_index/", selection->tableName, "_hash.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
+                FILE * aux;
+                if(aux = fopen(filename, "rb") != NULL) { // verifica se o arquivo do index já existe
+                    fprintf(stderr, "O campo %s já é indexado na tabela %s.\n", selection->field, selection->tableName);
+                    fclose(aux);
+                    return;
+                }
+                fclose(fopen(filename, "ab+")); // cria o arquivo do index
                 // to continue
 
             } else {
                 fprintf(stderr, "O campo %s não existe na tabela %s.\n", selection->field, selection->tableName);
             }
-        } else if (selection->parameter == 'A') {
-            if(fieldExistInTable(selection->tableName, selection->field)){
-                // to do
+        } else if (selection->parameter == 'A') { // se for index do tipo árvore
+            if(fieldExistInTable(selection->tableName, selection->field)){ // verifica se o campo a ser indexado existe na tabela
+                if(getFieldType(selection->tableName, selection->field) != 'i') { // verifica se o campo a ser indexado é do tipo inteiro
+                    fprintf(stderr, "O campo %s não é do tipo INT %s.\n", selection->field);
+                    return;
+                }
+                char * filename = glueString(4, "tables_index/", selection->tableName, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
+                FILE * aux;
+                if(aux = fopen(filename, "rb") != NULL) { // verifica se o arquivo do index já existe
+                    fprintf(stderr, "O campo %s já é indexado na tabela %s.\n", selection->field, selection->tableName);
+                    fclose(aux);
+                    return;
+                }
+                fclose(fopen(filename, "ab+")); // cria o arquivo do index
+                // to continue
+
             } else {
                 fprintf(stderr, "O campo %s não existe na tabela %s.\n", selection->field, selection->tableName);
             }
