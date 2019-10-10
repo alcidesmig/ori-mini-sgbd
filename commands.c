@@ -119,7 +119,7 @@ void removerTabela(Table *table) {
         // Remove o arquivo de blocos deletados
         removeFile(path);
         // Remove os índices da tabela, sem printar nada
-        removerIndex(table->name, 0);
+        removerIndex(&table->name, 0);
         free(path);
         // Decrementa o número de tabelas
         qtTables--;
