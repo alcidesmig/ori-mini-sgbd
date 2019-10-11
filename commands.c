@@ -190,10 +190,10 @@ void apresentarTabela(Table *table) {
             aux_index = fopen(filename, "rb");
             TableName tableName;
             fread(tableName, sizeof(TableName), 1, aux_index); // lê o nome do campo indexado
-            printf("Hash: índice para o campo %s do tipo: INT\n", tableName);
+            printf("\t> Hash: índice para o campo %s do tipo: INT\n", tableName);
             fclose(aux_index);
         } else {
-            printf("Hash: não existem índices\n");
+            printf("\t> Hash: não existem índices\n");
         }
 
         // Tree
@@ -203,10 +203,10 @@ void apresentarTabela(Table *table) {
             aux_index = fopen(filename, "rb");
             TableName tableName;
             fread(tableName, sizeof(TableName), 1, aux_index); // lê o nome do campo indexado
-            printf("Árvore: índice para o campo %s do tipo: INT\n", tableName);
+            printf("\t> Árvore: índice para o campo %s do tipo: INT\n", tableName);
             fclose(aux_index);
         } else {
-            printf("Árvore: não existem índices\n");
+            printf("\t> Árvore: não existem índices\n");
         }
     } else {
         fprintf(stderr, "Tabela não encontrada!\n");
