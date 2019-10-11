@@ -11,7 +11,7 @@ Type getFieldType(char *tableName, Field field) {
     fread(&table, sizeof(Table), 1, tableFile);
     // Laço de repetição para encontrar a posição do campo desejado
     int i;
-    for(i = 0; i < table.cols && (strcmp(table.fields[i], tableName)); i++);
+    for(i = 0; i < table.cols && (strcmp(table.fields[i], field)); i++);
     // Retorna o tipo do campo desejado baseado na sua posição
     return table.types[i];
 }
@@ -27,7 +27,7 @@ int fieldExistInTable(char *name, Field field) {
     // Variável que indicará se o campo existe na tabela
     int exist = 0;
     for(int i = 0; i < table.cols && !exist; i++) {
-        exist = (strcmp(table.fields[i], name) == 0);
+        exist = (strcmp(table.fields[i], field) == 0);
     }
     return exist;
 }

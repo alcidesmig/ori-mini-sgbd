@@ -119,7 +119,7 @@ void removerTabela(Table *table) {
         // Remove o arquivo de blocos deletados
         removeFile(path);
         // Remove os índices da tabela, sem printar nada
-        removerIndex(&table->name, 0);
+        removerIndex(table->name, 0);
         free(path);
         // Decrementa o número de tabelas
         qtTables--;
@@ -249,6 +249,8 @@ void listarTabela() {
             fseek(tablesIndex, blocks*BLOCK_SIZE, SEEK_CUR);
         }
     }
+    // Coloca o ponteiro no início do arquivo para uma nova chamada da função
+    fseek(tablesIndex, sizeof(int), SEEK_SET);
 }
 
 // Incluí um registro em uma tabela
@@ -789,15 +791,18 @@ void criarIndex(Selection *selection) {
     if(tableExists(qtTables, selection->tableName)) {
         if(selection->parameter == 'H') { // se for index do tipo hash
             if(fieldExistInTable(selection->tableName, selection->field)){ // verifica se o campo a ser indexado existe na tabela
-                
+
                 if(getFieldType(selection->tableName, selection->field) != 'i') { // verifica se o campo a ser indexado é do tipo inteiro
                     fprintf(stderr, "O campo %s não é do tipo INT %s.\n", selection->field);
                     return;
                 }
-
+                
                 char * filename = glueString(3, "tables_index/", selection->tableName, "_hash.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
                 
+                printf("Filename: %s\n", filename);
+
                 if(fileExist(filename)) { // verifica se já existe um index hash para a tabela (=> arquivo já existe)
+                    
                     fprintf(stderr, "O campo %s já é indexado na tabela %s.\n", selection->field, selection->tableName);
                     return;
                 }
@@ -844,9 +849,10 @@ void criarIndex(Selection *selection) {
     }
 }
 
-void removerIndex(const TableName * tableName, int imprime) { // recebe o nome da tabela e um booleano que indica a impressão dos logs para o usuário
-    char * filename_tree = glueString(3, "tables_index/", *tableName, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
-    char * filename_hash = glueString(3, "tables_index/", *tableName, "_hash.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
+void removerIndex(const TableName tableName, int imprime) { // recebe o nome da tabela e um booleano que indica a impressão dos logs para o usuário
+    char * filename_tree = glueString(3, "tables_index/", tableName, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
+    char * filename_hash = glueString(3, "tables_index/", tableName, "_hash.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
+    printf("%s\n", filename_hash);
     if(fileExist(filename_tree)) { // remove o árquivo de índice (árvore), caso ele exista
         removeFile(filename_tree);
         if(imprime) printf("Índice (árvore) removido.");

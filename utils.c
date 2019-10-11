@@ -2,7 +2,7 @@
 
 // Função para verificar se um arquivo existe (recebe o path inteiro)
 int fileExist(char * filename) {
-    return access(filename, R_OK);
+    return !(access(filename, R_OK));
 }
 
 void *mallocSafe(size_t s) {
