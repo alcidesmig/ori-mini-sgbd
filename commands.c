@@ -420,180 +420,197 @@ void buscarRegistros(Selection *selection) {
         char *path = glueString(2, TABLES_DIR, selection->tableName);
         // Abre o arquivo da tabela
         FILE *tableFile = fopenSafe(path, "rb+");
-        // Lê os metadados
-        fread(&table, sizeof(Table), 1, tableFile);
 
-        // Offset do campo nos dados
-        int offset = 0;
-        // Tipo do campo
-        char fieldType = '\0';
+        // Elabora o nome do arquivo de índices: hash
+        char * filename_index_hash = glueString(3, "tables_index/", selection->tableName, "_hash.index"); 
+        // Elabora o nome do arquivo de índices: árvore
+        char * filename_index_tree = glueString(3, "tables_index/", selection->tableName, "_tree.index"); 
 
-        int i = 0;
-        // Procura o campo da busca
-        while (i < table.cols && !fieldType) {
-            // Se o campo foi encontrado
-            if (!strcmp(table.fields[i], selection->field)) {
-                // É definido o tipo do campo
-                fieldType = table.types[i];
-                break;
-            // Se não for encontrado
-            } else {
-                // É incrementado o offset
-                if (table.types[i] == 'i') {
-                    offset += sizeof(int);
-                } else if (table.types[i] == 's') {
-                    offset += sizeof(long int);
-                } else if (table.types[i] == 'f') {
-                    offset += sizeof(float);
-                } else if (table.types[i] == 'b') {
-                    offset += sizeof(long int);
-                }
-            }
-
-            i++;
-        }
-
-        // Se o campo não for encontrado
-        if (i == table.cols) {
-            fprintf(stderr, "Campo %s não encontrado!\n", selection->field);
-            // Fecha o arquivo
-            fclose(tableFile);
+        // Verifica se já existe um index hash ou tree para a tabela
+        // se existir: realiza busca pelo índice, se não: busca sequencial
+        if(fileExist(filename_index_hash)) {    
+            printf("Índice <HASH>: to do"); 
             return;
-        }
+        } else if (fileExist(filename_index_tree)) {
+            printf("Índice <Árvore>: to do"); 
+            return;
+        } else {
+            // Lê os metadados
+            fread(&table, sizeof(Table), 1, tableFile);
 
-        // Posição do registro
-        long int rowPos = 0;
+            // Offset do campo nos dados
+            int offset = 0;
+            // Tipo do campo
+            char fieldType = '\0';
 
-        // Resto do sscanf
-        char *rest = NULL;
-
-        // Auxiliar, conversão do valor de pesquisa
-        int selNumbI;
-        float selNumbF;
-
-        // Converte os valores
-        if (fieldType == 'i') {
-            if(sscanf((char *)selection->value, "%d %[^\n]", &selNumbI, rest) != 1) {
-                fprintf(stderr, "Erro ao converter o valor %s para inteiro!", (char *)selection->value);
-                // Libera o resto, se leu a mais
-                if (rest) {
-                    free(rest);
+            int i = 0;
+            // Procura o campo da busca
+            while (i < table.cols && !fieldType) {
+                // Se o campo foi encontrado
+                if (!strcmp(table.fields[i], selection->field)) {
+                    // É definido o tipo do campo
+                    fieldType = table.types[i];
+                    break;
+                // Se não for encontrado
+                } else {
+                    // É incrementado o offset
+                    if (table.types[i] == 'i') {
+                        offset += sizeof(int);
+                    } else if (table.types[i] == 's') {
+                        offset += sizeof(long int);
+                    } else if (table.types[i] == 'f') {
+                        offset += sizeof(float);
+                    } else if (table.types[i] == 'b') {
+                        offset += sizeof(long int);
+                    }
                 }
+
+                i++;
+            }
+
+            // Se o campo não for encontrado
+            if (i == table.cols) {
+                fprintf(stderr, "Campo %s não encontrado!\n", selection->field);
                 // Fecha o arquivo
                 fclose(tableFile);
                 return;
             }
-        } else if (fieldType == 'f') {
-            if (sscanf((char *)selection->value, "%f %[^\n]", &selNumbF, rest) != 1) {
-                fprintf(stderr, "Erro ao converter o valor %s para ponto flutuante!", (char *)selection->value);
-                // Libera o resto, se leu a mais
-                if (rest) {
-                    free(rest);
-                }
-                // Fecha o arquivo
-                fclose(tableFile);
-                return;
-            }
-        }
 
-        // Auxiliar, bytes lidos
-        int read = 0;
-        // Auxiliar de leitura
-        int numbI;
-        float numbF;
-        long int pos;
-        int strSize;
-        char *str;
-        // Flag de validade
-        int valido = 0;
+            // Posição do registro
+            long int rowPos = 0;
 
-        // Lista de resultados
-        ResultList *resultList = NULL;
+            // Resto do sscanf
+            char *rest = NULL;
 
-        // Compara os registros
-        i = 0;
-        while (i < table.rows && i < searchLimit) {
-            // Salva a posição do registro
-            rowPos = ftell(tableFile);
-            // Lê a flag de validade
-            fread(&valido, sizeof(int), 1, tableFile);
+            // Auxiliar, conversão do valor de pesquisa
+            int selNumbI;
+            float selNumbF;
 
-            if (valido) {
-                // Pula o offset
-                fseek(tableFile, offset, SEEK_CUR);
-
-                // Lê o campo
-                if (fieldType == 'i') {
-                    // Bytes lidos
-                    read = sizeof(int);
-                    // Lê o número
-                    fread(&numbI, read, 1, tableFile);
-
-                    // Compara com o valor pesquisado
-                    if (numbI == selNumbI) {
-                        // Adiciona a posição a lista de resultados
-                        addToResultList(&resultList, rowPos);
+            // Converte os valores
+            if (fieldType == 'i') {
+                if(sscanf((char *)selection->value, "%d %[^\n]", &selNumbI, rest) != 1) {
+                    fprintf(stderr, "Erro ao converter o valor %s para inteiro!", (char *)selection->value);
+                    // Libera o resto, se leu a mais
+                    if (rest) {
+                        free(rest);
                     }
-                } else if (fieldType == 's') {
-                    // Bytes lidos
-                    read = sizeof(long int);
-                    // Lê a posição da string
-                    fread(&pos, read, 1, tableFile);
-                    // Pula para posição da string
-                    fseek(stringsFile, pos, SEEK_SET);
-                    // Lê o tamanho
-                    fread(&strSize, sizeof(int), 1, stringsFile);
-                    // Aloca memória para string
-                    str = (char *)mallocSafe(strSize+1);
-                    // Lê a string
-                    fread(str, strSize, 1, stringsFile);
-                    // Termina a string
-                    str[strSize] = '\0';
-
-                    // Compara com o valor pesquisado
-                    if (!strcmp(str, (char *)selection->value)) {
-                        // Adiciona a posição a lista de resultados
-                        addToResultList(&resultList, rowPos);
-                    }
-                    
-                    free(str);
-                } else if (fieldType == 'f') {
-                    // Bytes lidos
-                    read = sizeof(float);
-                    // Lê o número
-                    fread(&numbF, read, 1, tableFile);
-
-                    // Compara com o valor pesquisado
-                    if (numbF == selNumbF) {
-                        // Adiciona a posição a lista de resultados
-                        addToResultList(&resultList, rowPos);
-                    }
-                } else if (fieldType == 'b') {
-                    fprintf(stderr, "Busca em campos binários não é suportada!\n");
                     // Fecha o arquivo
                     fclose(tableFile);
                     return;
                 }
-
-                // Pula os campos restantes
-                fseek(tableFile, table.length-offset-read, SEEK_CUR);
-            } else {
-                // Pula o registro
-                fseek(tableFile, table.length, SEEK_CUR);
+            } else if (fieldType == 'f') {
+                if (sscanf((char *)selection->value, "%f %[^\n]", &selNumbF, rest) != 1) {
+                    fprintf(stderr, "Erro ao converter o valor %s para ponto flutuante!", (char *)selection->value);
+                    // Libera o resto, se leu a mais
+                    if (rest) {
+                        free(rest);
+                    }
+                    // Fecha o arquivo
+                    fclose(tableFile);
+                    return;
+                }
             }
 
-            i++;
-        }
+            // Auxiliar, bytes lidos
+            int read = 0;
+            // Auxiliar de leitura
+            int numbI;
+            float numbF;
+            long int pos;
+            int strSize;
+            char *str;
+            // Flag de validade
+            int valido = 0;
 
-        if (resultList) {
-            // Adiciona o resultado à arvore de resultados
-            addToResultTree(&resultTree, resultList, selection->tableName);
-        } else {
-            printf("Nenhum resultado para %s\n", selection->tableName);
-        }
+            // Lista de resultados
+            ResultList *resultList = NULL;
 
-        // Fecha o arquivo
-        fclose(tableFile);
+            // Compara os registros
+            i = 0;
+            while (i < table.rows && i < searchLimit) {
+                // Salva a posição do registro
+                rowPos = ftell(tableFile);
+                // Lê a flag de validade
+                fread(&valido, sizeof(int), 1, tableFile);
+
+                if (valido) {
+                    // Pula o offset
+                    fseek(tableFile, offset, SEEK_CUR);
+
+                    // Lê o campo
+                    if (fieldType == 'i') {
+                        // Bytes lidos
+                        read = sizeof(int);
+                        // Lê o número
+                        fread(&numbI, read, 1, tableFile);
+
+                        // Compara com o valor pesquisado
+                        if (numbI == selNumbI) {
+                            // Adiciona a posição a lista de resultados
+                            addToResultList(&resultList, rowPos);
+                        }
+                    } else if (fieldType == 's') {
+                        // Bytes lidos
+                        read = sizeof(long int);
+                        // Lê a posição da string
+                        fread(&pos, read, 1, tableFile);
+                        // Pula para posição da string
+                        fseek(stringsFile, pos, SEEK_SET);
+                        // Lê o tamanho
+                        fread(&strSize, sizeof(int), 1, stringsFile);
+                        // Aloca memória para string
+                        str = (char *)mallocSafe(strSize+1);
+                        // Lê a string
+                        fread(str, strSize, 1, stringsFile);
+                        // Termina a string
+                        str[strSize] = '\0';
+
+                        // Compara com o valor pesquisado
+                        if (!strcmp(str, (char *)selection->value)) {
+                            // Adiciona a posição a lista de resultados
+                            addToResultList(&resultList, rowPos);
+                        }
+                        
+                        free(str);
+                    } else if (fieldType == 'f') {
+                        // Bytes lidos
+                        read = sizeof(float);
+                        // Lê o número
+                        fread(&numbF, read, 1, tableFile);
+
+                        // Compara com o valor pesquisado
+                        if (numbF == selNumbF) {
+                            // Adiciona a posição a lista de resultados
+                            addToResultList(&resultList, rowPos);
+                        }
+                    } else if (fieldType == 'b') {
+                        fprintf(stderr, "Busca em campos binários não é suportada!\n");
+                        // Fecha o arquivo
+                        fclose(tableFile);
+                        return;
+                    }
+
+                    // Pula os campos restantes
+                    fseek(tableFile, table.length-offset-read, SEEK_CUR);
+                } else {
+                    // Pula o registro
+                    fseek(tableFile, table.length, SEEK_CUR);
+                }
+
+                i++;
+            }
+
+            if (resultList) {
+                // Adiciona o resultado à arvore de resultados
+                addToResultTree(&resultTree, resultList, selection->tableName);
+            } else {
+                printf("Nenhum resultado para %s\n", selection->tableName);
+            }
+
+            // Fecha o arquivo
+            fclose(tableFile);
+            
+        }
     } else {
         fprintf(stderr, "Tabela não encontrada!\n");
     }
@@ -777,8 +794,18 @@ void removerRegistros(Selection *selection) {
             fclose(tableFileEmpty);
 
             // Remove o registro nos índices
-            // #to do
+            // Elabora o nome do arquivo de índices: árvore
+            char * filename_index_hash = glueString(3, "tables_index/", selection->tableName, "_hash.index"); 
+            char * filename_index_tree = glueString(3, "tables_index/", selection->tableName, "_tree.index"); 
 
+            // Verifica se já existe um index hash ou tree para a tabela
+            // se existir: remove o valor do índice
+            if(fileExist(filename_index_hash)) {    
+                // to do: remoção na hash
+            }
+            if(fileExist(filename_index_tree)) {    
+                // to do: remoção na árvore
+            }
         } else {
             fprintf(stderr, "Não existe pesquisa para essa tabela!\n");
         }

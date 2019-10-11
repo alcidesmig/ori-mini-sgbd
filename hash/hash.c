@@ -23,7 +23,6 @@ void destroyHash(Noh ** lista) {
 
 int insertHash(Noh ** lista, Item i) {
 	int pos = hashFunc(i.key);
-	//printf("Hash mandou: %ld\n", i.telefone);
 	return insereLista(&lista[pos], i);
 }
 
@@ -36,7 +35,6 @@ Item *searchHash(Noh ** lista, Chave key) {
 		x->key = -1;
 		return x;
 	}
-	//printf("Encontrou %s %d\n", no->item.nome, no->item.telefone);
 	return &(no->item);
 }
 
