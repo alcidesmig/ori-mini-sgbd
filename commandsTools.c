@@ -1,7 +1,19 @@
 #include "commandsTools.h"
 
+// Verifica se existe um índice hash para a tabela
+int haveIndexHash(TableName tableName) {
+    char * filename = glueString(3, "tables_index/", tableName, "_hash.index"); 
+    return fileExist(filename);
+}
+
+// Verifica se existe um índice tree para a tabela
+int haveIndexTree(TableName tableName) {
+    char * filename = glueString(3, "tables_index/", tableName, "_tree.index"); 
+    return fileExist(filename);
+}
+
 // Antes de usar essa função, garanta que o campo exista na tablea utilizando a função fieldExistInTable(...)
-Type getFieldType(char *tableName, Field field) {
+Type getFieldType(TableName tableName, Field field) {
     // Path do arquivo da tabela
     char *path = glueString(2, TABLES_DIR, tableName);
     // Abre o arquivo da tabela
