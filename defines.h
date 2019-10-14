@@ -6,7 +6,7 @@
 #define NUMBER_COLUMNS_LIMIT 32
 #define TABLE_NAME_LIMIT 32
 #define FIELD_NAME_LIMIT 32
-#define NUM_ORDEM_BTREE 4
+#define NUM_ORDEM_BTREE 1024
 
 typedef char TableName[TABLE_NAME_LIMIT];
 typedef char Type;

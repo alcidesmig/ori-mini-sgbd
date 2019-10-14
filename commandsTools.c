@@ -1,6 +1,13 @@
 #include "commandsTools.h"
 #include "btree/lista.h"
 
+// Remove a BTree correspondente à tabela da lista de BTrees
+void apagaBTree(TableName tableName) {
+    // to do: free na BTree
+    removeLista(lista_btree, tableName);
+    return;
+}
+
 // Retorna a BTree correspondente à tabela
 BTree * encontraBTree(TableName tableName) {
     return pesquisaLista(lista_btree, tableName)->item.tree;

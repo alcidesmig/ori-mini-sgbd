@@ -305,12 +305,32 @@ void incluirRegistro(Row *row) {
                 fseek(tableFile, table.rows * (table.length + sizeof(int)), SEEK_CUR);
             }
 
+            
+            //alcides
+
+            // Indexação
+            // Posição do registro no arquivo
+            int pos_insercao_registro = ftell(tableFile);
+            // Variáveis a serem utilizadas caso haja indexação
+            Field field_indexado;
+            int valor_field_indexado;
+            // Verifica se há indexação
+            int haveIndex = haveIndexTree(row->tableName);
+            // Lê o Field indexado, caso tenha indexação
+            if(haveIndex) {
+                char * filename = glueString(3, "tables_index/", row->tableName, "_tree.index"); 
+                FILE * aux_index = fopen(filename, "rb");
+                fread(field_indexado, sizeof(Field), 1, aux_index); 
+                fclose(aux_index);
+            }
+            
             // Bit de validade
             fwrite(&valido, sizeof(int), 1, tableFile);
             // Para cada coluna
             for (int i = 0; i < table.cols; i++) {
                 // Verifica o tipo de dado da coluna
                 if (table.types[i] == 'i') {
+
                     // Auxiliares
                     int numb;
                     char *rest;
@@ -324,6 +344,14 @@ void incluirRegistro(Row *row) {
                     }
                     // Escreve no arquivo da tabela
                     fwrite(&numb, sizeof(int), 1, tableFile);
+
+                     // Pega o valor do field indexado caso haja index
+                    if(haveIndex){
+                        if(!strcmp(table.fields[i], field_indexado)) {
+                            valor_field_indexado = numb;
+                        }
+                    }
+
                 } else if (table.types[i] == 's') {
                     // Escreve a string no arquivo de strings
                     long int pos = addToExFile((char *)row->values[i], stringsFile, &stringEBlocks);
@@ -369,7 +397,14 @@ void incluirRegistro(Row *row) {
             fclose(tableFileEmpty);
 
             // Adiciona o registro nos índices
-            // #to do
+            
+            // Caso haja indexação (tree) -> adiciona par (registro, addr) na BTree correspondente
+            if(haveIndexTree(row->tableName)) {    
+                // Encontra a BTree correspondente
+                BTree * tree = encontraBTree(row->tableName);
+                // Insere os valores na BTree
+                btree_insert(tree, valor_field_indexado, pos_insercao_registro);
+            }
 
             // Printa a mensagem de sucesso
             printf("Registro criado: ");
@@ -778,7 +813,7 @@ void removerRegistros(Selection *selection) {
                 fread(field_indexado, sizeof(Field), 1, aux_index); 
                 fclose(aux_index);
             }
-
+            
             while (list) {
                 // Grava a posição deletada
                 fwrite(&(list->pos), sizeof(long int), 1, tableFileEmpty);
@@ -971,6 +1006,8 @@ void removerIndex(const TableName tableName, int imprime) { // recebe o nome da 
     char * filename_hash = glueString(3, "tables_index/", tableName, "_hash.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
 
     if(fileExist(filename_tree)) { // remove o árquivo de índice (árvore), caso ele exista
+        BTree * tree = encontraBTree(tableName);
+        
         removeFile(filename_tree);
         if(imprime) printf("Índice (árvore) removido.");
     }

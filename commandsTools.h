@@ -11,6 +11,9 @@
 #include "utils.h"
 #include "commandsDefines.h"
 
+void apagaBTree(TableName tableName);
+BTree * encontraBTree(TableName tableName);
+void carregaBTree(TableName tableName);
 int haveIndexHash(TableName tableName);
 int haveIndexTree(TableName tableName);
 Type getFieldType(TableName tableName, Field field);
