@@ -1,4 +1,32 @@
 #include "commandsTools.h"
+#include "btree/lista.h"
+
+
+
+// Carrega os dados da BTree de uma tabela caso eles ainda não tenha sido carregaods
+void carregaBTree(TableName tableName) {
+    if(haveIndexTree(tableName) && pesquisaLista(lista_btree, tableName) != NULL) {
+        // Arquivo da BTree
+        char * filename = glueString(3, "tables_index/", tableName, "_tree.index"); 
+        FILE * fp = fopen(filename, "r");
+        // Pula o nome do campo indexado
+        fseek(fp, sizeof(Field), SEEK_SET);
+        // Lê a quantidade de itens indexados
+        int qtdBTree;
+        fread(&qtdBTree, sizeof(int), 1, fp);
+        // Lê os itens indexados
+        pair_btree * values = (pair_btree *) malloc(sizeof(pair_btree) * qtdBTree);
+        fread(values, sizeof(pair_btree), qtdBTree, fp);
+        // Cria, povoa a BTree e insere ela na lista de BTrees carregadas
+        ItemBTree item_btree;
+        strcpy(item_btree.key, tableName);
+        item_btree.tree = btree_new(NUM_ORDEM_BTREE);
+        for(int i = 0; i < qtdBTree; i++) {
+            btree_insert(item_btree.tree, values[i].key, values[i].addr);
+        }
+        insereLista(lista_btree, item_btree);
+    }
+}
 
 // Verifica se existe um índice hash para a tabela
 int haveIndexHash(TableName tableName) {

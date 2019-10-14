@@ -6,6 +6,7 @@
 #define NUMBER_COLUMNS_LIMIT 32
 #define TABLE_NAME_LIMIT 32
 #define FIELD_NAME_LIMIT 32
+#define NUM_ORDEM_BTREE 4
 
 typedef char TableName[TABLE_NAME_LIMIT];
 typedef char Type;
@@ -36,6 +37,11 @@ typedef struct Selection {
     Field field;
     Value value;
 } Selection;
+
+typedef struct {
+    int key;
+    int addr;
+} pair_btree;
 
 extern const char INT[];
 extern const char STR[];

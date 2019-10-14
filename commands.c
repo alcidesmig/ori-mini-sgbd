@@ -1,5 +1,5 @@
 #include "commands.h"
-
+#include "btree/lista.h"
 // Cria uma tabela no banco
 // table: ponteiro para tabela
 void criarTabela(Table *table) {
@@ -400,6 +400,11 @@ void incluirRegistro(Row *row) {
 // Busca um ou mais registros em uma tabela
 // selection: ponteiro para uma seleção
 void buscarRegistros(Selection *selection) {
+
+    // Carrega a btree da tabela utilizada caso ela ainda não tenha sido carregada
+    carregaBTree(selection->tableName);
+    
+
     // Limite de busca
     int searchLimit = (selection->parameter == 'U' ? 1 : 2147483647);
     
@@ -636,7 +641,7 @@ void apresentarRegistros(Selection *selection) {
         FILE *tableFile = fopenSafe(path, "rb+");
         // Lê os metadados
         fread(&table, sizeof(Table), 1, tableFile);
-
+        //alcides
         // Auxiliar de leitura
         int numbI;
         float numbF;
@@ -827,8 +832,57 @@ void criarIndex(Selection *selection) {
 
                 fwrite(selection->field, sizeof(Field), 1, tabela_index); // escreve o nome do campo que será indexado
 
+                // Lê os valores do arquivo da tabela e insere os pares (key, ftell(key)) no arquivo para serem utilizados pela btree
+
+                // Tabela em questão
+                Table table;
+                // Path do arquivo da tabela
+                char *path = glueString(2, TABLES_DIR, selection->tableName);
+                // Abre o arquivo da tabela
+                FILE *tableFile = fopenSafe(path, "rb+");
+                // Lê os metadados
+                fread(&table, sizeof(Table), 1, tableFile);
+
+
+                int bit_validade;
+                int tam_pular = 0, tam_row = 0;
+                int j = 0;
+
+                // Descobre qual a posição (offset) do field a ser indexado
+                while(strcmp(table.fields[j], selection->field)) {
+                    switch(table.types[j]) {
+                        case 'i':
+                            tam_pular += sizeof(int);
+                            break;
+                        case 's':
+                            tam_pular += sizeof(long int);
+                            break;
+                        case 'f':
+                            tam_pular += sizeof(float);
+                            break;
+                        case 'b':
+                            tam_pular += sizeof(long int);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                // Lê os valores do campo a ser indexado e a posição do seu registro no arquivo
+                pair_btree * pairs = (pair_btree *) malloc(table.rows * sizeof(pair_btree));
+                int i_valido = 0;
+                for(int i = 0; i < table.length; i++) {
+                    fread(&bit_validade, sizeof(int), 1, tableFile);
+                    if(bit_validade) {
+                        pairs[i_valido].addr = ftell(tableFile);
+                        fseek(tableFile, tam_pular, SEEK_CUR); // to do: otimizar
+                        fread(&pairs[i_valido++], sizeof(int), 1, tableFile);
+                        fseek(tableFile, -(tam_pular + sizeof(int)), SEEK_CUR);
+                    }
+                    fseek(tableFile, table.length, SEEK_CUR);
+                }
+
                 fclose(tabela_index);
-                // to continue
 
             } else {
                 fprintf(stderr, "O campo %s não existe na tabela %s.\n", selection->field, selection->tableName);
@@ -910,6 +964,9 @@ void start() {
     fseek(tablesIndex, 0, SEEK_SET);
     // Lê a quantidade de tabelas
     fread(&qtTables, sizeof(int), 1, tablesIndex);
+
+    // Inicializa a lista das btrees
+    inicializaLista(lista_btree);
 }
 
 // Encerra o sistema
