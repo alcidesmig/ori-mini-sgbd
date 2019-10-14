@@ -1,5 +1,6 @@
 #include "commands.h"
 #include "btree/lista.h"
+#include "btree/btree.h"
 // Cria uma tabela no banco
 // table: ponteiro para tabela
 void criarTabela(Table *table) {
@@ -310,7 +311,8 @@ void incluirRegistro(Row *row) {
 
             // Indexação
             // Posição do registro no arquivo
-            int pos_insercao_registro = ftell(tableFile);
+            int * pos_insercao_registro = (int*) malloc(sizeof(int));
+            *pos_insercao_registro = ftell(tableFile);
             // Variáveis a serem utilizadas caso haja indexação
             Field field_indexado;
             int valor_field_indexado;
@@ -831,7 +833,7 @@ void removerRegistros(Selection *selection) {
                     if(haveIndex){
                         if(!strcmp(table.fields[i], field_indexado)) {
                             fread(&valor_index[i_index++], sizeof(int), 1, tableFile);
-                            fseek(tableFile, -sizeof(int), tableFile);
+                            fseek(tableFile, -sizeof(int), SEEK_CUR);
                         }
                     }
 
@@ -1001,13 +1003,12 @@ void criarIndex(Selection *selection) {
     }
 }
 
-void removerIndex(const TableName tableName, int imprime) { // recebe o nome da tabela e um booleano que indica a impressão dos logs para o usuário
+void removerIndex(TableName tableName, int imprime) { // recebe o nome da tabela e um booleano que indica a impressão dos logs para o usuário
     char * filename_tree = glueString(3, "tables_index/", tableName, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
     char * filename_hash = glueString(3, "tables_index/", tableName, "_hash.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
 
     if(fileExist(filename_tree)) { // remove o árquivo de índice (árvore), caso ele exista
-        BTree * tree = encontraBTree(tableName);
-        
+        apagaBTree(tableName);
         removeFile(filename_tree);
         if(imprime) printf("Índice (árvore) removido.");
     }

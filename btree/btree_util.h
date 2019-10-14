@@ -35,7 +35,7 @@ typedef struct pair_t {
    keys:       ponteiro para a lista de (ponteiros para) pairs<key, value>
  */
 typedef struct node_t {
-	bool is_leaf;
+	bool_ is_leaf;
 	int n_keys;
 
 	struct node_t **children;
@@ -64,7 +64,7 @@ node_position _node_position_new(node_t *node, int index);
     para pair's e 2*order ponteiros para node's.
     O parâmetro is_leaf é atribuído ao atributo de mesmo nome no node.
  */
-node_t* _node_new(int order, bool is_leaf);
+node_t* _node_new(int order, bool_ is_leaf);
 /*
     Aloca e retorna um novo pair com os valores passados.
  */
@@ -81,7 +81,7 @@ inline pair_t* _pair_copy(pair_t *p);
     pos:    retorno da posição em que a chave foi encontrada. Default: -1
     @return: se a chave key pertence ou não ao nó node
  */
-inline bool _node_find_key(node_t *node, int key, int* pos);
+inline bool_ _node_find_key(node_t *node, int key, int* pos);
 
 /*
     As funções a seguir correspondem à execução de um FOR.

@@ -30,7 +30,7 @@ inline pair_t* _pair_copy(pair_t *p) {
 	return new;
 }
 
-node_t* _node_new(int order, bool is_leaf) {
+node_t* _node_new(int order, bool_ is_leaf) {
 	node_t *n = malloc(sizeof(node_t));
 	assert(n != NULL);
 
@@ -46,7 +46,7 @@ node_t* _node_new(int order, bool is_leaf) {
 	return n;
 }
 
-inline bool _node_find_key(node_t *node, int key, int *pos) {
+inline bool_ _node_find_key(node_t *node, int key, int *pos) {
 	*pos = 0;
 
 	// Encontra a posição cuja chave é imediatamente maior ou igual à key

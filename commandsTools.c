@@ -1,5 +1,4 @@
 #include "commandsTools.h"
-#include "btree/lista.h"
 
 // Remove a BTree correspondente à tabela da lista de BTrees
 void apagaBTree(TableName tableName) {
@@ -32,7 +31,7 @@ void carregaBTree(TableName tableName) {
         strcpy(item_btree.key, tableName);
         item_btree.tree = btree_new(NUM_ORDEM_BTREE);
         for(int i = 0; i < qtdBTree; i++) {
-            btree_insert(item_btree.tree, values[i].key, values[i].addr);
+            btree_insert(item_btree.tree, values[i].key, &values[i].addr);
         }
         insereLista(lista_btree, item_btree);
     }

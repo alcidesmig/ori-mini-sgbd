@@ -5,7 +5,7 @@
 #include "btree.h"
 
 BTree* btree_new(int order) {
-	BTree* bt = malloc(sizeof(BTree));
+	BTree* bt = (BTree *)malloc(sizeof(BTree));
 	assert(bt != NULL);
 
 	#if DEBUG

@@ -10,6 +10,7 @@
 #include "defines.h"
 #include "utils.h"
 #include "commandsDefines.h"
+#include "btree/lista.h"
 
 void apagaBTree(TableName tableName);
 BTree * encontraBTree(TableName tableName);
