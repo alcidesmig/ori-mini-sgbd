@@ -73,7 +73,7 @@ node_position btree_remove(BTree *bt, int key);
     associado à key.
     Retorna node_position(NULL, -1) caso key não seja encontrada.
  */
-node_position _btree_find_node(node_t *node, int key);
+node_position btree_find_node(node_t *node, int key);
 /*
     Trata todos os casos de inserção de um pair na B-Tree.
     Retorna um node_position indicando onde a chave foi inserida.
@@ -81,12 +81,12 @@ node_position _btree_find_node(node_t *node, int key);
 
     order:  ordem da árvore à qual node pertence. Utilizado para alocar um novo nó.
  */
-node_position _btree_insert_nonfull(node_t *node, pair_t *pair, int order);
+node_position btree_insert_nonfull(node_t *node, pair_t *pair, int order);
 /*
     Realiza a função split sobre x, na posição pos.
     order:  ordem da árvore à qual node pertence. Utilizado para alocar um novo nó.
  */
-void _btree_split(node_t *x, int pos, int order);
+void btree_split(node_t *x, int pos, int order);
 /*
     Trata todos os casos de remoção de uma key na B-Tree.
     Realizada possíveis chamadas recursivas.
@@ -95,15 +95,15 @@ void _btree_split(node_t *x, int pos, int order);
     ATENÇÃO: Pode não ser seguro acessar tal posição.
     Retorna node_position(NULL, -1) caso key não exista em bt.
  */
-node_position _btree_remove_node(node_t *node, int key, int order);
+node_position btree_remove_node(node_t *node, int key, int order);
 
 /*
     Retorna o node_position da maior key em node
  */
-inline node_position _node_find_max(node_t *node);
+ node_position node_find_max(node_t *node);
 /*
     Retorna o node_position da menor key em node
  */
-inline node_position _node_find_min(node_t *node);
+ node_position node_find_min(node_t *node);
 
 #endif
