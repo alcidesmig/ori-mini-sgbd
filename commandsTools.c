@@ -1,7 +1,10 @@
 #include "commandsTools.h"
 #include "btree/lista.h"
 
-
+// Retorna a BTree correspondente à tabela
+BTree * encontraBTree(TableName tableName) {
+    return pesquisaLista(lista_btree, tableName)->item.tree;
+}
 
 // Carrega os dados da BTree de uma tabela caso eles ainda não tenha sido carregaods
 void carregaBTree(TableName tableName) {

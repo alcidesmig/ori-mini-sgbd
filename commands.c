@@ -201,9 +201,9 @@ void apresentarTabela(Table *table) {
         filename = glueString(3, "tables_index/", table->name, "_tree.index"); 
         if(fileExist(filename)) { // verifica se o arquivo existe = tem índice
             aux_index = fopen(filename, "rb");
-            TableName tableName;
-            fread(tableName, sizeof(TableName), 1, aux_index); // lê o nome do campo indexado
-            printf("\t> Árvore: índice para o campo %s do tipo: INT\n", tableName);
+            Field field;
+            fread(field, sizeof(Field), 1, aux_index); // lê o nome do campo indexado
+            printf("\t> Árvore: índice para o campo %s do tipo: INT\n", field);
             fclose(aux_index);
         } else {
             printf("\t> Árvore: não existem índices\n");
@@ -724,13 +724,31 @@ void removerRegistros(Selection *selection) {
         return;
     }
 
+    // (Início) auxiliares para o caso da existência de indexação
+
+    Field field_indexado;
+    // Aloca a quantidade de valores a serem excluidos
+    int cont_values = 0;
+    ResultList *list_search = searchResultList(resultTree, selection->tableName); // Recupera a pesquisa
+    ResultList * aux = list_search; 
+    while(list_search) {
+        cont_values++;
+        list_search = list_search->next;
+    }
+    int valor_index[cont_values];
+    int i_index = 0;
+    Field field_index;
+    int haveIndex = /*(haveIndexHash(selection->tableName) || */haveIndexTree(selection->tableName);
+
+    // (Fim) auxiliares para indexação
+
     // Verifica se a tabela existe
     int exists = tableExists(qtTables, selection->tableName);
 
     // Se a tabela existe
     if (exists) {
         // Recupera a pesquisa
-        ResultList *list = searchResultList(resultTree, selection->tableName);
+        ResultList *list = aux;
 
         if (list) {
             // Tabela em questão
@@ -752,6 +770,14 @@ void removerRegistros(Selection *selection) {
             int empty = 0;
             // Lê o número de blocos deletados
             fread(&empty, sizeof(int), 1, tableFileEmpty);
+            
+            // Lê o nome do campo indexado, caso tenha index
+            if(haveIndex) {
+                char * filename = glueString(3, "tables_index/", selection->tableName, "_tree.index"); 
+                FILE * aux_index = fopen(filename, "rb");
+                fread(field_indexado, sizeof(Field), 1, aux_index); 
+                fclose(aux_index);
+            }
 
             while (list) {
                 // Grava a posição deletada
@@ -765,6 +791,16 @@ void removerRegistros(Selection *selection) {
                 long int pos;
                 // Remove as strings e binários
                 for (int i = 0; i < table.cols; i++) {
+
+                    // Pega o valor do field indexado caso haja index
+                    if(haveIndex){
+                        if(!strcmp(table.fields[i], field_indexado)) {
+                            fread(&valor_index[i_index++], sizeof(int), 1, tableFile);
+                            fseek(tableFile, -sizeof(int), tableFile);
+                        }
+                    }
+
+                    // Remove dos arquivos exteriores + pula offsets
                     if (table.types[i] == 'i') {
                         fseek(tableFile, sizeof(int), SEEK_CUR);
                     } else if (table.types[i] == 's') {
@@ -801,7 +837,9 @@ void removerRegistros(Selection *selection) {
                 // to do: remoção na hash
             }
             if(haveIndexTree(selection->tableName)) {    
-                // to do: remoção na árvore
+                // Remoção na árvore
+                BTree * tree = encontraBTree(selection->tableName);
+                for(int i = 0; i < cont_values; i++) btree_remove(tree, valor_index[i]);
             }
         } else {
             fprintf(stderr, "Não existe pesquisa para essa tabela!\n");
@@ -872,16 +910,25 @@ void criarIndex(Selection *selection) {
                 pair_btree * pairs = (pair_btree *) malloc(table.rows * sizeof(pair_btree));
                 int i_valido = 0;
                 for(int i = 0; i < table.length; i++) {
+                    // Lê o bit de validades
                     fread(&bit_validade, sizeof(int), 1, tableFile);
                     if(bit_validade) {
+                        // Se for valido adiciona nos pairs
                         pairs[i_valido].addr = ftell(tableFile);
                         fseek(tableFile, tam_pular, SEEK_CUR); // to do: otimizar
                         fread(&pairs[i_valido++], sizeof(int), 1, tableFile);
                         fseek(tableFile, -(tam_pular + sizeof(int)), SEEK_CUR);
                     }
+                    // Pula para o próximo registro
                     fseek(tableFile, table.length, SEEK_CUR);
                 }
 
+                // Grava no arquivo de index a quantidade de itens indexados
+                fwrite(&i_valido, sizeof(int), 1, tabela_index);
+                // Grava no arquivo de index os pares (key, addr)
+                fwrite(pairs, sizeof(pair_btree), i_valido, tabela_index);
+                // Libera memória
+                free(pairs);
                 fclose(tabela_index);
 
             } else {
