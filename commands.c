@@ -463,14 +463,51 @@ void buscarRegistros(Selection *selection) {
         // Abre o arquivo da tabela
         FILE *tableFile = fopenSafe(path, "rb+");
 
+        // Verifica se tem indexação
+        int have_index_hash = haveIndexHash(selection->tableName);
+        int have_index_tree = haveIndexTree(selection->tableName);
+
+        // Descobre o field indexado
+        Field field_indexado;
+        if(have_index_hash) {
+            char * filename = glueString(3, "tables_index/", selection->tableName, "_hash.index"); 
+            FILE * aux_index = fopen(filename, "rb");
+            fread(field_indexado, sizeof(Field), 1, aux_index); 
+            fclose(aux_index);
+        } else if(have_index_tree) {
+            char * filename = glueString(3, "tables_index/", selection->tableName, "_tree.index"); 
+            FILE * aux_index = fopen(filename, "rb");
+            fread(field_indexado, sizeof(Field), 1, aux_index); 
+            fclose(aux_index);
+        }
+        
         // Verifica se já existe um index hash ou tree para a tabela
-        // se existir: realiza busca pelo índice, se não: busca sequencial
-        if(haveIndexHash(selection->tableName)) {    
+        // se existir e for o critério de busca: realiza busca pelo índice, se não: busca sequencial
+        if(have_index_hash && !(strcmp(selection->field, field_indexado))) {    
             printf("Índice <HASH>: to do"); 
             return;
-        } else if (haveIndexTree(selection->tableName)) {
+        } else if (have_index_tree && !(strcmp(selection->field, field_indexado))) {
             printf("Índice <Árvore>: to do"); 
-            return;
+            BTree * tree = encontraBTree(selection->tableName);
+            int value;
+            if(sscanf(selection->value, "%d", &value) != 1) {
+                fprintf(stderr, "Erro na busca (indexação)!\n");
+                return;
+            }
+            node_position no_valor = btree_find(tree, value);
+            int * addr = (int*) no_valor.node->keys[no_valor.index]->value;
+           
+            // Lista de resultados
+            ResultList *resultList = NULL;
+            if(*addr != NULL) {
+                addToResultList(&resultList, *addr + sizeof(int));
+            }
+            if (resultList) {
+                // Adiciona o resultado à arvore de resultados
+                addToResultTree(&resultTree, resultList, selection->tableName);
+            } else {
+                printf("Nenhum resultado para %s\n", selection->tableName);
+            }
         } else {
             // Lê os metadados
             fread(&table, sizeof(Table), 1, tableFile);
