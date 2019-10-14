@@ -11,7 +11,7 @@ node_position _node_position_new(node_t *node, int index) {
 }
 
 pair_t* _pair_new(int key, void *value) {
-	pair_t *p = malloc(sizeof(pair_t));
+	pair_t *p = (pair_t*) malloc(sizeof(pair_t));
 	assert(p != NULL);
 
 	#if DEBUG
@@ -26,12 +26,12 @@ pair_t* _pair_new(int key, void *value) {
 
 inline pair_t* _pair_copy(pair_t *p) {
 	// Apenas crie um novo pair_t com os mesmos valores que o antigo
-	pair_t *new = _pair_new(p->key, p->value);
-	return new;
+	pair_t *new_ = _pair_new(p->key, p->value);
+	return new_;
 }
 
 node_t* _node_new(int order, bool_ is_leaf) {
-	node_t *n = malloc(sizeof(node_t));
+	node_t *n = (node_t*) malloc(sizeof(node_t));
 	assert(n != NULL);
 
 	#if DEBUG
@@ -40,13 +40,13 @@ node_t* _node_new(int order, bool_ is_leaf) {
 
 	n->n_keys = 0;
 	n->is_leaf = is_leaf;
-	n->keys = malloc((2*order-1) * sizeof(pair_t));
-	n->children = malloc((2*order) * sizeof(node_t*));
+	n->keys = (pair_t **) malloc((2*order-1) * sizeof(pair_t));
+	n->children = (node_t **) malloc((2*order) * sizeof(node_t*));
 
 	return n;
 }
 
-inline bool_ _node_find_key(node_t *node, int key, int *pos) {
+inline int _node_find_key(node_t *node, int key, int *pos) {
 	*pos = 0;
 
 	// Encontra a posição cuja chave é imediatamente maior ou igual à key

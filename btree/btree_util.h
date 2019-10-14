@@ -81,7 +81,7 @@ inline pair_t* _pair_copy(pair_t *p);
     pos:    retorno da posição em que a chave foi encontrada. Default: -1
     @return: se a chave key pertence ou não ao nó node
  */
-inline bool_ _node_find_key(node_t *node, int key, int* pos);
+inline int _node_find_key(node_t *node, int key, int* pos);
 
 /*
     As funções a seguir correspondem à execução de um FOR.
