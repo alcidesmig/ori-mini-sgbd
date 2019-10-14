@@ -4,13 +4,13 @@
  */
 #include "btree_tools.h"
 
-void _btree_dfs_node(node_t *node, int level) {
+void btree_dfs_node(node_t *node, int level) {
 	assert(node != NULL);
 
 	int i;
 	if (!node->is_leaf) {
 		for (i = 0; i < node->n_keys+1; ++i) {
-			_btree_dfs_node(node->children[i], level+1);
+			btree_dfs_node(node->children[i], level+1);
 		}
 	}
 
@@ -24,7 +24,7 @@ void _btree_dfs_node(node_t *node, int level) {
 
 void btree_dfs(BTree *bt) {
 	assert(bt != NULL);
-	_btree_dfs_node(bt->root, 0);
+	btree_dfs_node(bt->root, 0);
 }
 
 void print_find(BTree *tree, int key) {
