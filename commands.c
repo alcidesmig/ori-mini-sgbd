@@ -263,6 +263,11 @@ void incluirRegistro(Row *row) {
         return;
     }
 
+    // Carrega a btree da tabela utilizada caso ela ainda não tenha sido carregada
+    printf("BTree antes de ser carregada\n");
+    carregaBTree(row->tableName);
+    printf("BTree carregada\n");
+
     // Verifica se a tabela existe
     int exists = tableExists(qtTables, row->tableName);
 
@@ -307,7 +312,7 @@ void incluirRegistro(Row *row) {
             }
 
             
-            //alcides
+            //checkpoint alcides
 
             // Indexação
             // Posição do registro no arquivo
@@ -351,6 +356,7 @@ void incluirRegistro(Row *row) {
                     if(haveIndex){
                         if(!strcmp(table.fields[i], field_indexado)) {
                             valor_field_indexado = numb;
+                            printf("Valor Field indexado: %d\n", numb);
                         }
                     }
 
@@ -397,13 +403,15 @@ void incluirRegistro(Row *row) {
             }
             // Fecha arquivo de blocos deletados
             fclose(tableFileEmpty);
-
+            
             // Adiciona o registro nos índices
             
             // Caso haja indexação (tree) -> adiciona par (registro, addr) na BTree correspondente
-            if(haveIndexTree(row->tableName)) {    
+            if(haveIndexTree(row->tableName)) {   
+                printf("Tem index\n"); 
                 // Encontra a BTree correspondente
                 BTree * tree = encontraBTree(row->tableName);
+                printf("BTree existe %d\n", tree == NULL);
                 // Insere os valores na BTree
                 btree_insert(tree, valor_field_indexado, pos_insercao_registro);
             }
@@ -439,8 +447,9 @@ void incluirRegistro(Row *row) {
 void buscarRegistros(Selection *selection) {
 
     // Carrega a btree da tabela utilizada caso ela ainda não tenha sido carregada
+    printf("BTree antes de ser carregada\n");
     carregaBTree(selection->tableName);
-    
+    printf("BTree carregada\n");
 
     // Limite de busca
     int searchLimit = (selection->parameter == 'U' ? 1 : 2147483647);
@@ -480,27 +489,31 @@ void buscarRegistros(Selection *selection) {
             fread(field_indexado, sizeof(Field), 1, aux_index); 
             fclose(aux_index);
         }
-        
+        if(have_index_tree) printf("Field indexado: %s\n", field_indexado);
         // Verifica se já existe um index hash ou tree para a tabela
         // se existir e for o critério de busca: realiza busca pelo índice, se não: busca sequencial
         if(have_index_hash && !(strcmp(selection->field, field_indexado))) {    
             printf("Índice <HASH>: to do"); 
             return;
         } else if (have_index_tree && !(strcmp(selection->field, field_indexado))) {
-            printf("Índice <Árvore>: to do"); 
+
             BTree * tree = encontraBTree(selection->tableName);
             int value;
             if(sscanf((char *) selection->value, "%d", &value) != 1) {
                 fprintf(stderr, "Erro na busca (indexação)!\n");
                 return;
             }
+            printf("Chegou em value %d\n", value);
             node_position no_valor = btree_find(tree, value);
+            printf("No valor index %d\n", no_valor.index);
+            int x = 0;
             int * addr = (int*) no_valor.node->keys[no_valor.index]->value;
-           
+            btree_dfs(tree);
+            printf("Chegou em ADDR %d\n", *addr);
             // Lista de resultados
             ResultList *resultList = NULL;
             if(*addr != NULL) {
-                addToResultList(&resultList, *addr + sizeof(int));
+                addToResultList(&resultList, *addr);
             }
             if (resultList) {
                 // Adiciona o resultado à arvore de resultados
@@ -621,6 +634,7 @@ void buscarRegistros(Selection *selection) {
                         // Compara com o valor pesquisado
                         if (numbI == selNumbI) {
                             // Adiciona a posição a lista de resultados
+                            printf("rowpos %d\n", rowPos);
                             addToResultList(&resultList, rowPos);
                         }
                     } else if (fieldType == 's') {
@@ -715,7 +729,7 @@ void apresentarRegistros(Selection *selection) {
         FILE *tableFile = fopenSafe(path, "rb+");
         // Lê os metadados
         fread(&table, sizeof(Table), 1, tableFile);
-        //alcides
+        //checkpoint alcides
         // Auxiliar de leitura
         int numbI;
         float numbF;
@@ -981,6 +995,7 @@ void criarIndex(Selection *selection) {
                 // Lê os metadados
                 fread(&table, sizeof(Table), 1, tableFile);
                 printf("Leu metadados da tabela %s\n", table.name);
+            //    fwrite(&(table.rows), sizeof(int), 1, tabela_index); // escreve o nome do campo que será indexado
 
                 int bit_validade;
                 int tam_pular = 0, tam_row = 0;
@@ -1014,7 +1029,7 @@ void criarIndex(Selection *selection) {
                     fread(&bit_validade, sizeof(int), 1, tableFile);
                     if(bit_validade) {
                         // Se for valido adiciona nos pairs
-                        pairs[i_valido].addr = ftell(tableFile);
+                        pairs[i_valido].addr = ftell(tableFile) - sizeof(int);
                         fseek(tableFile, tam_pular, SEEK_CUR); // to do: otimizar
                         fread(&(pairs[i_valido++].key), sizeof(int), 1, tableFile);
                         fseek(tableFile, -(tam_pular + sizeof(int)), SEEK_CUR);
@@ -1028,8 +1043,10 @@ void criarIndex(Selection *selection) {
                 fwrite(&i_valido, sizeof(int), 1, tabela_index);
                 // Grava no arquivo de index os pares (key, addr)
                 fwrite(pairs, sizeof(pair_btree), i_valido, tabela_index);
+                
+                printf("Valor do 1 addr: %d\n", pairs[0].addr);
                 // Libera memória
-                free(pairs);
+               // free(pairs);
 
                 fclose(tabela_index);
                 // to continue

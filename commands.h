@@ -12,6 +12,7 @@
 #include "commandsDefines.h"
 #include "commandsTools.h"
 #include "searchStructs.h"
+#include "btree/btree_tools.h"
 
 void criarTabela(Table *table);
 void removerTabela(Table *table);

@@ -13,12 +13,12 @@
     Executa uma DFS em node, imprimindo as chaves associadas à ele.
     Usa o parâmetro level no print dos dados do nó.
  */
-void btree_dfs_node(node_t *node, int level);
+void btree_dfs_node(node_t *node, int level, pair_t * valores);
 /*
     Executa uma DFS na B-Tree, imprimindo dados associados aos seus nós
     (em especial suas chaves) em ordem POSFIXA.
  */
-void btree_dfs(BTree *bt);
+void btree_dfs(BTree *bt, pair_t * valores);
 
 /*
     Função para testes.

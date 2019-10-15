@@ -14,15 +14,17 @@ BTree * encontraBTree(TableName tableName) {
 
 // Carrega os dados da BTree de uma tabela caso eles ainda não tenha sido carregaods
 void carregaBTree(TableName tableName) {
-    if(haveIndexTree(tableName) && pesquisaLista(&lista_btree, tableName) != NULL) {
+    if(haveIndexTree(tableName) && pesquisaLista(&lista_btree, tableName) == NULL) {
         // Arquivo da BTree
         char * filename = glueString(3, "tables_index/", tableName, "_tree.index"); 
+        printf("Carregando BTree %s\n", filename);
         FILE * fp = fopen(filename, "r");
         // Pula o nome do campo indexado
         fseek(fp, sizeof(Field), SEEK_SET);
         // Lê a quantidade de itens indexados
         int qtdBTree;
         fread(&qtdBTree, sizeof(int), 1, fp);
+        printf("Quantidade de itens: %d", qtdBTree);
         // Lê os itens indexados
         pair_btree * values = (pair_btree *) malloc(sizeof(pair_btree) * qtdBTree);
         fread(values, sizeof(pair_btree), qtdBTree, fp);
@@ -30,8 +32,11 @@ void carregaBTree(TableName tableName) {
         ItemBTree item_btree;
         strcpy(item_btree.key, tableName);
         item_btree.tree = btree_new(NUM_ORDEM_BTREE);
+        printf("valor saindo do arquivo: %d\n", values[0].addr);
+        
         for(int i = 0; i < qtdBTree; i++) {
             btree_insert(item_btree.tree, values[i].key, &values[i].addr);
+            printf("Inserido item na BTree %d %d\n", values[i].key, values[i].addr);
         }
         insereLista(&lista_btree, item_btree);
     }

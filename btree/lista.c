@@ -34,7 +34,9 @@ Noh * pesquisaLista(Noh ** raiz, TableName key) {
 	Noh * p;
 	
 	p = *raiz;
+	printf("Lista vazia = %d\n", p==NULL);
 	while(p != NULL) {
+		printf("Item na pesquisa: %s\n", p->item.key);
 		if (!strcmp(p->item.key,key))
 			return p;
 		p = p->prox;

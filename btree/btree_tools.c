@@ -4,27 +4,30 @@
  */
 #include "btree_tools.h"
 
-void btree_dfs_node(node_t *node, int level) {
+void btree_dfs_node(node_t *node, int level, pair_t * valores) {
 	assert(node != NULL);
 
 	int i;
 	if (!node->is_leaf) {
 		for (i = 0; i < node->n_keys+1; ++i) {
-			btree_dfs_node(node->children[i], level+1);
+			btree_dfs_node(node->children[i], level+1, valores);
 		}
 	}
 
 	printf("\tAlgum nó no nível %d possui %d chave(s): ", level, node->n_keys);
 	for (i = 0; i < node->n_keys; ++i) {
 		if (i != 0) printf(" ");
-		printf("%d", node->keys[i]->key);
+		printf("(%d", node->keys[i]->key);
+		printf(" %d) ", *((int*) node->keys[i]->value));
+		valores[i].key = node->keys[i]->key;
+		valores[i].value = *((int*) node->keys[i]->value);
 	}
 	printf("\n");
 }
 
-void btree_dfs(BTree *bt) {
+void btree_dfs(BTree *bt, pair_t * valores) {
 	assert(bt != NULL);
-	btree_dfs_node(bt->root, 0);
+	btree_dfs_node(bt->root, 0, valores);
 }
 
 void print_find(BTree *tree, int key) {
