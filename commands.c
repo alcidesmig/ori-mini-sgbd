@@ -505,10 +505,14 @@ void buscarRegistros(Selection *selection) {
             }
             printf("Chegou em value %d\n", value);
             node_position no_valor = btree_find(tree, value);
-            printf("No valor index %d\n", no_valor.index);
+
+            if(no_valor.index < 0) {
+                printf("Nenhum resultado para %s\n", selection->tableName);
+                return;
+            }
+            
             int x = 0;
             int * addr = (int*) no_valor.node->keys[no_valor.index]->value;
-            btree_dfs(tree);
             printf("Chegou em ADDR %d\n", *addr);
             // Lista de resultados
             ResultList *resultList = NULL;

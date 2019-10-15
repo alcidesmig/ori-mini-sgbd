@@ -11,7 +11,10 @@
 #include "utils.h"
 #include "commandsDefines.h"
 #include "btree/lista.h"
+#include "btree/btree_tools.h"
 
+void salvaBTrees(Noh * lista_btree);
+void salvarBTree(TableName tableName);
 void apagaBTree(TableName tableName);
 BTree * encontraBTree(TableName tableName);
 void carregaBTree(TableName tableName);

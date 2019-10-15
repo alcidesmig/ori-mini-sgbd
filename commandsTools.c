@@ -1,5 +1,62 @@
 #include "commandsTools.h"
 
+
+// Função para salvar todas as BTrees antes de fechar o programa
+void salvaBTrees(Noh * lista_btree) {
+    while(lista_btree) {
+        salvarBTree(lista_btree->item.key);
+        lista_btree = lista_btree->prox;
+    }
+}
+
+// Função para salvar os pairs da BTree no arquivo de index antes de fechar o programa
+void salvarBTree(TableName tableName) {
+    // Path do arquivo da tabela
+    char *path = glueString(2, TABLES_DIR, tableName);
+    // Abre o arquivo da tabela
+    FILE *tableFile = fopenSafe(path, "rb+");
+    if(tableFile == NULL) {
+        fprintf(stderr, "Erro ao salvar os dados de indexação de %s!\n", tableName);
+    }
+    // Lê os metadados
+    Table table;
+    fread(&table, sizeof(Table), 1, tableFile);
+    // Fecha o arquivo
+    fclose(tableFile);
+    // Armazena a quantidade de registros
+    int qtRegistros = table.rows;
+    // Aloca espaço para leitura dos pares via DFS
+    pair_btree * pairs = (pair_btree *) malloc(sizeof(pair_btree) * qtRegistros);
+    // Encontra a BTree correspondente
+    BTree * tree = encontraBTree(tableName);
+    // DFS
+    btree_dfs(tree, pairs);
+    // Grava valores no arquivo da BTree
+    char * filename = glueString(3, "tables_index/", tableName, "_tree.index"); 
+    // Pega o Field indexado
+    Field field_indexado;
+    FILE * table_index = fopen(filename, "rb+");
+    if(table_index == NULL) {
+        fprintf(stderr, "Erro ao salvar os dados de indexação de %s!\n", tableName);
+    }
+    fread(&field_indexado, sizeof(Field), 1, table_index);
+    fclose(table_index); // to do: mudar para append no arquivo anterior sobrescrevendo os dados dos pares e qtdRegistros
+    // Reescreve o arquivo de index
+    table_index = fopen(filename, "wb+");
+    if(table_index == NULL) {
+        fprintf(stderr, "Erro ao salvar os dados de indexação de %s!\n", tableName);
+    }
+    fwrite(&field_indexado, sizeof(Field), 1, table_index);
+    // Grava qt de registros indexados
+    fwrite(&qtRegistros, sizeof(int), 1, table_index);
+    printf("Qtd registros salvos btree file: %d\n", qtRegistros);
+    // Grava os valores (key, addr)
+    fwrite(pairs, sizeof(pair_btree), qtRegistros, table_index); 
+    // Fecha o arquivo
+    fclose(table_index);
+    return;
+}
+
 // Remove a BTree correspondente à tabela da lista de BTrees
 void apagaBTree(TableName tableName) {
     // to do: free na BTree

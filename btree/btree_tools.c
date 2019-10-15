@@ -4,7 +4,8 @@
  */
 #include "btree_tools.h"
 
-void btree_dfs_node(node_t *node, int level, pair_t * valores) {
+
+void btree_dfs_node(node_t *node, int level, pair_btree * valores) {
 	assert(node != NULL);
 
 	int i;
@@ -20,12 +21,12 @@ void btree_dfs_node(node_t *node, int level, pair_t * valores) {
 		printf("(%d", node->keys[i]->key);
 		printf(" %d) ", *((int*) node->keys[i]->value));
 		valores[i].key = node->keys[i]->key;
-		valores[i].value = *((int*) node->keys[i]->value);
+		valores[i].addr = *((int*) node->keys[i]->value);
 	}
 	printf("\n");
 }
 
-void btree_dfs(BTree *bt, pair_t * valores) {
+void btree_dfs(BTree *bt, pair_btree * valores) {
 	assert(bt != NULL);
 	btree_dfs_node(bt->root, 0, valores);
 }

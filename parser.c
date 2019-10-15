@@ -404,6 +404,7 @@ ParsedData *parser(char * line) {
         }
         strncpy(selection->field, ptr, FIELD_NAME_LIMIT);
     } else if (!strncmp(*cmd, EB, CMD_LIMIT)) {
+        salvaBTrees(lista_btree);
         // Ponteiro auxiliar
         char *ptr = strtok(NULL, "\0");
 
