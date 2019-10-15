@@ -3,18 +3,18 @@
 // Remove a BTree correspondente à tabela da lista de BTrees
 void apagaBTree(TableName tableName) {
     // to do: free na BTree
-    removeLista(lista_btree, tableName);
+    removeLista(&lista_btree, tableName);
     return;
 }
 
 // Retorna a BTree correspondente à tabela
 BTree * encontraBTree(TableName tableName) {
-    return pesquisaLista(lista_btree, tableName)->item.tree;
+    return pesquisaLista(&lista_btree, tableName)->item.tree;
 }
 
 // Carrega os dados da BTree de uma tabela caso eles ainda não tenha sido carregaods
 void carregaBTree(TableName tableName) {
-    if(haveIndexTree(tableName) && pesquisaLista(lista_btree, tableName) != NULL) {
+    if(haveIndexTree(tableName) && pesquisaLista(&lista_btree, tableName) != NULL) {
         // Arquivo da BTree
         char * filename = glueString(3, "tables_index/", tableName, "_tree.index"); 
         FILE * fp = fopen(filename, "r");
@@ -33,7 +33,7 @@ void carregaBTree(TableName tableName) {
         for(int i = 0; i < qtdBTree; i++) {
             btree_insert(item_btree.tree, values[i].key, &values[i].addr);
         }
-        insereLista(lista_btree, item_btree);
+        insereLista(&lista_btree, item_btree);
     }
 }
 

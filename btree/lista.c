@@ -3,7 +3,7 @@
 #include "lista.h"
 #include <string.h>
 
-Noh **lista_btree;
+Noh *lista_btree;
 
 void inicializaLista(Noh ** raiz) {
 	*raiz = NULL;

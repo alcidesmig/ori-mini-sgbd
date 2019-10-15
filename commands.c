@@ -490,7 +490,7 @@ void buscarRegistros(Selection *selection) {
             printf("Índice <Árvore>: to do"); 
             BTree * tree = encontraBTree(selection->tableName);
             int value;
-            if(sscanf(selection->value, "%d", &value) != 1) {
+            if(sscanf((char *) selection->value, "%d", &value) != 1) {
                 fprintf(stderr, "Erro na busca (indexação)!\n");
                 return;
             }
@@ -944,6 +944,31 @@ void criarIndex(Selection *selection) {
 
                 fwrite(selection->field, sizeof(Field), 1, tabela_index); // escreve o nome do campo que será indexado
 
+                fclose(tabela_index);
+
+            } else {
+                fprintf(stderr, "O campo %s não existe na tabela %s.\n", selection->field, selection->tableName);
+            }
+        } else if (selection->parameter == 'A') { // se for index do tipo árvore
+            if(fieldExistInTable(selection->tableName, selection->field)){ // verifica se o campo a ser indexado existe na tabela
+                
+                if(getFieldType(selection->tableName, selection->field) != 'i') { // verifica se o campo a ser indexado é do tipo inteiro
+                    fprintf(stderr, "O campo %s não é do tipo INT %s.\n", selection->field);
+                    return;
+                }
+
+                if(haveIndexTree(selection->tableName)) { // verifica se já existe um index tree para a tabela (=> arquivo já existe)
+                    fprintf(stderr, "O campo %s já é indexado na tabela %s.\n", selection->field, selection->tableName);
+                    return;
+                }
+
+                char * filename = glueString(3, "tables_index/", selection->tableName, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
+                
+                FILE * tabela_index = fopen(filename, "wb+"); // cria o arquivo do index
+
+                fwrite(selection->field, sizeof(Field), 1, tabela_index); // escreve o nome do campo que será indexado
+
+                
                 // Lê os valores do arquivo da tabela e insere os pares (key, ftell(key)) no arquivo para serem utilizados pela btree
 
                 // Tabela em questão
@@ -990,8 +1015,9 @@ void criarIndex(Selection *selection) {
                         // Se for valido adiciona nos pairs
                         pairs[i_valido].addr = ftell(tableFile);
                         fseek(tableFile, tam_pular, SEEK_CUR); // to do: otimizar
-                        fread(&pairs[i_valido++], sizeof(int), 1, tableFile);
+                        fread(&(pairs[i_valido++].key), sizeof(int), 1, tableFile);
                         fseek(tableFile, -(tam_pular + sizeof(int)), SEEK_CUR);
+                        printf("Adicionando pair no index: (%d %d)\n", pairs[i_valido-1].key, pairs[i_valido-1].addr);
                     }
                     // Pula para o próximo registro
                     fseek(tableFile, table.length, SEEK_CUR);
@@ -1003,29 +1029,6 @@ void criarIndex(Selection *selection) {
                 fwrite(pairs, sizeof(pair_btree), i_valido, tabela_index);
                 // Libera memória
                 free(pairs);
-                fclose(tabela_index);
-
-            } else {
-                fprintf(stderr, "O campo %s não existe na tabela %s.\n", selection->field, selection->tableName);
-            }
-        } else if (selection->parameter == 'A') { // se for index do tipo árvore
-            if(fieldExistInTable(selection->tableName, selection->field)){ // verifica se o campo a ser indexado existe na tabela
-                
-                if(getFieldType(selection->tableName, selection->field) != 'i') { // verifica se o campo a ser indexado é do tipo inteiro
-                    fprintf(stderr, "O campo %s não é do tipo INT %s.\n", selection->field);
-                    return;
-                }
-
-                if(haveIndexTree(selection->tableName)) { // verifica se já existe um index tree para a tabela (=> arquivo já existe)
-                    fprintf(stderr, "O campo %s já é indexado na tabela %s.\n", selection->field, selection->tableName);
-                    return;
-                }
-
-                char * filename = glueString(3, "tables_index/", selection->tableName, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
-                
-                FILE * tabela_index = fopen(filename, "wb+"); // cria o arquivo do index
-
-                fwrite(selection->field, sizeof(Field), 1, tabela_index); // escreve o nome do campo que será indexado
 
                 fclose(tabela_index);
                 // to continue
@@ -1086,9 +1089,8 @@ void start() {
     fseek(tablesIndex, 0, SEEK_SET);
     // Lê a quantidade de tabelas
     fread(&qtTables, sizeof(int), 1, tablesIndex);
-
     // Inicializa a lista das btrees
-    inicializaLista(lista_btree);
+    inicializaLista(&lista_btree);
 }
 
 // Encerra o sistema

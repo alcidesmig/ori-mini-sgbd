@@ -16,7 +16,7 @@ typedef struct no {
 	struct no * prox;
 } Noh;
 
-extern Noh ** lista_btree;
+extern Noh * lista_btree;
 
 void inicializaLista(Noh ** raiz);
 Noh * pesquisaLista(Noh ** raiz, TableName key);

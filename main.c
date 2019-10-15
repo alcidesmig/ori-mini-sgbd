@@ -15,7 +15,7 @@ void execute(ParsedData *pData);
 
 int main(int argc, char *argv[]) {
     start();
-
+    
     linenoiseInstallWindowChangeHandler();
     linenoiseHistoryLoad(HISTORY_FILE);
     linenoiseSetCompletionCallback(completionHook);
