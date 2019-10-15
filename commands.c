@@ -976,9 +976,7 @@ void criarIndex(Selection *selection) {
                 char * filename = glueString(3, "tables_index/", selection->tableName, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
                 
                 FILE * tabela_index = fopen(filename, "wb+"); // cria o arquivo do index
-                printf("Arquivo index criado %s %d\n", filename, tabela_index == NULL);
                 fwrite(selection->field, sizeof(Field), 1, tabela_index); // escreve o nome do campo que será indexado
-                printf("Gravado nome do field em %s\n", filename);
                 
                 // Lê os valores do arquivo da tabela e insere os pares (key, ftell(key)) no arquivo para serem utilizados pela btree
 
@@ -986,13 +984,10 @@ void criarIndex(Selection *selection) {
                 Table table;
                 // Path do arquivo da tabela
                 char *path = glueString(2, TABLES_DIR, selection->tableName);
-                printf("Path index: %s\n", path);
                 // Abre o arquivo da tabela
                 FILE *tableFile = fopenSafe(path, "rb+");
                 // Lê os metadados
                 fread(&table, sizeof(Table), 1, tableFile);
-                printf("Leu metadados da tabela %s\n", table.name);
-            //    fwrite(&(table.rows), sizeof(int), 1, tabela_index); // escreve o nome do campo que será indexado
 
                 int bit_validade;
                 int tam_pular = 0, tam_row = 0;
@@ -1041,12 +1036,10 @@ void criarIndex(Selection *selection) {
                 // Grava no arquivo de index os pares (key, addr)
                 fwrite(pairs, sizeof(pair_btree), i_valido, tabela_index);
                 
-                printf("Valor do 1 addr: %d\n", pairs[0].addr);
                 // Libera memória
-               // free(pairs);
+                free(pairs);
 
                 fclose(tabela_index);
-                // to continue
             } else {
                 fprintf(stderr, "O campo %s não existe na tabela %s.\n", selection->field, selection->tableName);
             }
@@ -1142,6 +1135,7 @@ void gerarIndex(Selection *selection) {
                 fseek(tableFile, tam_pular, SEEK_CUR); // to do: otimizar
                 fread(&(pairs[i_valido++].key), sizeof(int), 1, tableFile);
                 fseek(tableFile, -(tam_pular + sizeof(int)), SEEK_CUR);
+                printf("Adicionando pair no index: (%d %d)\n", pairs[i_valido-1].key, pairs[i_valido-1].addr);
             }
             // Pula para o próximo registro
             fseek(tableFile, table.length, SEEK_CUR);
