@@ -82,7 +82,7 @@ void removerTabela(Table *table) {
         // Posição da string ou binário
         long int pos;
         // Remove as strings e binários
-        printf("rows %d\n", table->rows);
+
         for (int i = 0; i < table->rows; i++) {
             printf("p %ld\n", ftell(tableFile));
             // Lê a flag de validade
@@ -264,9 +264,7 @@ void incluirRegistro(Row *row) {
     }
 
     // Carrega a btree da tabela utilizada caso ela ainda não tenha sido carregada
-    printf("BTree antes de ser carregada\n");
     carregaBTree(row->tableName);
-    printf("BTree carregada\n");
 
     // Verifica se a tabela existe
     int exists = tableExists(qtTables, row->tableName);
@@ -356,7 +354,6 @@ void incluirRegistro(Row *row) {
                     if(haveIndex){
                         if(!strcmp(table.fields[i], field_indexado)) {
                             valor_field_indexado = numb;
-                            printf("Valor Field indexado: %d\n", numb);
                         }
                     }
 
@@ -408,10 +405,8 @@ void incluirRegistro(Row *row) {
             
             // Caso haja indexação (tree) -> adiciona par (registro, addr) na BTree correspondente
             if(haveIndexTree(row->tableName)) {   
-                printf("Tem index\n"); 
                 // Encontra a BTree correspondente
                 BTree * tree = encontraBTree(row->tableName);
-                printf("BTree existe %d\n", tree == NULL);
                 // Insere os valores na BTree
                 btree_insert(tree, valor_field_indexado, pos_insercao_registro);
             }
@@ -447,9 +442,7 @@ void incluirRegistro(Row *row) {
 void buscarRegistros(Selection *selection) {
 
     // Carrega a btree da tabela utilizada caso ela ainda não tenha sido carregada
-    printf("BTree antes de ser carregada\n");
     carregaBTree(selection->tableName);
-    printf("BTree carregada\n");
 
     // Limite de busca
     int searchLimit = (selection->parameter == 'U' ? 1 : 2147483647);
@@ -489,34 +482,35 @@ void buscarRegistros(Selection *selection) {
             fread(field_indexado, sizeof(Field), 1, aux_index); 
             fclose(aux_index);
         }
-        if(have_index_tree) printf("Field indexado: %s\n", field_indexado);
         // Verifica se já existe um index hash ou tree para a tabela
         // se existir e for o critério de busca: realiza busca pelo índice, se não: busca sequencial
         if(have_index_hash && !(strcmp(selection->field, field_indexado))) {    
             printf("Índice <HASH>: to do"); 
             return;
         } else if (have_index_tree && !(strcmp(selection->field, field_indexado))) {
-
+            printf("Buscando por indexação. Field indexado: %s\n", field_indexado);
             BTree * tree = encontraBTree(selection->tableName);
             int value;
             if(sscanf((char *) selection->value, "%d", &value) != 1) {
                 fprintf(stderr, "Erro na busca (indexação)!\n");
                 return;
             }
-            printf("Chegou em value %d\n", value);
+            // Busca o par (key, addr) na BTree
             node_position no_valor = btree_find(tree, value);
 
+            // Verifica se encontrou
             if(no_valor.index < 0) {
                 printf("Nenhum resultado para %s\n", selection->tableName);
                 return;
             }
             
             int x = 0;
+            // Pega a posição do registro no arquivo
             int * addr = (int*) no_valor.node->keys[no_valor.index]->value;
-            printf("Chegou em ADDR %d\n", *addr);
+
             // Lista de resultados
             ResultList *resultList = NULL;
-            if(*addr != NULL) {
+            if(addr != NULL) {
                 addToResultList(&resultList, *addr);
             }
             if (resultList) {
@@ -638,7 +632,6 @@ void buscarRegistros(Selection *selection) {
                         // Compara com o valor pesquisado
                         if (numbI == selNumbI) {
                             // Adiciona a posição a lista de resultados
-                            printf("rowpos %d\n", rowPos);
                             addToResultList(&resultList, rowPos);
                         }
                     } else if (fieldType == 's') {
@@ -1101,13 +1094,12 @@ void gerarIndex(Selection *selection) {
         Table table;
         // Path do arquivo da tabela
         char *path = glueString(2, TABLES_DIR, selection->tableName);
-        printf("Path index: %s\n", path);
         // Abre o arquivo da tabela
         FILE *tableFile = fopenSafe(path, "rb+");
         // Lê os metadados
         fread(&table, sizeof(Table), 1, tableFile);
-        printf("Leu metadados da tabela %s\n", table.name);
 
+        // Variáveis utilizadas na leitura dos dados
         int bit_validade;
         int tam_pular = 0, tam_row = 0;
         int j = 0;
@@ -1150,7 +1142,6 @@ void gerarIndex(Selection *selection) {
                 fseek(tableFile, tam_pular, SEEK_CUR); // to do: otimizar
                 fread(&(pairs[i_valido++].key), sizeof(int), 1, tableFile);
                 fseek(tableFile, -(tam_pular + sizeof(int)), SEEK_CUR);
-                printf("Adicionando pair no index: (%d %d)\n", pairs[i_valido - 1].key, pairs[i_valido - 1].addr);
             }
             // Pula para o próximo registro
             fseek(tableFile, table.length, SEEK_CUR);
