@@ -965,9 +965,9 @@ void criarIndex(Selection *selection) {
                 char * filename = glueString(3, "tables_index/", selection->tableName, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
                 
                 FILE * tabela_index = fopen(filename, "wb+"); // cria o arquivo do index
-
+                printf("Arquivo index criado %s %d\n", filename, tabela_index == NULL);
                 fwrite(selection->field, sizeof(Field), 1, tabela_index); // escreve o nome do campo que será indexado
-
+                printf("Gravado nome do field em %s\n", filename);
                 
                 // Lê os valores do arquivo da tabela e insere os pares (key, ftell(key)) no arquivo para serem utilizados pela btree
 
@@ -975,11 +975,12 @@ void criarIndex(Selection *selection) {
                 Table table;
                 // Path do arquivo da tabela
                 char *path = glueString(2, TABLES_DIR, selection->tableName);
+                printf("Path index: %s\n", path);
                 // Abre o arquivo da tabela
                 FILE *tableFile = fopenSafe(path, "rb+");
                 // Lê os metadados
                 fread(&table, sizeof(Table), 1, tableFile);
-
+                printf("Leu metadados da tabela %s\n", table.name);
 
                 int bit_validade;
                 int tam_pular = 0, tam_row = 0;
@@ -1008,7 +1009,7 @@ void criarIndex(Selection *selection) {
                 // Lê os valores do campo a ser indexado e a posição do seu registro no arquivo
                 pair_btree * pairs = (pair_btree *) malloc(table.rows * sizeof(pair_btree));
                 int i_valido = 0;
-                for(int i = 0; i < table.length; i++) {
+                for(int i = 0; i < table.rows; i++) {
                     // Lê o bit de validades
                     fread(&bit_validade, sizeof(int), 1, tableFile);
                     if(bit_validade) {
@@ -1050,11 +1051,11 @@ void removerIndex(TableName tableName, int imprime) { // recebe o nome da tabela
     if(fileExist(filename_tree)) { // remove o árquivo de índice (árvore), caso ele exista
         apagaBTree(tableName);
         removeFile(filename_tree);
-        if(imprime) printf("Índice (árvore) removido.");
+        if(imprime) printf("Índice (árvore) removido.\n");
     }
     if(fileExist(filename_hash)) { // remove o árquivo de índice (hash), caso ele exista
         removeFile(filename_hash);
-        if(imprime) printf("Índice (hash) removido.");
+        if(imprime) printf("Índice (hash) removido.\n");
     }
     return;
 }
