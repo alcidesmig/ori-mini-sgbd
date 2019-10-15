@@ -1082,6 +1082,89 @@ void removerIndex(TableName tableName, int imprime) { // recebe o nome da tabela
 }
 
 void gerarIndex(Selection *selection) {
+    if (haveIndexTree(selection->tableName))
+    {
+        char *filename = glueString(3, "tables_index/", selection->tableName, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
+        // Abre o arquivo de index
+        FILE *tabela_index = fopen(filename, "ab+"); 
+        // Coloca ponteiro no início do arquivo
+        fseek(tabela_index, 0, SEEK_SET);
+        // Lê o Field indexado
+        Field field;
+        fread(&field, sizeof(Field), 1, tabela_index);
+        // Verifica se o campo é o campo indexado
+        if((strcmp(field, selection->field))) {
+            fprintf(stderr, "O campo %s não é indexado na tabela %s.\n", selection->field, selection->tableName);
+            return;
+        }
+        // Tabela em questão
+        Table table;
+        // Path do arquivo da tabela
+        char *path = glueString(2, TABLES_DIR, selection->tableName);
+        printf("Path index: %s\n", path);
+        // Abre o arquivo da tabela
+        FILE *tableFile = fopenSafe(path, "rb+");
+        // Lê os metadados
+        fread(&table, sizeof(Table), 1, tableFile);
+        printf("Leu metadados da tabela %s\n", table.name);
+
+        int bit_validade;
+        int tam_pular = 0, tam_row = 0;
+        int j = 0;
+
+        // Descobre qual a posição (offset) do field a ser indexado
+        while (strcmp(table.fields[j], selection->field))
+        {
+            switch (table.types[j])
+            {
+            case 'i':
+                tam_pular += sizeof(int);
+                break;
+            case 's':
+                tam_pular += sizeof(long int);
+                break;
+            case 'f':
+                tam_pular += sizeof(float);
+                break;
+            case 'b':
+                tam_pular += sizeof(long int);
+                break;
+            default:
+                break;
+            }
+        }
+
+        // Lê os valores do campo a ser indexado e a posição do seu registro no arquivo
+        pair_btree *pairs = (pair_btree *)malloc(table.rows * sizeof(pair_btree));
+        int i_valido = 0;
+        
+        // Lê os valores do arquivo da tabela e insere os pares (key, ftell(key)) no arquivo para serem utilizados pela btree
+        for (int i = 0; i < table.rows; i++)
+        {
+            // Lê o bit de validades
+            fread(&bit_validade, sizeof(int), 1, tableFile);
+            if (bit_validade)
+            {
+                // Se for valido adiciona nos pairs
+                pairs[i_valido].addr = ftell(tableFile) - sizeof(int);
+                fseek(tableFile, tam_pular, SEEK_CUR); // to do: otimizar
+                fread(&(pairs[i_valido++].key), sizeof(int), 1, tableFile);
+                fseek(tableFile, -(tam_pular + sizeof(int)), SEEK_CUR);
+                printf("Adicionando pair no index: (%d %d)\n", pairs[i_valido - 1].key, pairs[i_valido - 1].addr);
+            }
+            // Pula para o próximo registro
+            fseek(tableFile, table.length, SEEK_CUR);
+        }
+
+        // Grava no arquivo de index a quantidade de itens indexados
+        fwrite(&i_valido, sizeof(int), 1, tabela_index);
+        // Grava no arquivo de index os pares (key, addr)
+        fwrite(pairs, sizeof(pair_btree), i_valido, tabela_index);
+    }
+    if (haveIndexHash(selection->tableName))
+    {
+        printf("To do\n");
+    }
 }
 
 // Prepara o sistema
