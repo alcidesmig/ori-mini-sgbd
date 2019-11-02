@@ -308,27 +308,16 @@ void incluirRegistro(Row *row) {
                 // Pula outros registros, mais as flags de validade
                 fseek(tableFile, table.rows * (table.length + sizeof(int)), SEEK_CUR);
             }
-
             
+            // Auxiliares para indexação
             //checkpoint alcides
-
-            // Indexação
             // Posição do registro no arquivo
-            int * pos_insercao_registro = (int*) malloc(sizeof(int));
-            *pos_insercao_registro = ftell(tableFile);
-            // Variáveis a serem utilizadas caso haja indexação
-            Field field_indexado;
-            int valor_field_indexado;
-            // Verifica se há indexação
-            int haveIndex = haveIndexTree(row->tableName);
-            // Lê o Field indexado, caso tenha indexação
-            if(haveIndex) {
-                char * filename = glueString(3, "tables_index/", row->tableName, "_tree.index"); 
-                FILE * aux_index = fopen(filename, "rb");
-                fread(field_indexado, sizeof(Field), 1, aux_index); 
-                fclose(aux_index);
-            }
-            
+            int posInsercaoRegistro = ftell(tableFile);
+            // Colunas da table que tem arquivo de indexacão
+            int temIndexTree[table->cols];
+            int temIndexHash[table->cols];
+            int valoresFieldsIndexados[table-cols];
+
             // Bit de validade
             fwrite(&valido, sizeof(int), 1, tableFile);
             // Para cada coluna
@@ -349,13 +338,12 @@ void incluirRegistro(Row *row) {
                     }
                     // Escreve no arquivo da tabela
                     fwrite(&numb, sizeof(int), 1, tableFile);
-
-                     // Pega o valor do field indexado caso haja index
-                    if(haveIndex){
-                        if(!strcmp(table.fields[i], field_indexado)) {
-                            valor_field_indexado = numb;
-                        }
-                    }
+                    // Verifica se há indexação
+                    temIndexTree[i] = tem_index_tree(row->tableName, table.fields[i]);
+                    temIndexHash[i] = tem_index_Hash(row->tableName, table.fields[i]);
+                    // Pega o valor do field se deve ser indexado
+                    if(temIndexTree[i] || temIndexHash[i])
+                        valoresFieldsIndexados[i] = numb;
 
                 } else if (table.types[i] == 's') {
                     // Escreve a string no arquivo de strings
@@ -400,15 +388,26 @@ void incluirRegistro(Row *row) {
             }
             // Fecha arquivo de blocos deletados
             fclose(tableFileEmpty);
-            
-            // Adiciona o registro nos índices
-            
-            // Caso haja indexação (tree) -> adiciona par (registro, addr) na BTree correspondente
-            if(haveIndexTree(row->tableName)) {   
-                // Encontra a BTree correspondente
-                BTree * tree = encontraBTree(row->tableName);
-                // Insere os valores na BTree
-                btree_insert(tree, valor_field_indexado, pos_insercao_registro);
+
+            //OBS: tambem da pra adicionar nos indices logo que se escreve o valor do field indexado
+            for(int i=0; i<table->cols; i++) {
+                // Se tem indexacao com arvore
+                if(temIndexTree[i]) {
+                    //ja foi verificado existencia do arquivo
+                    char * treeFilename  = glueString(4, "tables_index/", row->tableName, table.fields[i], "_tree.index"); 
+                    //TODO: inserir no arquivo da arvore node com valor (posInsercaoRegistro) e chave (valoresFieldsIndexados[i])
+                    //btreeFileInsert(treeFilename, valoresFieldsIndexados[i], posInsercaoRegistro);
+                    fclose(indexTree);
+                }
+
+                // Se tem indexacao com hash
+                if(temIndexHash[i]) {
+                    //ja foi verificado existencia do arquivo
+                    char * hashFilename  = glueString(4, "tables_index/", row->tableName, table.fields[i], "_tree.index"); 
+                    //TODO: inserir no arquivo da hashtable o valor (posInsercaoRegistro) com chave (valoresFieldsIndexados[i])
+                    //hashFileInsert(hashFilename, valoresFieldsIndexados[i], posInsercaoRegistro);
+                    fclose(indexHash);
+                }
             }
 
             // Printa a mensagem de sucesso
