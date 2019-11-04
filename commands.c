@@ -1,6 +1,7 @@
 #include "commands.h"
 #include "btree/lista.h"
 #include "btree/btree.h"
+
 // Cria uma tabela no banco
 // table: ponteiro para tabela
 void criarTabela(Table *table) {
@@ -216,13 +217,20 @@ void apresentarTabela(Table *table) {
 
 // Lista as tabelas do banco
 void listarTabela() {
+    // Coloca o ponteiro no início do arquivo para uma nova chamada da função
+    fseek(tablesIndex, sizeof(int), SEEK_SET);
+
     // Verifica se existem tabelas
     if (!qtTables) {
         printf("Não existem tabelas!\n");
         return;
     }
 
-    printf("Mostrando tabelas:\n");
+    if (qtTables == 1) {
+        printf("Mostrando 1 tabela:\n");
+    } else {
+        printf("Mostrando %d tabelas:\n", qtTables);
+    }
 
     int i = 0;
     while (i < qtTables) {
@@ -234,13 +242,14 @@ void listarTabela() {
 
         // Se o espaço possuí informações válidas
         if (blocks > 0) {
+            printf("blocos %d\n", blocks);
+
             // Tamanho real do nome
             int size = blocks*BLOCK_SIZE;
             char *buf = (char *)mallocSafe(size);
             // Lê o nome
             fread(buf, size, 1, tablesIndex);
             // Printa o nome
-            printf("- %s\n", buf);
             free(buf);
             // Incrementa só se a tabela é válida
             i++;
@@ -250,8 +259,6 @@ void listarTabela() {
             fseek(tablesIndex, blocks*BLOCK_SIZE, SEEK_CUR);
         }
     }
-    // Coloca o ponteiro no início do arquivo para uma nova chamada da função
-    fseek(tablesIndex, sizeof(int), SEEK_SET);
 }
 
 // Incluí um registro em uma tabela
@@ -940,7 +947,7 @@ void criarIndex(Selection *selection) {
             if(fieldExistInTable(selection->tableName, selection->field)){ // verifica se o campo a ser indexado existe na tabela
 
                 if(getFieldType(selection->tableName, selection->field) != 'i') { // verifica se o campo a ser indexado é do tipo inteiro
-                    fprintf(stderr, "O campo %s não é do tipo INT %s.\n", selection->field);
+                    fprintf(stderr, "O campo %s não é do tipo INT.\n", selection->field);
                     return;
                 }
 
@@ -964,7 +971,7 @@ void criarIndex(Selection *selection) {
             if(fieldExistInTable(selection->tableName, selection->field)){ // verifica se o campo a ser indexado existe na tabela
                 
                 if(getFieldType(selection->tableName, selection->field) != 'i') { // verifica se o campo a ser indexado é do tipo inteiro
-                    fprintf(stderr, "O campo %s não é do tipo INT %s.\n", selection->field);
+                    fprintf(stderr, "O campo %s não é do tipo INT.\n", selection->field);
                     return;
                 }
 
@@ -1068,8 +1075,7 @@ void removerIndex(TableName tableName, int imprime) { // recebe o nome da tabela
 }
 
 void gerarIndex(Selection *selection) {
-    if (haveIndexTree(selection->tableName))
-    {
+    if (haveIndexTree(selection->tableName)) {
         char *filename = glueString(3, "tables_index/", selection->tableName, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
         // Abre o arquivo de index
         FILE *tabela_index = fopen(filename, "ab+"); 
