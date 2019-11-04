@@ -10,7 +10,7 @@ void inicializaLista(Noh ** raiz) {
 }
 
 int insereLista(Noh ** raiz, ItemBTree i) {
-	if(pesquisaLista(raiz, i.key) != NULL) {
+	if(pesquisaLista(raiz, i.tableName, i.field) != NULL) {
 		return 0;
 	}
 
@@ -29,13 +29,13 @@ int insereLista(Noh ** raiz, ItemBTree i) {
 	return 1;
 }
 
-Noh * pesquisaLista(Noh ** raiz, TableName key) {
+Noh * pesquisaLista(Noh ** raiz, TableName tableName, Field field) {
 
 	Noh * p;
 	
 	p = *raiz;
 	while(p != NULL) {
-		if (!strcmp(p->item.key,key))
+		if (!strcmp(p->item.tableName, tableName) && !strcmp(p->item.field, field))
 			return p;
 		p = p->prox;
 	}
@@ -79,8 +79,8 @@ int static removeListaPosicao(Noh ** raiz, Noh * p) {
 	return 1;
 }
 
-int removeLista(Noh ** raiz, Chave key) {	
-	Noh * p = pesquisaLista(raiz, key);	
+int removeLista(Noh ** raiz, Chave key, Field field) {	
+	Noh * p = pesquisaLista(raiz, key, field);	
 	if(p == NULL) return 0;
 	else removeListaPosicao(raiz, p);
 	return 1;

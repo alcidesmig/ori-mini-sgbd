@@ -8,7 +8,8 @@ typedef TableName Chave;
 
 typedef struct {
 	BTree * tree;
-	TableName key;
+	TableName tableName;
+	Field field;
 } ItemBTree;
 
 typedef struct no {
@@ -19,10 +20,10 @@ typedef struct no {
 extern Noh * lista_btree;
 
 void inicializaLista(Noh ** raiz);
-Noh * pesquisaLista(Noh ** raiz, TableName key);
+Noh * pesquisaLista(Noh ** raiz, TableName tableName, Field field);
 void freeLista(Noh ** raiz);
 int pesquisaAtualizaLista(Noh ** raiz, ItemBTree item);
 int insereLista(Noh ** raiz, ItemBTree i);
-int removeLista(Noh ** raiz, Chave key);
+int removeLista(Noh ** raiz, Chave key, Field field);
 
 #endif
