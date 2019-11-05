@@ -267,7 +267,7 @@ void incluirRegistro(Row *row) {
     }
 
     // Carrega a btree da tabela utilizada caso ela ainda não tenha sido carregada
-    carregaBTree(row->tableName);
+    // carregaBTree(row->tableName);
 
     // Verifica se a tabela existe
     int exists = tableExists(qtTables, row->tableName);
@@ -425,7 +425,7 @@ void incluirRegistro(Row *row) {
 void buscarRegistros(Selection *selection) {
 
     // Carrega a btree da tabela utilizada caso ela ainda não tenha sido carregada
-    carregaBTree(selection->tableName);
+    // carregaBTree(selection->tableName);
 
     // Limite de busca
     int searchLimit = (selection->parameter == 'U' ? 1 : 2147483647);
@@ -466,6 +466,7 @@ void buscarRegistros(Selection *selection) {
 
             return;
         } else if (temIndexTree) {
+            /*TODO: refatorar BTree
 
             printf("Buscando por indexação. Field indexado: %s\n", selection->field);
             BTree * tree = encontraBTree(selection->tableName);
@@ -498,6 +499,8 @@ void buscarRegistros(Selection *selection) {
             } else {
                 printf("Nenhum resultado para %s\n", selection->tableName);
             }
+            */
+
         } else {
             // Lê os metadados
             fread(&table, sizeof(Table), 1, tableFile);
@@ -890,26 +893,67 @@ void removerRegistros(Selection *selection) {
 
 void criarIndex(Selection *selection) {
     if(tableExists(qtTables, selection->tableName)) {
-        if(selection->parameter == 'H') { // se for index do tipo hash
-            if(fieldExistInTable(selection->tableName, selection->field)){ // verifica se o campo a ser indexado existe na tabela
-
-                if(getFieldType(selection->tableName, selection->field) != 'i') { // verifica se o campo a ser indexado é do tipo inteiro
+        //se tipo de indexacao eh hash
+        if(selection->parameter == 'H') {
+            //se o campo existe na tabela
+            if(fieldExistInTable(selection->tableName, selection->field)){
+                //se o campo eh inteiro
+                if(getFieldType(selection->tableName, selection->field) != 'i') { 
                     fprintf(stderr, "O campo %s não é do tipo INT.\n", selection->field);
                     return;
                 }
-
-                if(tem_index_hash(selection->tableName, selection->field)) { // verifica se já existe um index hash para a tabela (=> arquivo já existe)
+                //se o indice ja existe
+                if(tem_index_hash(selection->tableName, selection->field)) {
                     fprintf(stderr, "O campo %s já é indexado na tabela %s.\n", selection->field, selection->tableName);
                     return;
                 }
-                
-                char * filename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_hash.index"); // elabora o nome do arquivo
-                
-                FILE * tabela_index = fopen(filename, "wb+"); // cria o arquivo do index
 
-                fwrite(selection->field, sizeof(Field), 1, tabela_index); // escreve o nome do campo que será indexado
+                char * hashFilename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_h.i");
+                FILE * arquivoHash  = fopen(hashFilename, "wb"); // cria o arquivo do index
 
-                fclose(tabela_index);
+                inicializaArquivoHash(arquivoHash);
+
+                char *tableFilename = glueString(2, TABLES_DIR, selection->tableName);
+                FILE *arquivoTable  = fopenSafe(tableFilename, "r+b");
+
+                Table table;
+                fread(&table, sizeof(Table), 1, arquivoTable);
+
+                fseek(arquivoHash, 0, SEEK_SET);
+
+                // pra cada registro, insere a pos dele na hashtable usando o valor do field indexado como chave
+                for (int i=0; i<table.rows; i++) {
+
+                    int posRegistro = ftell(arquivoTable);
+
+                    int valido;
+
+                    fread(&valido, sizeof(int), 1, arquivoTable);
+
+                    if (!valido) fseek(arquivoTable, table.length, SEEK_CUR);
+                    else {
+                        //passa por cada field do registro
+                        for (int i=0; i<table.cols; i++) {
+                            //se achou o campo indexado
+                            if (strcmp(table.fields[i], selection->field) == 0) {
+
+                                int valorDoCampo;
+                                //le o valor 
+                                fread(&valorDoCampo, sizeof(int), 1, arquivoTable);
+                                //insere na hash o par (valorDoCampo, posRegistro)
+                                insereArquivoHash(arquivoHash, valorDoCampo, posRegistro);
+
+                            } //se nao eh o campo indexado vai para o proximo campo
+                            else if (table.types[i] == 's') fseek(arquivoTable, sizeof(long int), SEEK_CUR);
+                            else if (table.types[i] == 'i') fseek(arquivoTable, sizeof(int), SEEK_CUR);
+                            else if (table.types[i] == 'f') fseek(arquivoTable, sizeof(float), SEEK_CUR);
+                            else if (table.types[i] == 'b') fseek(arquivoTable, sizeof(long int), SEEK_CUR);
+                        }
+                    }
+                }
+
+                fclose(arquivoTable);
+                fclose(arquivoHash);
 
             } else {
                 fprintf(stderr, "O campo %s não existe na tabela %s.\n", selection->field, selection->tableName);

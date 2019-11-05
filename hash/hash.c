@@ -1,19 +1,57 @@
 #include "hash.h"
-//#include "lista.h"
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
+
+static int hashFunc(int chave) {
+	return ((int)pow(chave, 2)) % TAM_HASHTABLE;
+}
+
+void inicializaArquivoHash(FILE * arquivo) {
+
+    Balde balde;
+    balde.qtdRegsNoBalde = 0;
+
+    for(int i=0; i<TAM_HASHTABLE; i++)
+    {
+        fwrite(&balde, sizeof(Balde), 1, arquivo);
+    }
+}
+
+void insereArquivoHash(FILE *arquivo, int chave, int valor) {
+
+    int posicao = hashFunc(chave);
+    
+    Balde balde;
+
+    fseek(arquivo, posicao*sizeof(Balde), SEEK_SET);
+    fread(&balde, sizeof(Balde), 1, arquivo);
+
+    balde.itens[balde.qtdRegsNoBalde].chave = chave;
+    balde.itens[balde.qtdRegsNoBalde].valor = valor;
+    balde.qtdRegsNoBalde++;
+
+    fwrite(&balde, sizeof(Balde), 1, arquivo);
+}
 
 int buscaEmArquivoHash(int chave, char * filename) {
-    return 0;
+
+    FILE * arquivo = fopen(filename, "rb");
+
+    int posicao = hashFunc(chave);
+
+    Balde balde;
+
+    fseek(arquivo, posicao*sizeof(Balde), SEEK_SET);
+    fread(&balde, sizeof(Balde), 1, arquivo);
+
+    for (int i=0; i<balde.qtdRegsNoBalde; i++)
+    {
+        if (chave == balde.itens[i].chave)
+            return balde.itens[i].valor;
+    }
 }
 
 // http://www.cse.yorku.ca/~oz/hash.html
-/*
-static int hashFunc(Chave key) {
-	return key << 10 % TAM;
-}
 
+/*
 void initHash(Noh ** lista) {
 	for (int i = 0; i < TAM; i++) {
 		inicializaLista(&(lista[i]));
