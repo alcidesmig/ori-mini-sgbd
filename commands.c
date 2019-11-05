@@ -33,14 +33,24 @@ void criarTabela(Table *table) {
         createFile(auxPath);
         free(auxPath);
 
+        // Auxiliar
+        long FLAG = -1;
+        FILE *fp = NULL;
+
         // Arquivo de strings deletadas
         auxPath = glueString(2, path, "_strings.empty");
         createFile(auxPath);
+        fp = fopenSafe(auxPath, "rb+");
+        fwrite(&FLAG, sizeof(long), 1, fp);
+        fclose(fp);
         free(auxPath);
 
         // Arquivo de binarios deletados
         auxPath = glueString(2, path, "_binaries.empty");
         createFile(auxPath);
+        fp = fopenSafe(auxPath, "rb+");
+        fwrite(&FLAG, sizeof(long), 1, fp);
+        fclose(fp);
         free(auxPath);
 
         // Path do arquivo de blocos deletados

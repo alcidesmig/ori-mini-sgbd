@@ -27,7 +27,7 @@ int tableNameIsUnique(int qtTables, char *name, long int *marker);
 void addTableName(int qtTables, char *name);
 long int addToExFile(char *str, FILE *dataFile, FILE *emptyFile);
 void removeFromExFile(long int pos, FILE *dataFile, FILE *emptyFile);
-void reorderEmptyFile(FILE *emptyFile);
-void insertToEmptyFile(FILE *emptyFile, EmptyBlock *empty);
+void removeEmptyBlock(FILE *emptyFile);
+void insertEmptyBlock(FILE *emptyFile, EmptyBlock *emptyBlock);
 
 #endif /* COMMANDS_TOOLS_H */

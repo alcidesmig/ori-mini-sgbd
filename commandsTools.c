@@ -338,7 +338,7 @@ long int addToExFile(char *str, FILE *dataFile, FILE *emptyFile) {
             // Grava o novo tamanho, logo após a última string
             fwrite(&(emptyBlock.size), sizeof(int), 1, dataFile);
             // Coloca o bloco atualizado no arquivo
-            insertEmptyBlock(emptyFile, emptyBlock);
+            insertEmptyBlock(emptyFile, &emptyBlock);
         }
     // Se a lista está vazia ou o maior bloco não é suficiente
     } else {
@@ -371,10 +371,99 @@ void removeFromExFile(long int pos, FILE *dataFile, FILE *emptyFile) {
     insertEmptyBlock(emptyFile, &empty);
 }
 
+// Remove o primeiro elemento do arquivo
 void removeEmptyBlock(FILE *emptyFile) {
-    // TODO
+    EmptyBlock empty;
+
+    // Posição corrente
+    long pos;
+
+    // Vai para o começo do arquivo
+    fseek(emptyFile, 0, SEEK_SET);
+
+    // Lê a posição do maior elemento
+    fread(&pos, sizeof(long), 1, emptyFile);
+
+    // Pula para o maior elemento
+    fseek(emptyFile, pos, SEEK_SET);
+
+    // Lê o maior bloco
+    fread(&empty, sizeof(EmptyBlock), 1, emptyFile);
+
+    // Pula para o começo
+    fseek(emptyFile, 0, SEEK_SET);
+
+    // Grava a posição do próximo elemento
+    fread(&(empty.next), sizeof(long), 1, emptyFile);
 }
 
+// Coloca um elemento na lista do arquivo
 void insertEmptyBlock(FILE *emptyFile, EmptyBlock *emptyBlock) {
-    // TODO
+    EmptyBlock empty;
+
+    // Posição corrente
+    long pos = -1;
+    long pastPos = -1;
+
+    // Vai para o começo do arquivo
+    fseek(emptyFile, 0, SEEK_SET);
+
+    // Lê a posição do maior elemento
+    fread(&pos, sizeof(long), 1, emptyFile);
+
+    // Pula para o maior elemento
+    fseek(emptyFile, pos, SEEK_SET);
+
+    // Lê o maior bloco
+    fread(&empty, sizeof(EmptyBlock), 1, emptyFile);
+
+    // Enquanto o novo bloco é menor
+    while (emptyBlock->size < empty.size) {
+        // Atualiza o pos
+        pastPos = pos;
+        pos = empty.next;
+
+        // Pula para a próximo elemento
+        fseek(emptyFile, pos, SEEK_SET);
+
+        // Lê o bloco
+        fread(&empty, sizeof(EmptyBlock), 1, emptyFile);
+    }
+
+    // O novo bloco é maior ou igual a um encontrado
+
+    // Atualiza o bloco com a posição do próximo bloco
+    emptyBlock->next = pos;
+
+    // Vai para o fim do arquivo
+    fseek(emptyFile, 0, SEEK_END);
+
+    // Salva a posição
+    pos = ftell(emptyFile);
+
+    // Grava o novo bloco
+    fwrite(&empty, sizeof(EmptyBlock), 1, emptyFile);
+
+    // Se pos == -1, então é o maior bloco
+    if (pastPos == -1) {
+        // Vai para o começo do arquivo
+        fseek(emptyFile, 0, SEEK_SET);
+
+        // Grava a posição do novo maior elemento
+        fwrite(&pos, sizeof(long), 1, emptyFile);
+    
+    // Se não é um bloco no meio da lista
+    } else {
+        // Vai para o bloco que vai ser atualizado
+        fseek(emptyFile, pastPos, SEEK_SET);
+
+        // Lê o bloco
+        fread(&empty, sizeof(EmptyBlock), 1, emptyFile);
+
+        // Atualiza a posição do próximo elemento
+        empty.next = pos;
+
+        // Grava o bloco atualizado
+        fwrite(&empty, sizeof(EmptyBlock), 1, emptyFile);
+    }
 }
