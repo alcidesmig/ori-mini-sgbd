@@ -94,6 +94,6 @@ void showResultTree(ResultNode *root) {
 void showResultList(ResultList *list) {
 	if (list) {
 		showResultList(list->next);
-		printf("\t%x\n", list->pos);
+		printf("\t%lx\n", list->pos);
 	}
 }
