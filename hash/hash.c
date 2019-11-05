@@ -1,10 +1,15 @@
 #include "hash.h"
-#include "lista.h"
+//#include "lista.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
+int buscaEmArquivoHash(int chave, char * filename) {
+    return 0;
+}
+
 // http://www.cse.yorku.ca/~oz/hash.html
+/*
 static int hashFunc(Chave key) {
 	return key << 10 % TAM;
 }
@@ -47,3 +52,4 @@ int removeHash(Noh ** lista, Chave key) {
 	int pos = hashFunc(key);
 	return removeLista(&lista[pos], key); 
 }
+*/

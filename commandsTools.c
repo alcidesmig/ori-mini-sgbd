@@ -71,7 +71,7 @@ BTree * encontraBTree(TableName tableName) {
 
 // Carrega os dados da BTree de uma tabela caso eles ainda não tenha sido carregaods
 void carregaBTree(TableName tableName) {
-    if(haveIndexTree(tableName) && pesquisaLista(&lista_btree, tableName) == NULL) {
+    if(/*TODO: tem_index_tree(tableName, field) &&*/ pesquisaLista(&lista_btree, tableName) == NULL) {
         // Arquivo da BTree
         char * filename = glueString(3, "tables_index/", tableName, "_tree.index"); 
         FILE * fp = fopen(filename, "r");
@@ -97,15 +97,15 @@ void carregaBTree(TableName tableName) {
 }
 
 // Verifica se existe um índice hash para a tabela
-int haveIndexHash(TableName tableName) {
-    char * filename = glueString(3, "tables_index/", tableName, "_hash.index"); 
-    return fileExist(filename);
+int tem_index_hash(TableName tableName, Field field) {
+    char * hashFilename = glueString(5, "tables_index/", tableName, "_", field, "_hash.index");
+    return fileExist(hashFilename);
 }
 
 // Verifica se existe um índice tree para a tabela
-int haveIndexTree(TableName tableName) {
-    char * filename = glueString(3, "tables_index/", tableName, "_tree.index"); 
-    return fileExist(filename);
+int tem_index_tree(TableName tableName, Field field) {
+    char * treeFilename = glueString(5, "tables_index/", tableName, "_", field, "_tree.index");
+    return fileExist(treeFilename);
 }
 
 // Antes de usar essa função, garanta que o campo exista na tablea utilizando a função fieldExistInTable(...)
