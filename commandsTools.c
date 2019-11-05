@@ -1,6 +1,5 @@
 #include "commandsTools.h"
 
-
 // Função para salvar todas as BTrees antes de fechar o programa
 void salvaBTrees(Noh * lista_btree) {
     while(lista_btree) {
@@ -251,90 +250,96 @@ void addTableName(int qtTables, char *name) {
     fwrite(name, blocks*BLOCK_SIZE, 1, tablesIndex);
 }
 
-void loadEmptyList(FILE *eListFile, EmptyBlockList **list) {
-    int qt = 0;
+// void loadEmptyList(FILE *eListFile, EmptyBlockList **list) {
+//     int qt = 0;
 
-    fseek(eListFile, 0, SEEK_SET);
-    fread(&qt, sizeof(int), 1, eListFile);
+//     fseek(eListFile, 0, SEEK_SET);
+//     fread(&qt, sizeof(int), 1, eListFile);
 
-    EmptyBlock *block;
+//     EmptyBlock *block;
 
-    for (int i = 0; i < qt; i++) {
-        block = (EmptyBlock *)mallocSafe(sizeof(EmptyBlock));
+//     for (int i = 0; i < qt; i++) {
+//         block = (EmptyBlock *)mallocSafe(sizeof(EmptyBlock));
 
-        fread(block, sizeof(EmptyBlock), 1, eListFile);
+//         fread(block, sizeof(EmptyBlock), 1, eListFile);
         
-        if (*list) {
-            EmptyBlockList *temp = *list;
+//         if (*list) {
+//             EmptyBlockList *temp = *list;
             
-            while (temp->next) {
-                temp = temp->next;
-            }
+//             while (temp->next) {
+//                 temp = temp->next;
+//             }
 
-            temp->next = (EmptyBlockList *)mallocSafe(sizeof(EmptyBlockList));
-            temp = temp->next;
-            temp->next = NULL;
-            temp->data = block;
-        } else {
-            *list = (EmptyBlockList *)mallocSafe(sizeof(EmptyBlockList));
-            (*list)->next = NULL;
-            (*list)->data = block;
-        }
-    }
-}
+//             temp->next = (EmptyBlockList *)mallocSafe(sizeof(EmptyBlockList));
+//             temp = temp->next;
+//             temp->next = NULL;
+//             temp->data = block;
+//         } else {
+//             *list = (EmptyBlockList *)mallocSafe(sizeof(EmptyBlockList));
+//             (*list)->next = NULL;
+//             (*list)->data = block;
+//         }
+//     }
+// }
 
-void saveEmptyList(FILE *eListFile, EmptyBlockList **list) {
-    int qt = 0;
-    fseek(eListFile, sizeof(int), SEEK_SET);
+// void saveEmptyList(FILE *eListFile, EmptyBlockList **list) {
+//     int qt = 0;
+//     fseek(eListFile, sizeof(int), SEEK_SET);
 
-    while (*list) {
-        fwrite((*list)->data, sizeof(EmptyBlock), 1, eListFile);
-        free((*list)->data);
-        EmptyBlockList *aux = *list;
-        *list = (*list)->next;
-        free(aux);
-        qt++;
-    }
+//     while (*list) {
+//         fwrite((*list)->data, sizeof(EmptyBlock), 1, eListFile);
+//         free((*list)->data);
+//         EmptyBlockList *aux = *list;
+//         *list = (*list)->next;
+//         free(aux);
+//         qt++;
+//     }
 
-    fseek(eListFile, 0, SEEK_SET);
-    fwrite(&qt, sizeof(int), 1, eListFile);
-}
+//     fseek(eListFile, 0, SEEK_SET);
+//     fwrite(&qt, sizeof(int), 1, eListFile);
+// }
 
-long int addToExFile(char *str, FILE *dataFile, EmptyBlockList **list) {
+long int addToExFile(char *str, FILE *dataFile, FILE *emptyFile) {
     // Posição que a string foi escrita
     long int pos;
     // Tamanho da string
     int size = strlen(str);
 
-    // Se a lista não está vazia e se o maior elemento é maior que a string
-    if (*list && (*list)->data->size >= size) {
+    // Auxiliar para o block vazio
+    EmptyBlock emptyBlock;
+    emptyBlock.size = 0;
+    emptyBlock.pos = -1;
+
+    // Lê o maior bloco do arquivo
+    fseek(emptyFile, 0, SEEK_SET);
+    fread(&emptyBlock, sizeof(EmptyBlock), 1, emptyFile);
+
+    // Se o maior elemento é maior que a string
+    if (emptyBlock.size >= size) {
+        // Remove o maior bloco
+        removeEmptyBlock(emptyFile);
+
         // Pula para posição vazia
-        fseek(dataFile, (*list)->data->pos, SEEK_SET);
+        fseek(dataFile, emptyBlock.pos, SEEK_SET);
         // Salva a posição da string
         pos = ftell(dataFile);
         // Escreve o tamanho da string
         fwrite(&size, sizeof(int), 1, dataFile);
         // Escreve a string
         fwrite(str, size, 1, dataFile);
-        // Bloco removido
-        EmptyBlockList *removed = *list;
-        // Tira o primeiro bloco da lista
-        *list = (*list)->next;
+
         // Atualiza o tamanho do bloco remanescente
-        removed->data->size -= size;
+        emptyBlock.size -= size;
 
         // Se o bloco ainda possuí espaço
-        if (removed->data->size) {
-            // Atualiza a posição
-            removed->data->pos += size + sizeof(int);
+        if (emptyBlock.size) {
+            // Atualiza a posição (tamanho da string, tamanho do tamanho da string)
+            emptyBlock.pos += size + sizeof(int);
             // Grava o novo tamanho, logo após a última string
-            fwrite(&(removed->data->size), sizeof(int), 1, dataFile);
-            // Coloca o bloco na lista
-            addInOrderToEBList(list, removed->data->pos, removed->data->size);
+            fwrite(&(emptyBlock.size), sizeof(int), 1, dataFile);
+            // Coloca o bloco atualizado no arquivo
+            insertEmptyBlock(emptyFile, emptyBlock);
         }
-        // Libera o bloco de qualquer forma
-        free(removed->data);
-        free(removed);
     // Se a lista está vazia ou o maior bloco não é suficiente
     } else {
         // Pula para o fim
@@ -350,41 +355,26 @@ long int addToExFile(char *str, FILE *dataFile, EmptyBlockList **list) {
     return pos;
 }
 
-void removeFromExFile(long int pos, FILE *dataFile, EmptyBlockList **list) {
+void removeFromExFile(long int pos, FILE *dataFile, FILE *emptyFile) {
     // Tamanho do bloco
     int size;
     // Pula para o bloco que será removida
     fseek(dataFile, pos, SEEK_SET);
-    // Salva o tamanho do bloco
+    // Lê o tamanho do bloco
     fread(&size, sizeof(int), 1, dataFile);
 
-    // Coloca o bloco na lista
-    addInOrderToEBList(list, pos, size);
+    // Novo bloco
+    EmptyBlock empty;
+    empty.size = size;
+    empty.pos = pos;
+
+    insertEmptyBlock(emptyFile, &empty);
 }
 
-void addInOrderToEBList(EmptyBlockList **list, long int pos, int size) {
-    EmptyBlockList *newBlock = (EmptyBlockList *)mallocSafe(sizeof(EmptyBlockList));
-    newBlock->data = (EmptyBlock *)mallocSafe(sizeof(EmptyBlock));
-    newBlock->data->pos = pos;
-    newBlock->data->size = size;
+void removeEmptyBlock(FILE *emptyFile) {
+    // TODO
+}
 
-    if (*list) {
-        EmptyBlockList *parent = NULL;
-        EmptyBlockList *temp = *list;
-
-        while (temp && temp->data->size > newBlock->data->size) {
-            parent = temp;
-            temp = temp->next;
-        }
-
-        if (parent) {
-            newBlock->next = parent->next;
-            parent->next = newBlock;
-        } else {
-            newBlock->next = temp;
-            *list = newBlock;
-        }
-    } else {
-        *list = newBlock;
-    }
+void insertEmptyBlock(FILE *emptyFile, EmptyBlock *emptyBlock) {
+    // TODO
 }
