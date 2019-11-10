@@ -21,6 +21,10 @@
       the optional textfile for input data. Use different
       file-name extensions, such as .bin and .txt.
 */
+
+#ifndef DISK_TREE
+#define DISK_TREE
+
 #include <fstream>
 #include <iomanip>
 #include <stdlib.h>
@@ -65,6 +69,7 @@ public:
     }
     void DelNode(pair_btree x);
     void ShowSearch(pair_btree x);
+    int search(pair_btree *x)
 private:
     enum {NIL = -1};
     long root, FreeList;
@@ -313,6 +318,32 @@ void Btree::ShowSearch(pair_btree x)
     }
     cout << "Key " << x.key << " not found.\n";
 }
+
+int search(pair_btree *x)
+{
+    int i, j, n;
+    long r = root;
+    node Node;
+    while (r != NIL)
+    {
+        ReadNode(r, Node);
+        n = Node.n;
+        for (j = 0; j < Node.n; j++) cout << " " << Node.k[j].key;
+        cout << endl;
+        i = NodeSearch(x, Node.k, n);
+        if (i < n && x->key == Node.k[i].key)
+        {
+            cout << "Key " << x.key << " found in position " << i
+                 << " of last displayed node.\n";
+            x->addr = Node.k[i].addr;
+            return 1;
+        }
+        r = Node.p[i];
+    }
+    cout << "Key " << x.key << " not found.\n";
+    return 0;
+}
+
 
 void Btree::DelNode(pair_btree x)
 {
@@ -601,3 +632,5 @@ int main()
 }
 
 */
+
+#endif
