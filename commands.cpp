@@ -972,7 +972,7 @@ void criarIndex(Selection *selection) {
                     return;
                 }
 
-                char * filename = glueString(3, "tables_index/", selection->tableName, "_", selection->field, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
+                char * filename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_tree.bin"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
 
                 Btree * btree = new Btree(filename);
 
