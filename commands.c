@@ -1,6 +1,7 @@
 #include "commands.h"
 #include "btree/lista.h"
 #include "btree/btree.h"
+#include "hash/hash.h"
 
 // Cria uma tabela no banco
 // table: ponteiro para tabela
@@ -184,32 +185,27 @@ void apresentarTabela(Table *table) {
         // Printa os índices existentes
         printf("Índices existentes:\n");
 
-        // Hash
-        // elabora o nome do arquivo de index: hash
-        char * filename = glueString(3, "tables_index/", table->name, "_hash.index"); 
-        FILE * aux_index;
-        if(fileExist(filename)) { // verifica se o arquivo existe = tem índice
-            aux_index = fopen(filename, "rb");
-            TableName tableName;
-            fread(tableName, sizeof(TableName), 1, aux_index); // lê o nome do campo indexado
-            printf("\t> Hash: índice para o campo %s do tipo: INT\n", tableName);
-            fclose(aux_index);
-        } else {
-            printf("\t> Hash: não existem índices\n");
+        int achouIndiceHash = 0;
+        int achouIndiceTree = 0;
+
+        for (int i=0; i<table->cols; i++) {
+            if(tem_index_hash(table->name, table->fields[i])) {
+                if (!achouIndiceHash)
+                    printf("Indice Hash para os campos:\n");
+                printf("  - %s\n", table->fields[i]);
+                achouIndiceHash = 1;
+            }
+            if(tem_index_tree(table->name, table->fields[i])) {
+                if (!achouIndiceTree)
+                    printf("Indice Tree para os campos:");
+                printf("  - %s\n", table->fields[i]);
+                achouIndiceTree = 1;
+            }
         }
 
-        // Tree
-        // elabora o nome do arquivo de index: árvores
-        filename = glueString(3, "tables_index/", table->name, "_tree.index"); 
-        if(fileExist(filename)) { // verifica se o arquivo existe = tem índice
-            aux_index = fopen(filename, "rb");
-            Field field;
-            fread(field, sizeof(Field), 1, aux_index); // lê o nome do campo indexado
-            printf("\t> Árvore: índice para o campo %s do tipo: INT\n", field);
-            fclose(aux_index);
-        } else {
-            printf("\t> Árvore: não existem índices\n");
-        }
+        if (!achouIndiceHash) printf("\t> Hash: não existem índices\n");
+        if (!achouIndiceTree) printf("\t> Árvore: não existem índices\n");
+
     } else {
         fprintf(stderr, "Tabela não encontrada!\n");
     }
@@ -271,7 +267,7 @@ void incluirRegistro(Row *row) {
     }
 
     // Carrega a btree da tabela utilizada caso ela ainda não tenha sido carregada
-    carregaBTree(row->tableName);
+    // carregaBTree(row->tableName);
 
     // Verifica se a tabela existe
     int exists = tableExists(qtTables, row->tableName);
@@ -315,27 +311,12 @@ void incluirRegistro(Row *row) {
                 // Pula outros registros, mais as flags de validade
                 fseek(tableFile, table.rows * (table.length + sizeof(int)), SEEK_CUR);
             }
-
             
+            // Auxiliares para indexação
             //checkpoint alcides
-
-            // Indexação
             // Posição do registro no arquivo
-            int * pos_insercao_registro = (int*) malloc(sizeof(int));
-            *pos_insercao_registro = ftell(tableFile);
-            // Variáveis a serem utilizadas caso haja indexação
-            Field field_indexado;
-            int valor_field_indexado;
-            // Verifica se há indexação
-            int haveIndex = haveIndexTree(row->tableName);
-            // Lê o Field indexado, caso tenha indexação
-            if(haveIndex) {
-                char * filename = glueString(3, "tables_index/", row->tableName, "_tree.index"); 
-                FILE * aux_index = fopen(filename, "rb");
-                fread(field_indexado, sizeof(Field), 1, aux_index); 
-                fclose(aux_index);
-            }
-            
+            int posInsercaoRegistro = ftell(tableFile);
+
             // Bit de validade
             fwrite(&valido, sizeof(int), 1, tableFile);
             // Para cada coluna
@@ -356,13 +337,18 @@ void incluirRegistro(Row *row) {
                     }
                     // Escreve no arquivo da tabela
                     fwrite(&numb, sizeof(int), 1, tableFile);
-
-                     // Pega o valor do field indexado caso haja index
-                    if(haveIndex){
-                        if(!strcmp(table.fields[i], field_indexado)) {
-                            valor_field_indexado = numb;
-                        }
+                    // Verifica se há indexação
+                    if(tem_index_tree(row->tableName, table.fields[i])) {
+                        //TODO: inserir no arquivo da arvore node com valor (posInsercaoRegistro) e chave (numb)
+                        char * treeFilename  = glueString(5, "tables_index/", row->tableName, "_", table.fields[i], "_tree.index"); 
+                        //btreeFileInsert(treeFilename, valoresFieldsIndexados[i], posInsercaoRegistro);
                     }
+                    if(tem_index_hash(row->tableName, table.fields[i])) {
+                        //TODO: inserir no arquivo da hashtable o valor (posInsercaoRegistro) com chave (numb)
+                        char * hashFilename  = glueString(5, "tables_index/", row->tableName, "_", table.fields[i], "_hash.index"); 
+                        //hashFileInsert(hashFilename, valoresFieldsIndexados[i], posInsercaoRegistro);
+                    }
+                    // Pega o valor do field se deve ser indexado
 
                 } else if (table.types[i] == 's') {
                     // Escreve a string no arquivo de strings
@@ -407,16 +393,6 @@ void incluirRegistro(Row *row) {
             }
             // Fecha arquivo de blocos deletados
             fclose(tableFileEmpty);
-            
-            // Adiciona o registro nos índices
-            
-            // Caso haja indexação (tree) -> adiciona par (registro, addr) na BTree correspondente
-            if(haveIndexTree(row->tableName)) {   
-                // Encontra a BTree correspondente
-                BTree * tree = encontraBTree(row->tableName);
-                // Insere os valores na BTree
-                btree_insert(tree, valor_field_indexado, pos_insercao_registro);
-            }
 
             // Printa a mensagem de sucesso
             printf("Registro criado: ");
@@ -449,7 +425,7 @@ void incluirRegistro(Row *row) {
 void buscarRegistros(Selection *selection) {
 
     // Carrega a btree da tabela utilizada caso ela ainda não tenha sido carregada
-    carregaBTree(selection->tableName);
+    // carregaBTree(selection->tableName);
 
     // Limite de busca
     int searchLimit = (selection->parameter == 'U' ? 1 : 2147483647);
@@ -473,29 +449,26 @@ void buscarRegistros(Selection *selection) {
         FILE *tableFile = fopenSafe(path, "rb+");
 
         // Verifica se tem indexação
-        int have_index_hash = haveIndexHash(selection->tableName);
-        int have_index_tree = haveIndexTree(selection->tableName);
+        int temIndexTree = tem_index_tree(selection->tableName, selection->field);
+        int temIndexHash = tem_index_hash(selection->tableName, selection->field);
 
-        // Descobre o field indexado
-        Field field_indexado;
-        if(have_index_hash) {
-            char * filename = glueString(3, "tables_index/", selection->tableName, "_hash.index"); 
-            FILE * aux_index = fopen(filename, "rb");
-            fread(field_indexado, sizeof(Field), 1, aux_index); 
-            fclose(aux_index);
-        } else if(have_index_tree) {
-            char * filename = glueString(3, "tables_index/", selection->tableName, "_tree.index"); 
-            FILE * aux_index = fopen(filename, "rb");
-            fread(field_indexado, sizeof(Field), 1, aux_index); 
-            fclose(aux_index);
-        }
-        // Verifica se já existe um index hash ou tree para a tabela
         // se existir e for o critério de busca: realiza busca pelo índice, se não: busca sequencial
-        if(have_index_hash && !(strcmp(selection->field, field_indexado))) {    
-            printf("Índice <HASH>: to do"); 
+        if (temIndexHash) {
+
+            int value;
+            if(sscanf((char *) selection->value, "%d", &value) != 1) {
+                fprintf(stderr, "Erro na busca (indexação)!\n");
+                return;
+            }
+            //TODO: Busca pelo indice hash
+            char * hashFilename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_hash.index");
+            int registerPos = buscaEmArquivoHash(value, hashFilename);
+
             return;
-        } else if (have_index_tree && !(strcmp(selection->field, field_indexado))) {
-            printf("Buscando por indexação. Field indexado: %s\n", field_indexado);
+        } else if (temIndexTree) {
+            /*TODO: refatorar BTree
+
+            printf("Buscando por indexação. Field indexado: %s\n", selection->field);
             BTree * tree = encontraBTree(selection->tableName);
             int value;
             if(sscanf((char *) selection->value, "%d", &value) != 1) {
@@ -526,6 +499,8 @@ void buscarRegistros(Selection *selection) {
             } else {
                 printf("Nenhum resultado para %s\n", selection->tableName);
             }
+            */
+
         } else {
             // Lê os metadados
             fread(&table, sizeof(Table), 1, tableFile);
@@ -816,9 +791,6 @@ void removerRegistros(Selection *selection) {
         return;
     }
 
-    // (Início) auxiliares para o caso da existência de indexação
-
-    Field field_indexado;
     // Aloca a quantidade de valores a serem excluidos
     int cont_values = 0;
     ResultList *list_search = searchResultList(resultTree, selection->tableName); // Recupera a pesquisa
@@ -827,12 +799,6 @@ void removerRegistros(Selection *selection) {
         cont_values++;
         list_search = list_search->next;
     }
-    int valor_index[cont_values];
-    int i_index = 0;
-    Field field_index;
-    int haveIndex = /*(haveIndexHash(selection->tableName) || */haveIndexTree(selection->tableName);
-
-    // (Fim) auxiliares para indexação
 
     // Verifica se a tabela existe
     int exists = tableExists(qtTables, selection->tableName);
@@ -862,15 +828,7 @@ void removerRegistros(Selection *selection) {
             int empty = 0;
             // Lê o número de blocos deletados
             fread(&empty, sizeof(int), 1, tableFileEmpty);
-            
-            // Lê o nome do campo indexado, caso tenha index
-            if(haveIndex) {
-                char * filename = glueString(3, "tables_index/", selection->tableName, "_tree.index"); 
-                FILE * aux_index = fopen(filename, "rb");
-                fread(field_indexado, sizeof(Field), 1, aux_index); 
-                fclose(aux_index);
-            }
-            
+
             while (list) {
                 // Grava a posição deletada
                 fwrite(&(list->pos), sizeof(long int), 1, tableFileEmpty);
@@ -883,14 +841,6 @@ void removerRegistros(Selection *selection) {
                 long int pos;
                 // Remove as strings e binários
                 for (int i = 0; i < table.cols; i++) {
-
-                    // Pega o valor do field indexado caso haja index
-                    if(haveIndex){
-                        if(!strcmp(table.fields[i], field_indexado)) {
-                            fread(&valor_index[i_index++], sizeof(int), 1, tableFile);
-                            fseek(tableFile, -sizeof(int), SEEK_CUR);
-                        }
-                    }
 
                     // Remove dos arquivos exteriores + pula offsets
                     if (table.types[i] == 'i') {
@@ -925,13 +875,13 @@ void removerRegistros(Selection *selection) {
 
             // Verifica se já existe um index hash ou tree para a tabela
             // se existir: remove o valor do índice
-            if(haveIndexHash(selection->tableName)) {    
-                // to do: remoção na hash
+            if(tem_index_hash(selection->tableName, selection->field)) {    
+                //TODO: remoção na hash
             }
-            if(haveIndexTree(selection->tableName)) {    
+            if(tem_index_tree(selection->tableName, selection->field)) {    
                 // Remoção na árvore
-                BTree * tree = encontraBTree(selection->tableName);
-                for(int i = 0; i < cont_values; i++) btree_remove(tree, valor_index[i]);
+                // BTree * tree = encontraBTree(selection->tableName);
+                // for(int i = 0; i < cont_values; i++) btree_remove(tree, valor_index[i]);
             }
         } else {
             fprintf(stderr, "Não existe pesquisa para essa tabela!\n");
@@ -943,26 +893,67 @@ void removerRegistros(Selection *selection) {
 
 void criarIndex(Selection *selection) {
     if(tableExists(qtTables, selection->tableName)) {
-        if(selection->parameter == 'H') { // se for index do tipo hash
-            if(fieldExistInTable(selection->tableName, selection->field)){ // verifica se o campo a ser indexado existe na tabela
-
-                if(getFieldType(selection->tableName, selection->field) != 'i') { // verifica se o campo a ser indexado é do tipo inteiro
+        //se tipo de indexacao eh hash
+        if(selection->parameter == 'H') {
+            //se o campo existe na tabela
+            if(fieldExistInTable(selection->tableName, selection->field)){
+                //se o campo eh inteiro
+                if(getFieldType(selection->tableName, selection->field) != 'i') { 
                     fprintf(stderr, "O campo %s não é do tipo INT.\n", selection->field);
                     return;
                 }
-
-                if(haveIndexHash(selection->tableName)) { // verifica se já existe um index hash para a tabela (=> arquivo já existe)
+                //se o indice ja existe
+                if(tem_index_hash(selection->tableName, selection->field)) {
                     fprintf(stderr, "O campo %s já é indexado na tabela %s.\n", selection->field, selection->tableName);
                     return;
                 }
-                
-                char * filename = glueString(3, "tables_index/", selection->tableName, "_hash.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
-                
-                FILE * tabela_index = fopen(filename, "wb+"); // cria o arquivo do index
 
-                fwrite(selection->field, sizeof(Field), 1, tabela_index); // escreve o nome do campo que será indexado
+                char * hashFilename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_h.i");
+                FILE * arquivoHash  = fopen(hashFilename, "wb"); // cria o arquivo do index
 
-                fclose(tabela_index);
+                inicializaArquivoHash(arquivoHash);
+
+                char *tableFilename = glueString(2, TABLES_DIR, selection->tableName);
+                FILE *arquivoTable  = fopenSafe(tableFilename, "r+b");
+
+                Table table;
+                fread(&table, sizeof(Table), 1, arquivoTable);
+
+                fseek(arquivoHash, 0, SEEK_SET);
+
+                // pra cada registro, insere a pos dele na hashtable usando o valor do field indexado como chave
+                for (int i=0; i<table.rows; i++) {
+
+                    int posRegistro = ftell(arquivoTable);
+
+                    int valido;
+
+                    fread(&valido, sizeof(int), 1, arquivoTable);
+
+                    if (!valido) fseek(arquivoTable, table.length, SEEK_CUR);
+                    else {
+                        //passa por cada field do registro
+                        for (int i=0; i<table.cols; i++) {
+                            //se achou o campo indexado
+                            if (strcmp(table.fields[i], selection->field) == 0) {
+
+                                int valorDoCampo;
+                                //le o valor 
+                                fread(&valorDoCampo, sizeof(int), 1, arquivoTable);
+                                //insere na hash o par (valorDoCampo, posRegistro)
+                                insereArquivoHash(arquivoHash, valorDoCampo, posRegistro);
+
+                            } //se nao eh o campo indexado vai para o proximo campo
+                            else if (table.types[i] == 's') fseek(arquivoTable, sizeof(long int), SEEK_CUR);
+                            else if (table.types[i] == 'i') fseek(arquivoTable, sizeof(int), SEEK_CUR);
+                            else if (table.types[i] == 'f') fseek(arquivoTable, sizeof(float), SEEK_CUR);
+                            else if (table.types[i] == 'b') fseek(arquivoTable, sizeof(long int), SEEK_CUR);
+                        }
+                    }
+                }
+
+                fclose(arquivoTable);
+                fclose(arquivoHash);
 
             } else {
                 fprintf(stderr, "O campo %s não existe na tabela %s.\n", selection->field, selection->tableName);
@@ -975,7 +966,7 @@ void criarIndex(Selection *selection) {
                     return;
                 }
 
-                if(haveIndexTree(selection->tableName)) { // verifica se já existe um index tree para a tabela (=> arquivo já existe)
+                if(tem_index_tree(selection->tableName, selection->field)) { // verifica se já existe um index tree para a tabela (=> arquivo já existe)
                     fprintf(stderr, "O campo %s já é indexado na tabela %s.\n", selection->field, selection->tableName);
                     return;
                 }
@@ -1075,10 +1066,11 @@ void removerIndex(TableName tableName, int imprime) { // recebe o nome da tabela
 }
 
 void gerarIndex(Selection *selection) {
-    if (haveIndexTree(selection->tableName)) {
-        char *filename = glueString(3, "tables_index/", selection->tableName, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
+    if (tem_index_tree(selection->tableName, selection->field))
+    {
+        char * treeFilename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_tree.index");
         // Abre o arquivo de index
-        FILE *tabela_index = fopen(filename, "ab+"); 
+        FILE *tabela_index = fopen(treeFilename, "ab+"); 
         // Coloca ponteiro no início do arquivo
         fseek(tabela_index, 0, SEEK_SET);
         // Lê o Field indexado
@@ -1152,9 +1144,9 @@ void gerarIndex(Selection *selection) {
         // Grava no arquivo de index os pares (key, addr)
         fwrite(pairs, sizeof(pair_btree), i_valido, tabela_index);
     }
-    if (haveIndexHash(selection->tableName))
+    if (tem_index_hash(selection->tableName, selection->field))
     {
-        printf("To do\n");
+        //TODO: gera indice hash
     }
 }
 
