@@ -1,7 +1,7 @@
 #include "commandsTools.hpp"
 
 // Remove a BTree correspondente à tabela da lista de BTrees
-void apagaBTree(TableName tableName, Field field) {
+void removeBTreeFromList(TableName tableName, Field field) {
     removeLista(&lista_btree, tableName, field);
     return;
 }

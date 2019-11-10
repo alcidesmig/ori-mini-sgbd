@@ -1,7 +1,4 @@
 #include "commands.hpp"
-#include "btree/lista.hpp"
-#include "btree/disktree.cpp"
-#include "hash/hash.h"
 
 // Cria uma tabela no banco
 // table: ponteiro para tabela
@@ -122,7 +119,7 @@ void removerTabela(Table *table) {
         // Remove o arquivo de blocos deletados
         removeFile(path);
         // Remove os índices da tabela, sem printar nada
-        removerIndex(table->name, 0);
+        removerIndex(table->name, "all", 0);
         free(path);
         // Decrementa o número de tabelas
         qtTables--;
@@ -1047,12 +1044,14 @@ void criarIndex(Selection *selection) {
     }
 }
 
-void removerIndex(TableName tableName, int imprime) { // recebe o nome da tabela e um booleano que indica a impressão dos logs para o usuário
-    char * filename_tree = glueString(3, "tables_index/", tableName, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
+void removerIndex(TableName tableName, Field field, int imprime) { // recebe o nome da tabela e um booleano que indica a impressão dos logs para o usuário
+    char * filename_tree = glueString(3, "tables_index/", tableName, "_", field, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
     char * filename_hash = glueString(3, "tables_index/", tableName, "_h.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
 
+    // To do: remoção para field="all"
+
     if(fileExist(filename_tree)) { // remove o árquivo de índice (árvore), caso ele exista
-        apagaBTree(tableName);
+        removeBTreeFromList(tableName, field);
         removeFile(filename_tree);
         if(imprime) printf("Índice (árvore) removido.\n");
     }

@@ -1,5 +1,5 @@
-#ifndef COMMANDS_TOOLS_H
-#define COMMANDS_TOOLS_H
+#ifndef COMMANDS_TOOLS_HPP
+#define COMMANDS_TOOLS_HPP
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,9 +11,9 @@
 #include "utils.h"
 #include "commandsDefines.h"
 #include "btree/lista.hpp"
-#include "btree/disktree.cpp"
+#include "btree/disktree.hpp"
 
-void apagaBTree(TableName tableName);
+void removeBTreeFromList(TableName tableName, Field field);
 Btree * encontraBTree(TableName tableName, Field field);
 Btree * carregaBTree(TableName tableName, Field field);
 int tem_index_hash(TableName tableName, Field field);

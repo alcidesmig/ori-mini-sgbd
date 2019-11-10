@@ -12,7 +12,9 @@
 #include "commandsDefines.h"
 #include "commandsTools.hpp"
 #include "searchStructs.h"
-#include "btree/disktree.cpp"
+#include "btree/disktree.hpp"
+#include "btree/lista.hpp"
+#include "hash/hash.h"
 
 void criarTabela(Table *table);
 void removerTabela(Table *table);
@@ -23,7 +25,7 @@ void buscarRegistros(Selection *selection);
 void apresentarRegistros(Selection *selection);
 void removerRegistros(Selection *selection);
 void criarIndex(Selection *selection);
-void removerIndex(TableName tableName, int imprime);
+void removerIndex(TableName tableName, Field field, int imprime);
 void gerarIndex(Selection *selection);
 void start();
 void end();
