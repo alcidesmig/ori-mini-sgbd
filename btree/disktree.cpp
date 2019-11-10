@@ -39,12 +39,12 @@ typedef struct
 {
     int key;
     int addr;
-} dtype;
+} pair_btree;
 
 struct node
 {
     int n;        // Number of items stored in a node (n < M)
-    dtype k[M - 1]; // Data items (only the first n in use)
+    pair_btree k[M - 1]; // Data items (only the first n in use)
     long p[M];    // 'Pointers' to other nodes (n+1 in use)
 };
 
@@ -56,24 +56,24 @@ class Btree
 public:
     Btree(const char *TreeFileName);
     ~Btree();
-    void insert(dtype x);
+    void insert(pair_btree x);
     void insert(const char *InpFileName);
     void print()
     {
         cout << "Contents:\n";
         pr(root, 0);
     }
-    void DelNode(dtype x);
-    void ShowSearch(dtype x);
+    void DelNode(pair_btree x);
+    void ShowSearch(pair_btree x);
 private:
     enum {NIL = -1};
     long root, FreeList;
     node RootNode;
     fstream file;
-    status ins(long r, dtype x, dtype &y, long &u);
+    status ins(long r, pair_btree x, pair_btree &y, long &u);
     void pr(long r, int nSpace);
-    int NodeSearch(dtype x, const dtype *a, int n)const;
-    status del(long r, dtype x);
+    int NodeSearch(pair_btree x, const pair_btree *a, int n)const;
+    status del(long r, pair_btree x);
     void ReadNode(long r, node &Node);
     void WriteNode(long r, const node &Node);
     void ReadStart();
@@ -147,10 +147,10 @@ Btree::~Btree()
     file.close();
 }
 
-void Btree::insert(dtype x)
+void Btree::insert(pair_btree x)
 {
     long pNew;
-    dtype xNew;
+    pair_btree xNew;
     status code = ins(root, x, xNew, pNew);
     if (code == DuplicateKey)
         cout << "Duplicate key ignored.\n";
@@ -159,7 +159,7 @@ void Btree::insert(dtype x)
         long root0 = root;
         root = GetNode();
         RootNode.n = 1;
-        RootNode.k[0].key = xNew;
+        RootNode.k[0] = xNew;
         RootNode.p[0] = root0;
         RootNode.p[1] = pNew;
         WriteNode(root, RootNode);
@@ -175,13 +175,13 @@ void Btree::insert(const char *InpFileName)
              << endl;
         return;
     }
-    dtype x;
-    while(InpFile >> x) insert(x);
+    pair_btree x;
+    while(InpFile >> x.key >> x.addr) insert(x);
     InpFile.clear();
     InpFile.close();
 }
 
-status Btree::ins(long r, dtype x, dtype &y, long &q)
+status Btree::ins(long r, pair_btree x, pair_btree &y, long &q)
 {
     // Insert x in *this. If not completely successful, the
     // integer y and the pointer q remain to be inserted.
@@ -189,7 +189,7 @@ status Btree::ins(long r, dtype x, dtype &y, long &q)
     //    Success, DuplicateKey or InsertNotComplete.
     long pNew, pFinal;
     int i, j, n;
-    dtype xNew, kFinal;
+    pair_btree xNew, kFinal;
     status code;
     if (r == NIL)
     {
@@ -201,7 +201,7 @@ status Btree::ins(long r, dtype x, dtype &y, long &q)
     ReadNode(r, Node);
     n = Node.n;
     i = NodeSearch(x, Node.k, n);
-    if (i < n && x == Node.k[i].key) return DuplicateKey;
+    if (i < n && x.key == Node.k[i].key) return DuplicateKey;
     code = ins(Node.p[i], x, xNew, pNew);
     if (code != InsertNotComplete) return code;
     // Insertion in subtree did not completely succeed;
@@ -277,20 +277,20 @@ void Btree::pr(long r, int nSpace)
     }
 }
 
-int Btree::NodeSearch(dtype x, const dtype *a, int n)const
+int Btree::NodeSearch(pair_btree x, const pair_btree *a, int n)const
 {
     int middle, left = 0, right = n - 1;
-    if (x <= a[left]) return 0;
-    if (x > a[right]) return n;
+    if (x.key <= a[left].key) return 0;
+    if (x.key > a[right].key) return n;
     while (right - left > 1)
     {
         middle = (right + left) / 2;
-        (x <= a[middle] ? right : left) = middle;
+        (x.key <= a[middle].key ? right : left) = middle;
     }
     return right;
 }
 
-void Btree::ShowSearch(dtype x)
+void Btree::ShowSearch(pair_btree x)
 {
     cout << "Search path:\n";
     int i, j, n;
@@ -303,24 +303,24 @@ void Btree::ShowSearch(dtype x)
         for (j = 0; j < Node.n; j++) cout << " " << Node.k[j].key;
         cout << endl;
         i = NodeSearch(x, Node.k, n);
-        if (i < n && x == Node.k[i].key)
+        if (i < n && x.key == Node.k[i].key)
         {
-            cout << "Key " << x << " found in position " << i
+            cout << "Key " << x.key << " found in position " << i
                  << " of last displayed node.\n";
             return;
         }
         r = Node.p[i];
     }
-    cout << "Key " << x << " not found.\n";
+    cout << "Key " << x.key << " not found.\n";
 }
 
-void Btree::DelNode(dtype x)
+void Btree::DelNode(pair_btree x)
 {
     long root0;
     switch (del(root, x))
     {
     case NotFound:
-        cout << x << " not found.\n";
+        cout << x.key << " not found.\n";
         break;
     case Underflow:
         root0 = root;
@@ -331,20 +331,20 @@ void Btree::DelNode(dtype x)
     }
 }
 
-status Btree::del(long r, dtype x)
+status Btree::del(long r, pair_btree x)
 {
     if (r == NIL) return NotFound;
     node Node;
     ReadNode(r, Node);
     int i, j, pivot, n = Node.n;
-    dtype *k = Node.k;  // k[i] means Node.k[i]
+    pair_btree *k = Node.k;  // k[i] means Node.k[i]
     const int nMin = (M - 1) / 2;
     status code;
     long *p = Node.p, pL, pR;       // p[i] means Node.p[i]
     i = NodeSearch(x, k, n);
     if (p[0] == NIL)  // Are we dealing with a leaf?
     {
-        if (i == n || x < k[i]) return NotFound;
+        if (i == n || x.key < k[i].key) return NotFound;
         // x == k[i]
         for (j = i + 1; j < n; j++)
         {
@@ -357,7 +357,7 @@ status Btree::del(long r, dtype x)
                Success : Underflow;
     }
     // *r is an interior node, not a leaf:
-    if (i < n && x == k[i])
+    if (i < n && x.key == k[i].key)
     {
         // x found in an interior node. Go to left child
         // and follow a path all the way to a leaf,
@@ -527,6 +527,12 @@ void Btree::FreeNode(long r)
 
 int main()
 {
+    return 0;
+}
+
+/*
+int main()
+{
     cout <<
          "Demonstration program for a B-tree on disk. The\n"
          "structure of the B-tree is shown by indentation.\n"
@@ -545,7 +551,7 @@ int main()
     cout <<
          "\nEnter a (possibly empty) sequence of integers,\n"
          "followed by a slash (/):\n";
-    dtype x;
+    pair_btree x;
     char ch = 0;
     while (cin >> x, !cin.fail())
     {
@@ -594,3 +600,4 @@ int main()
     return 0;
 }
 
+*/
