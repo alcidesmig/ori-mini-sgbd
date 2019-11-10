@@ -6,3 +6,5 @@ strings.bin
 stringsEmptyList.bin
 binaries.bin
 binariesEmptyList.bin
+.vscode
+tables_index/

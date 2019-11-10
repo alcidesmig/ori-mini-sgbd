@@ -13,7 +13,6 @@
 #include "commandsTools.hpp"
 #include "searchStructs.h"
 #include "btree/disktree.hpp"
-#include "btree/lista.hpp"
 #include "hash/hash.h"
 
 void criarTabela(Table *table);
@@ -25,7 +24,7 @@ void buscarRegistros(Selection *selection);
 void apresentarRegistros(Selection *selection);
 void removerRegistros(Selection *selection);
 void criarIndex(Selection *selection);
-void removerIndex(TableName tableName, Field field, int imprime);
+void removerIndex(TableName tableName, Field field, int imprime, int all);
 void gerarIndex(Selection *selection);
 void start();
 void end();

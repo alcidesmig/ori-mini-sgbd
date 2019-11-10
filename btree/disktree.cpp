@@ -14,7 +14,7 @@
    btree, program disktree writes, reads and updates nodes
    on disk, using a binary file. The name of this file is
    to be entered on the keyboard. If a B-tree with that
-   name exists, that B-tree is used; otherwise such a fpr(ile
+   name exists, that B-tree is used; otherwise such a file
    is created.
    Caution:
       Do not confuse the (binary) file for the B-tree with
@@ -46,7 +46,7 @@ Btree::Btree(const char *TreeFileName)
     }
     else
     {
-       cout << "!NewFile " << TreeFileName << endl;
+       cout << "!NewFile" << TreeFileName << endl;
         long start[2];
         file.open(TreeFileName, ios::out | ios::in/* | ios::nocreate */ | ios::binary); // See above note.
         file.seekg(-1L, ios::end);
@@ -54,16 +54,17 @@ Btree::Btree(const char *TreeFileName)
         file.read(&ch, 1); // Read signature.
         file.seekg(0L, ios::beg);
         file.read((char *)start, 2 * sizeof(long));
-        /*if (ch != sizeof(int))
+        if (ch != sizeof(int))
         {
+            cout << "CH: " << ch << endl;
             cout << "Wrong file format.\n";
             exit(1);
-        }*/
+        }
         root = start[0];
         FreeList = start[1];
         RootNode.n = 0;   // Signal for function ReadNode
         ReadNode(root, RootNode);
-        //print();
+        print();
     }
 }
 
@@ -111,7 +112,6 @@ void Btree::insert(pair_btree x)
         RootNode.p[1] = pNew;
         WriteNode(root, RootNode);
     }
-    cout << "inserido index" << endl;
 }
 
 void Btree::insert(const char *InpFileName)

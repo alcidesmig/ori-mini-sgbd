@@ -10,15 +10,12 @@
 #include "defines.h"
 #include "utils.h"
 #include "commandsDefines.h"
-#include "btree/lista.hpp"
 #include "btree/disktree.hpp"
 
-void removeBTreeFromList(TableName tableName, Field field);
-Btree * encontraBTree(TableName tableName, Field field);
-Btree * carregaBTree(TableName tableName, Field field);
 int tem_index_hash(TableName tableName, Field field);
 int tem_index_tree(TableName tableName, Field field);
 Type getFieldType(TableName tableName, Field field);
+Table readTable(TableName name);
 int fieldExistInTable(char *name, Field field);
 int tableExists(int qtTables, char *name);
 int tableNameIsUnique(int qtTables, char *name, long int *marker);

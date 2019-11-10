@@ -119,7 +119,7 @@ void removerTabela(Table *table) {
         // Remove o arquivo de blocos deletados
         removeFile(path);
         // Remove os índices da tabela, sem printar nada
-        removerIndex(table->name, "all", 0);
+        removerIndex(table->name, NULL, 0, 1);
         free(path);
         // Decrementa o número de tabelas
         qtTables--;
@@ -337,13 +337,14 @@ void incluirRegistro(Row *row) {
                     // Verifica se há indexação
                     if(tem_index_tree(row->tableName, table.fields[i])) {
                         // Encontra a Btree correspondente a tabela e ao campo
-                        Btree * tree = carregaBTree(row->tableName, table.fields[i]);
+                        Btree * tree = new Btree(glueString(5, "tables_index/", row->tableName, "_", table.fields[i], "_tree.index"));
                         // Adiciona os valores na tree
                         pair_btree aux;
                         aux.addr = posInsercaoRegistro;
                         aux.key = numb;
                         tree->insert(aux);
-                        free(tree);
+                        // Delete na tree (necessário para chamar o construtor e manter a assinatura válida
+                        delete tree;
                     }
                     if(tem_index_hash(row->tableName, table.fields[i])) {
                         //TODO: inserir no arquivo da hashtable o valor (posInsercaoRegistro) com chave (numb)
@@ -468,7 +469,9 @@ void buscarRegistros(Selection *selection) {
             return;
         } else if (temIndexTree) {
             printf("Buscando por indexação. Field indexado: %s\n", selection->field);
-            Btree * tree = carregaBTree(selection->tableName, selection->field);
+
+            Btree * tree = new Btree(glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_tree.index"));
+
             int value;
             if(sscanf((char *) selection->value, "%d", &value) != 1) {
                 fprintf(stderr, "Erro na busca (indexação)!\n");
@@ -478,7 +481,8 @@ void buscarRegistros(Selection *selection) {
             pair_btree pair;
             pair.key = value;
             int search = tree->search(&pair);
-
+            // Delete na tree (necessário para chamar o construtor e manter a assinatura válida
+            delete tree;
             // Verifica se encontrou
             if(!search) {
                 printf("Nenhum resultado para %s\n", selection->tableName);
@@ -972,7 +976,7 @@ void criarIndex(Selection *selection) {
                     return;
                 }
 
-                char * filename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_tree.bin"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
+                char * filename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
 
                 Btree * btree = new Btree(filename);
 
@@ -1030,6 +1034,9 @@ void criarIndex(Selection *selection) {
                     fseek(tableFile, table.length, SEEK_CUR);
                 }
 
+                // Delete na tree (necessário para chamar o construtor e manter a assinatura válida
+                delete btree;
+
                 // Libera memória
                 free(pair);
 
@@ -1044,14 +1051,28 @@ void criarIndex(Selection *selection) {
     }
 }
 
-void removerIndex(TableName tableName, Field field, int imprime) { // recebe o nome da tabela e um booleano que indica a impressão dos logs para o usuário
-    char * filename_tree = glueString(3, "tables_index/", tableName, "_", field, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
-    char * filename_hash = glueString(3, "tables_index/", tableName, "_h.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
+void removerIndex(TableName tableName, Field field, int imprime, int all) { // recebe o nome da tabela e um booleano que indica a impressão dos logs para o usuário
 
-    // To do: remoção para field="all"
+    if(all) {
+        Table table = readTable(tableName);
+        for(int i = 0; i < table.cols; i++) {
+            char *filename_tree = glueString(5, "tables_index/", tableName, "_", table.fields[i], "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
+            char * filename_hash = glueString(5, "tables_index/", tableName, "_", table.fields[i], "_h.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
+
+            if (fileExist(filename_tree)) { // remove o árquivo de índice (árvore), caso ele exista
+                removeFile(filename_tree);
+            }
+            if(fileExist(filename_hash)) { // remove o árquivo de índice (hash), caso ele exista
+                removeFile(filename_hash);
+            }
+        }
+    }
+
+    char * filename_tree = glueString(5, "tables_index/", tableName, "_", field, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
+    char * filename_hash = glueString(3, "tables_index/", tableName, "_", field, "_h.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
+
 
     if(fileExist(filename_tree)) { // remove o árquivo de índice (árvore), caso ele exista
-        removeBTreeFromList(tableName, field);
         removeFile(filename_tree);
         if(imprime) printf("Índice (árvore) removido.\n");
     }
@@ -1162,8 +1183,6 @@ void start() {
     fseek(tablesIndex, 0, SEEK_SET);
     // Lê a quantidade de tabelas
     fread(&qtTables, sizeof(int), 1, tablesIndex);
-    // Inicializa a lista das btrees
-    inicializaLista(&lista_btree);
 }
 
 // Encerra o sistema

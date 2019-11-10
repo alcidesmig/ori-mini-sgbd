@@ -1,29 +1,5 @@
 #include "commandsTools.hpp"
 
-// Remove a BTree correspondente à tabela da lista de BTrees
-void removeBTreeFromList(TableName tableName, Field field) {
-    removeLista(&lista_btree, tableName, field);
-    return;
-}
-
-// Retorna a BTree correspondente à tabela
-Btree * encontraBTree(TableName tableName, Field field) {
-    return pesquisaLista(&lista_btree, tableName, field)->item.tree;
-}
-
-// Carrega uma Btree para a lista de Btrees
-Btree * carregaBTree(TableName tableName, Field field) {
-    if(pesquisaLista(&lista_btree, tableName, field) == NULL) {
-        // Arquivo da BTree
-        ItemBTree item_btree;
-        strcpy(item_btree.field, field);
-        strcpy(item_btree.tableName, tableName);
-        item_btree.tree = new Btree(glueString(5, "tables_index/", tableName, "_", field, "_tree.index"));
-        insereLista(&lista_btree, item_btree);
-    }
-    return (pesquisaLista(&lista_btree, tableName, field))->item.tree;
-}
-
 // Verifica se existe um índice hash para a tabela
 int tem_index_hash(TableName tableName, Field field) {
     char * hashFilename = glueString(5, "tables_index/", tableName, "_", field, "_h.i");
@@ -50,6 +26,19 @@ Type getFieldType(TableName tableName, Field field) {
     for(i = 0; i < table.cols && (strcmp(table.fields[i], field)); i++);
     // Retorna o tipo do campo desejado baseado na sua posição
     return table.types[i];
+}
+
+// Lê os metadados de uma tabela e os retorna
+Table readTable(TableName name) {
+    // Path do arquivo da tabela
+    char *path = glueString(2, TABLES_DIR, name);
+    // Abre o arquivo da tabela
+    FILE *tableFile = fopenSafe(path, "rb+");
+    // Lê os metadados
+    Table table;
+    fread(&table, sizeof(Table), 1, tableFile);
+    // Variável que indicará se o campo existe na tabela
+    return table;
 }
 
 int fieldExistInTable(char *name, Field field) {
