@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "lista.h"
+#include "lista.hpp"
 #include <string.h>
 
 Noh *lista_btree;

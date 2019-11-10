@@ -1,13 +1,13 @@
 #ifndef LISTA_H
 #define LISTA_H
 
-#include "btree.h"
 #include "../defines.h"
+#include "disktree.cpp"
 
 typedef TableName Chave;
 
 typedef struct {
-	BTree * tree;
+	Btree * tree;
 	TableName tableName;
 	Field field;
 } ItemBTree;
