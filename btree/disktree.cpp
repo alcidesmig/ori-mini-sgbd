@@ -37,7 +37,6 @@ Btree::Btree(const char *TreeFileName)
     {
         file.open(TreeFileName, ios::out | ios::in |
                   ios::trunc | ios::binary);
-        cout << "NewFile" << endl;
         // ios::binary required with MSDOS, but possibly
         // not accepted with other environments.
         root = FreeList = NIL;
@@ -46,7 +45,6 @@ Btree::Btree(const char *TreeFileName)
     }
     else
     {
-       cout << "!NewFile" << TreeFileName << endl;
         long start[2];
         file.open(TreeFileName, ios::out | ios::in/* | ios::nocreate */ | ios::binary); // See above note.
         file.seekg(-1L, ios::end);
@@ -64,7 +62,6 @@ Btree::Btree(const char *TreeFileName)
         FreeList = start[1];
         RootNode.n = 0;   // Signal for function ReadNode
         ReadNode(root, RootNode);
-        print();
     }
 }
 
@@ -253,8 +250,8 @@ void Btree::ShowSearch(pair_btree x)
         i = NodeSearch(x, Node.k, n);
         if (i < n && x.key == Node.k[i].key)
         {
-            cout << "Key " << x.key << " found in position " << i
-                 << " of last displayed node.\n";
+                  cout << "Key " << x.key << " found in position " << i
+                       << " of last displayed node.\n";
             return;
         }
         r = Node.p[i];
@@ -271,19 +268,19 @@ int Btree::search(pair_btree *x)
     {
         ReadNode(r, Node);
         n = Node.n;
-        for (j = 0; j < Node.n; j++) cout << " " << Node.k[j].key;
-        cout << endl;
+        // for (j = 0; j < Node.n; j++) cout << " " << Node.k[j].key;
+        // cout << endl;
         i = NodeSearch(*x, Node.k, n);
         if (i < n && x->key == Node.k[i].key)
         {
-            cout << "Key " << x->key << " found in position " << i
-                 << " of last displayed node.\n";
+            // cout << "Key " << x->key << " found in position " << i
+            //     << " of last displayed node.\n";
             x->addr = Node.k[i].addr;
             return 1;
         }
         r = Node.p[i];
     }
-    cout << "Key " << x->key << " not found.\n";
+    // cout << "Key " << x->key << " not found.\n";
     return 0;
 }
 
@@ -294,7 +291,7 @@ void Btree::DelNode(pair_btree x)
     switch (del(root, x))
     {
     case NotFound:
-        cout << x.key << " not found.\n";
+        // cout << x.key << " not found.\n";
         break;
     case Underflow:
         root0 = root;

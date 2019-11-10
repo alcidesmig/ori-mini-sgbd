@@ -988,8 +988,11 @@ void criarIndex(Selection *selection) {
                 char *path = glueString(2, TABLES_DIR, selection->tableName);
                 // Abre o arquivo da tabela
                 FILE *tableFile = fopenSafe(path, "rb+");
+                
                 // Lê os metadados
                 fread(&table, sizeof(Table), 1, tableFile);
+
+                fclose(tableFile);
 
                 int bit_validade;
                 int tam_pular = 0, tam_row = 0;
@@ -997,7 +1000,7 @@ void criarIndex(Selection *selection) {
 
                 // Descobre qual a posição (offset) do field a ser indexado
                 while(strcmp(table.fields[j], selection->field)) {
-                    switch(table.types[j]) {
+                    switch(table.types[j++]) {
                         case 'i':
                             tam_pular += sizeof(int);
                             break;
@@ -1021,6 +1024,7 @@ void criarIndex(Selection *selection) {
                 for(int i = 0; i < table.rows; i++) {
                     // Lê o bit de validades
                     fread(&bit_validade, sizeof(int), 1, tableFile);
+
                     if(bit_validade) {
                         // Se for valido adiciona nos pairs
                         pair->addr = ftell(tableFile) - sizeof(int);
