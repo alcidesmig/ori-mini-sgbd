@@ -10,14 +10,12 @@
 #include "defines.h"
 #include "utils.h"
 #include "commandsDefines.h"
-#include "btree/lista.h"
-#include "btree/btree_tools.h"
+#include "btree/lista.hpp"
+#include "btree/disktree.cpp"
 
-void salvaBTrees(Noh * lista_btree);
-void salvarBTree(TableName tableName);
 void apagaBTree(TableName tableName);
-BTree * encontraBTree(TableName tableName);
-void carregaBTree(TableName tableName);
+Btree * encontraBTree(TableName tableName, Field field);
+Btree * carregaBTree(TableName tableName, Field field);
 int tem_index_hash(TableName tableName, Field field);
 int tem_index_tree(TableName tableName, Field field);
 Type getFieldType(TableName tableName, Field field);

@@ -10,9 +10,9 @@
 #include "defines.h"
 #include "utils.h"
 #include "commandsDefines.h"
-#include "commandsTools.h"
+#include "commandsTools.hpp"
 #include "searchStructs.h"
-#include "btree/btree_tools.h"
+#include "btree/disktree.cpp"
 
 void criarTabela(Table *table);
 void removerTabela(Table *table);

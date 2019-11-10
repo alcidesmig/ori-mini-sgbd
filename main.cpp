@@ -3,10 +3,10 @@
 #include <string.h>
 
 #include "linenoise/linenoise.h"
-#include "menu.h"
-#include "parser.h"
+#include "menu.hpp"
+#include "parser.hpp"
 #include "defines.h"
-#include "commands.h"
+#include "commands.hpp"
 
 #define HISTORY_FILE "./.history"
 #define PROMPT "\x1b[1;32mSGBD\x1b[0m> "

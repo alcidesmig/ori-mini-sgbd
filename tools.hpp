@@ -1,9 +1,9 @@
-#ifndef TOOLS_H
-#define TOOLS_H
+#ifndef TOOLS_HPP
+#define TOOLS_HPP
 
 #include <string.h>
 #include "linenoise/linenoise.h"
-#include "commands.h"
+#include "commands.hpp"
 #include "defines.h"
 
 // Função auxilidar para auto-compleate dos comandos (uso interno da linenoise)

@@ -1,99 +1,27 @@
-#include "commandsTools.h"
-
-
-// Função para salvar todas as BTrees antes de fechar o programa
-void salvaBTrees(Noh * lista_btree) {
-    while(lista_btree) {
-        salvarBTree(lista_btree->item.key);
-        lista_btree = lista_btree->prox;
-    }
-}
-
-// Função para salvar os pairs da BTree no arquivo de index antes de fechar o programa
-void salvarBTree(TableName tableName) {
-    // Path do arquivo da tabela
-    char *path = glueString(2, TABLES_DIR, tableName);
-    // Abre o arquivo da tabela
-    FILE *tableFile = fopenSafe(path, "rb+");
-    if(tableFile == NULL) {
-        fprintf(stderr, "Erro ao salvar os dados de indexação de %s!\n", tableName);
-    }
-    // Lê os metadados
-    Table table;
-    fread(&table, sizeof(Table), 1, tableFile);
-    // Fecha o arquivo
-    fclose(tableFile);
-    // Armazena a quantidade de registros
-    int qtRegistros = table.rows;
-    // Aloca espaço para leitura dos pares via DFS
-    pair_btree * pairs = (pair_btree *) malloc(sizeof(pair_btree) * qtRegistros);
-    // Encontra a BTree correspondente
-    BTree * tree = encontraBTree(tableName);
-    // DFS
-    btree_dfs(tree, pairs);
-    // Grava valores no arquivo da BTree
-    char * filename = glueString(3, "tables_index/", tableName, "_tree.index"); 
-    // Pega o Field indexado
-    Field field_indexado;
-    FILE * table_index = fopen(filename, "rb+");
-    if(table_index == NULL) {
-        fprintf(stderr, "Erro ao salvar os dados de indexação de %s!\n", tableName);
-    }
-    fread(&field_indexado, sizeof(Field), 1, table_index);
-    fclose(table_index); // to do: mudar para append no arquivo anterior sobrescrevendo os dados dos pares e qtdRegistros
-    // Reescreve o arquivo de index
-    table_index = fopen(filename, "wb+");
-    if(table_index == NULL) {
-        fprintf(stderr, "Erro ao salvar os dados de indexação de %s!\n", tableName);
-    }
-    fwrite(&field_indexado, sizeof(Field), 1, table_index);
-    // Grava qt de registros indexados
-    fwrite(&qtRegistros, sizeof(int), 1, table_index);
-    printf("Qtd registros salvos btree file: %d\n", qtRegistros);
-    // Grava os valores (key, addr)
-    fwrite(pairs, sizeof(pair_btree), qtRegistros, table_index); 
-    // Fecha o arquivo
-    fclose(table_index);
-    return;
-}
+#include "commandsTools.hpp"
 
 // Remove a BTree correspondente à tabela da lista de BTrees
-void apagaBTree(TableName tableName) {
-    // to do: free na BTree
-    removeLista(&lista_btree, tableName);
+void apagaBTree(TableName tableName, Field field) {
+    removeLista(&lista_btree, tableName, field);
     return;
 }
 
 // Retorna a BTree correspondente à tabela
-BTree * encontraBTree(TableName tableName) {
-    return pesquisaLista(&lista_btree, tableName)->item.tree;
+Btree * encontraBTree(TableName tableName, Field field) {
+    return pesquisaLista(&lista_btree, tableName, field)->item.tree;
 }
 
-// Carrega os dados da BTree de uma tabela caso eles ainda não tenha sido carregaods
-void carregaBTree(TableName tableName) {
-    if(/*TODO: tem_index_tree(tableName, field) &&*/ pesquisaLista(&lista_btree, tableName) == NULL) {
+// Carrega uma Btree para a lista de Btrees
+Btree * carregaBTree(TableName tableName, Field field) {
+    if(pesquisaLista(&lista_btree, tableName, field) == NULL) {
         // Arquivo da BTree
-        char * filename = glueString(3, "tables_index/", tableName, "_tree.index"); 
-        FILE * fp = fopen(filename, "r");
-        // Pula o nome do campo indexado
-        fseek(fp, sizeof(Field), SEEK_SET);
-        // Lê a quantidade de itens indexados
-        int qtdBTree;
-        fread(&qtdBTree, sizeof(int), 1, fp);
-        // Lê os itens indexados
-        pair_btree * values = (pair_btree *) malloc(sizeof(pair_btree) * qtdBTree);
-        fread(values, sizeof(pair_btree), qtdBTree, fp);
-        // Cria, povoa a BTree e insere ela na lista de BTrees carregadas
         ItemBTree item_btree;
-        strcpy(item_btree.key, tableName);
-        item_btree.tree = btree_new(NUM_ORDEM_BTREE);
-        
-        for(int i = 0; i < qtdBTree; i++) {
-            btree_insert(item_btree.tree, values[i].key, &values[i].addr);
-            printf("Inserido item na BTree %d %d\n", values[i].key, values[i].addr);
-        }
+        strcpy(item_btree.field, field);
+        strcpy(item_btree.tableName, tableName);
+        item_btree.tree = new Btree(glueString(5, "tables_index/", tableName, "_", field, "_tree.index"));
         insereLista(&lista_btree, item_btree);
     }
+    return (pesquisaLista(&lista_btree, tableName, field))->item.tree;
 }
 
 // Verifica se existe um índice hash para a tabela

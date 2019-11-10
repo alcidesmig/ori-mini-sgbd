@@ -38,11 +38,6 @@ typedef struct Selection {
     Value value;
 } Selection;
 
-typedef struct {
-    int key;
-    int addr;
-} pair_btree;
-
 extern const char INT[];
 extern const char STR[];
 extern const char FLT[];

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "commands.h"
+#include "commands.hpp"
 
 // Printa os comandos
 void menu();

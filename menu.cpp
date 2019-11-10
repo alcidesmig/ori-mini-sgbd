@@ -1,4 +1,4 @@
-#include "menu.h"
+#include "menu.hpp"
 
 // Printa os comandos
 void menu() {

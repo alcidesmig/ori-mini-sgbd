@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "commands.h"
+#include "commands.hpp"
 #include "utils.h"
-#include "tools.h"
+#include "tools.hpp"
 #include "defines.h"
 
 typedef struct {

@@ -69,7 +69,7 @@ public:
     }
     void DelNode(pair_btree x);
     void ShowSearch(pair_btree x);
-    int search(pair_btree *x)
+    int search(pair_btree *x);
 private:
     enum {NIL = -1};
     long root, FreeList;
@@ -319,7 +319,7 @@ void Btree::ShowSearch(pair_btree x)
     cout << "Key " << x.key << " not found.\n";
 }
 
-int search(pair_btree *x)
+int Btree::search(pair_btree *x)
 {
     int i, j, n;
     long r = root;
@@ -330,17 +330,17 @@ int search(pair_btree *x)
         n = Node.n;
         for (j = 0; j < Node.n; j++) cout << " " << Node.k[j].key;
         cout << endl;
-        i = NodeSearch(x, Node.k, n);
+        i = NodeSearch(*x, Node.k, n);
         if (i < n && x->key == Node.k[i].key)
         {
-            cout << "Key " << x.key << " found in position " << i
+            cout << "Key " << x->key << " found in position " << i
                  << " of last displayed node.\n";
             x->addr = Node.k[i].addr;
             return 1;
         }
         r = Node.p[i];
     }
-    cout << "Key " << x.key << " not found.\n";
+    cout << "Key " << x->key << " not found.\n";
     return 0;
 }
 
@@ -555,11 +555,11 @@ void Btree::FreeNode(long r)
     FreeList = r;
     WriteNode(r, Node);
 }
-
+/*
 int main()
 {
     return 0;
-}
+}*/
 
 /*
 int main()

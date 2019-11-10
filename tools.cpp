@@ -1,4 +1,4 @@
-#include "tools.h"
+#include "tools.hpp"
 
 // Função auxilidar para auto-compleate dos comandos (uso interno da linenoise)
 // prefix: string a ser completada
