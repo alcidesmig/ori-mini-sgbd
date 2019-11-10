@@ -1,95 +1,60 @@
 #include "hash.h"
 
 static int hashFunc(int chave) {
-	return ((int)pow(chave, 2)) % TAM_HASHTABLE;
+	return ((int)pow(chave, 2)) % NUM_BALDES;
 }
 
-void inicializaArquivoHash(FILE * arquivo) {
+void inicializaArquivoHash(char *filename) {
 
     Balde balde;
     balde.qtdRegsNoBalde = 0;
 
-    for(int i=0; i<TAM_HASHTABLE; i++)
+    FILE *arquivo;
+    arquivo = fopen(filename, "wb");
+
+    for(int i=0; i<NUM_BALDES; i++)
     {
         fwrite(&balde, sizeof(Balde), 1, arquivo);
+        printf("|Balde nro %d comeca em: %ld\n", i, ftell(arquivo));
     }
+
+    fclose(arquivo);
 }
 
-void insereArquivoHash(FILE *arquivo, int chave, int valor) {
+void insereArquivoHash(char * filename, int chave, int valor) {
 
+    FILE *arquivo = fopen(filename, "r+b");
     int posicao = hashFunc(chave);
+    printf(" P=%d\n", posicao);
     
-    Balde balde;
-
     fseek(arquivo, posicao*sizeof(Balde), SEEK_SET);
+
+    Balde balde;
     fread(&balde, sizeof(Balde), 1, arquivo);
 
     balde.itens[balde.qtdRegsNoBalde].chave = chave;
     balde.itens[balde.qtdRegsNoBalde].valor = valor;
     balde.qtdRegsNoBalde++;
 
+    fseek(arquivo, posicao*sizeof(Balde), SEEK_SET);
     fwrite(&balde, sizeof(Balde), 1, arquivo);
+
+    fclose(arquivo);
 }
 
-int buscaEmArquivoHash(int chave, char * filename) {
+long int buscaEmArquivoHash(char * filename, int chave) {
 
     FILE * arquivo = fopen(filename, "rb");
-
     int posicao = hashFunc(chave);
 
-    Balde balde;
-
     fseek(arquivo, posicao*sizeof(Balde), SEEK_SET);
+
+    Balde balde;
     fread(&balde, sizeof(Balde), 1, arquivo);
 
-    for (int i=0; i<balde.qtdRegsNoBalde; i++)
-    {
+    for (int i=0; i<balde.qtdRegsNoBalde; i++) {
+
         if (chave == balde.itens[i].chave)
             return balde.itens[i].valor;
     }
-
-    return 0;
 }
-
-// http://www.cse.yorku.ca/~oz/hash.html
-
-/*
-void initHash(Noh ** lista) {
-	for (int i = 0; i < TAM; i++) {
-		inicializaLista(&(lista[i]));
-	}
-}
-
-void destroyHash(Noh ** lista) {
-	for (int i = 0; i < TAM; i++) {
-		freeLista(&(lista[i]));
-	}
-}
-
-int insertHash(Noh ** lista, Item i) {
-	int pos = hashFunc(i.key);
-	return insereLista(&lista[pos], i);
-}
-
-Item *searchHash(Noh ** lista, Chave key) {
-	int pos = hashFunc(key);
-	Noh * no = pesquisaLista(&lista[pos], key);
-	
-	if (no == NULL) {
-		Item *x = (Item *)malloc(sizeof(Item));
-		x->key = -1;
-		return x;
-	}
-	return &(no->item);
-}
-
-int updateHashItem(Noh ** lista, Item item) {
-	int pos = hashFunc(item.key);
-	return (pesquisaAtualizaLista(&lista[pos], item));
-}
-
-int removeHash(Noh ** lista, Chave key) {
-	int pos = hashFunc(key);
-	return removeLista(&lista[pos], key); 
-}
-*/
