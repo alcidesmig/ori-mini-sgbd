@@ -22,8 +22,8 @@
       file-name extensions, such as .bin and .txt.
 */
 
-#ifndef DISK_TREE
-#define DISK_TREE
+#ifndef DISK_TREE_CPP
+#define DISK_TREE_CPP
 
 #include <fstream>
 #include <iomanip>
