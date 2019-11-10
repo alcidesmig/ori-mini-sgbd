@@ -55,6 +55,36 @@ struct node
 // Logical order:
 //    p[0], k[0], p[1], k[1], ..., p[n-1], k[n-1], p[n]
 
+class Btree {
+public:
+    Btree(const char *TreeFileName);
+    ~Btree();
+    void insert(pair_btree x);
+    void insert(const char *InpFileName);
+    void print()
+    {
+        cout << "Contents:\n";
+        pr(root, 0);
+    }
+    void DelNode(pair_btree x);
+    void ShowSearch(pair_btree x);
+    int search(pair_btree *x);
+private:
+    enum {NIL = -1};
+    long root, FreeList;
+    node RootNode;
+    fstream file;
+    status ins(long r, pair_btree x, pair_btree &y, long &u);
+    void pr(long r, int nSpace);
+    int NodeSearch(pair_btree x, const pair_btree *a, int n)const;
+    status del(long r, pair_btree x);
+    void ReadNode(long r, node &Node);
+    void WriteNode(long r, const node &Node);
+    void ReadStart();
+    long GetNode();
+    void FreeNode(long r);
+};
+
 Btree::Btree(const char *TreeFileName)
 {
     ifstream test(TreeFileName, ios::in/* | ios::nocreate*/);
@@ -524,38 +554,6 @@ void Btree::FreeNode(long r)
     FreeList = r;
     WriteNode(r, Node);
 }
-
-class Btree
-{
-public:
-    Btree(const char *TreeFileName);
-    ~Btree();
-    void insert(pair_btree x);
-    void insert(const char *InpFileName);
-    void print()
-    {
-        cout << "Contents:\n";
-        pr(root, 0);
-    }
-    void DelNode(pair_btree x);
-    void ShowSearch(pair_btree x);
-    int search(pair_btree *x);
-private:
-    enum {NIL = -1};
-    long root, FreeList;
-    node RootNode;
-    fstream file;
-    status ins(long r, pair_btree x, pair_btree &y, long &u);
-    void pr(long r, int nSpace);
-    int NodeSearch(pair_btree x, const pair_btree *a, int n)const;
-    status del(long r, pair_btree x);
-    void ReadNode(long r, node &Node);
-    void WriteNode(long r, const node &Node);
-    void ReadStart();
-    long GetNode();
-    void FreeNode(long r);
-};
-
 /*
 int main()
 {
