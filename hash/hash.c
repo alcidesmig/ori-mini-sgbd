@@ -47,6 +47,8 @@ int buscaEmArquivoHash(int chave, char * filename) {
         if (chave == balde.itens[i].chave)
             return balde.itens[i].valor;
     }
+
+    return 0;
 }
 
 // http://www.cse.yorku.ca/~oz/hash.html
