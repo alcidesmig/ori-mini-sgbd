@@ -20,6 +20,37 @@ void criarTabela(Table *table) {
         fwrite(table, sizeof(Table), 1, tableFile);
         // Fecha o arquivo
         fclose(tableFile);
+
+        // Arquivo de strings
+        char *auxPath = glueString(2, path, "_strings.bin");
+        createFile(auxPath);
+        free(auxPath);
+
+        // Arquivo de binarios
+        auxPath = glueString(2, path, "_binaries.bin");
+        createFile(auxPath);
+        free(auxPath);
+
+        // Auxiliar
+        long FLAG = -1;
+        FILE *fp = NULL;
+
+        // Arquivo de strings deletadas
+        auxPath = glueString(2, path, "_strings.empty");
+        createFile(auxPath);
+        fp = fopenSafe(auxPath, "rb+");
+        fwrite(&FLAG, sizeof(long), 1, fp);
+        fclose(fp);
+        free(auxPath);
+
+        // Arquivo de binarios deletados
+        auxPath = glueString(2, path, "_binaries.empty");
+        createFile(auxPath);
+        fp = fopenSafe(auxPath, "rb+");
+        fwrite(&FLAG, sizeof(long), 1, fp);
+        fclose(fp);
+        free(auxPath);
+
         // Path do arquivo de blocos deletados
         path = glueString(2, path, ".empty");
         // É criado o arquivo de blocos deletados
@@ -69,55 +100,38 @@ void removerTabela(Table *table) {
         // Escreve o número de blocos inválidados
         fwrite(&blocks, sizeof(int), 1, tablesIndex);
 
-        // Path do arquivo da tabela
+        // Remoção dos arquivos
+
+        // Arquivo da tabela
         char *path = glueString(2, TABLES_DIR, table->name);
-        // Abre o arquivo da tabela
-        FILE *tableFile = fopenSafe(path, "rb+");
-        // Lê os metadados
-        fread(table, sizeof(Table), 1, tableFile);
-
-        // Flag de validade
-        int valido = 0;
-        // Posição da string ou binário
-        long int pos;
-        // Remove as strings e binários
-
-        for (int i = 0; i < table->rows; i++) {
-            printf("p %ld\n", ftell(tableFile));
-            // Lê a flag de validade
-            fread(&valido, sizeof(int), 1, tableFile);
-            printf("valido %d\n", valido);
-            if (valido) {
-                for (int i = 0; i < table->cols; i++) {
-                printf("type %c %d\n", table->types[i], table->types[i]);
-                    if (table->types[i] == 'i') {
-                        fseek(tableFile, sizeof(int), SEEK_CUR);
-                    } else if (table->types[i] == 's') {
-                        fread(&pos, sizeof(long int), 1, tableFile);
-                        printf("pos %ld\n", pos);
-                        removeFromExFile(pos, stringsFile, &stringEBlocks);
-                    } else if (table->types[i] == 'f') {
-                        fseek(tableFile, sizeof(float), SEEK_CUR);
-                    } else if (table->types[i] == 'b') {
-                        fread(&pos, sizeof(long int), 1, tableFile);
-                        printf("pos %ld\n", pos);
-                        removeFromExFile(pos, binariesFile, &binaryEBlocks);
-                    } else {
-                        printf("else\n");
-                    }
-                }
-            } else {
-                fseek(tableFile, table->length, SEEK_CUR);
-            }
-        }
-        // Fecha o arquivo
-        fclose(tableFile);
-        // Remove o arquivo da tabela
         removeFile(path);
-        // Path do arquivo de blocos deletados
-        path = glueString(2, path, ".empty");
-        // Remove o arquivo de blocos deletados
-        removeFile(path);
+        free(path);
+
+        // Arquivo de strings
+        char *auxPath = glueString(2, path, "_strings.bin");
+        removeFile(auxPath);
+        free(auxPath);
+
+        // Arquivo de binarios
+        auxPath = glueString(2, path, "_binaries.bin");
+        removeFile(auxPath);
+        free(auxPath);
+
+        // Arquivo de strings deletadas
+        auxPath = glueString(2, path, "_strings.empty");
+        removeFile(auxPath);
+        free(auxPath);
+
+        // Arquivo de binarios deletados
+        auxPath = glueString(2, path, "_binaries.empty");
+        removeFile(auxPath);
+        free(auxPath);
+
+        // Arquivo de blocos deletados
+        auxPath = glueString(2, path, ".empty");
+        removeFile(auxPath);
+        free(auxPath);
+
         // Remove os índices da tabela, sem printar nada
         removerIndex(table->name, NULL, 0, 1);
         free(path);
@@ -241,7 +255,7 @@ void listarTabela() {
             // Lê o nome
             fread(buf, size, 1, tablesIndex);
             // Printa o nome
-            printf("%s\n", buf);
+            printf("- %s\n", buf);
             free(buf);
             // Incrementa só se a tabela é válida
             i++;
@@ -274,6 +288,23 @@ void incluirRegistro(Row *row) {
         char *path = glueString(2, TABLES_DIR, row->tableName);
         // Abre o arquivo da tabela
         FILE *tableFile = fopenSafe(path, "rb+");
+
+        // Path do arquivo de strings da tabela
+        char *pathString = glueString(2, path, "_strings.bin");
+        FILE *stringsFile = NULL;
+
+        // Path do arquivo de binarios da tabela
+        char *pathBinary = glueString(2, path, "_binaries.bin");
+        FILE *binariesFile = NULL;
+
+        // Path do arquivo de strings deletadas da tabela
+        char *pathStringEmpty = glueString(2, path, "_strings.empty");
+        FILE *stringsFileEmpty = NULL;
+
+        // Path do arquivo de binarios deletados da tabela
+        char *pathBinaryEmpty = glueString(2, path, "_binaries.empty");
+        FILE *binariesFileEmpty = NULL;
+
         // Lê os metadados
         Table table;
         fread(&table, sizeof(Table), 1, tableFile);
@@ -309,17 +340,16 @@ void incluirRegistro(Row *row) {
             }
             
             // Auxiliares para indexação
-            //checkpoint alcides
             // Posição do registro no arquivo
             int posInsercaoRegistro = ftell(tableFile);
 
             // Bit de validade
             fwrite(&valido, sizeof(int), 1, tableFile);
+
             // Para cada coluna
             for (int i = 0; i < table.cols; i++) {
                 // Verifica o tipo de dado da coluna
                 if (table.types[i] == 'i') {
-
                     // Auxiliares
                     int numb;
                     char *rest;
@@ -331,6 +361,7 @@ void incluirRegistro(Row *row) {
                         fclose(tableFileEmpty);
                         return;
                     }
+
                     // Escreve no arquivo da tabela
                     fwrite(&numb, sizeof(int), 1, tableFile);
                     // Verifica se há indexação
@@ -352,8 +383,13 @@ void incluirRegistro(Row *row) {
                     }
 
                 } else if (table.types[i] == 's') {
+                    if (!stringsFile) {
+                        stringsFile = fopenSafe(pathString, "rb+");
+                        stringsFileEmpty = fopenSafe(pathStringEmpty, "rb+");
+                    }
+
                     // Escreve a string no arquivo de strings
-                    long int pos = addToExFile((char *)row->values[i], stringsFile, &stringEBlocks);
+                    long int pos = addToExFile((char *)row->values[i], stringsFile, stringsFileEmpty);
                     // Escreve a posição da string no arquivo da tabela
                     fwrite(&pos, sizeof(long int), 1, tableFile);
                 } else if (table.types[i] == 'f') {
@@ -371,6 +407,11 @@ void incluirRegistro(Row *row) {
                     // Escreve no arquivo da tabela
                     fwrite(&numb, sizeof(float), 1, tableFile);
                 } else if (table.types[i] == 'b') {
+                    if (!binariesFile) {
+                        binariesFile = fopenSafe(pathBinary, "rb+");
+                        binariesFileEmpty = fopenSafe(pathBinaryEmpty, "rb+");
+                    }
+
                     // Abre o arquivo de dados
                     FILE *inputFile = fopenSafe((char *)row->values[i], "rb");
                     // Pula para o fim
@@ -387,7 +428,7 @@ void incluirRegistro(Row *row) {
                     fclose(inputFile);
 
                     // Escreve a string no arquivo de strings
-                    long int pos = addToExFile(data, binariesFile, &binaryEBlocks);
+                    long int pos = addToExFile(data, binariesFile, binariesFileEmpty);
                     // Escreve a posição da string no arquivo da tabela
                     fwrite(&pos, sizeof(long int), 1, tableFile);
                 }
@@ -395,6 +436,20 @@ void incluirRegistro(Row *row) {
             // Fecha arquivo de blocos deletados
             fclose(tableFileEmpty);
 
+            // Fecha os arquivos de dados tabela
+            if (stringsFile) {
+                fclose(stringsFile);
+                fclose(stringsFileEmpty);
+            }
+            if (binariesFile) {
+                fclose(binariesFile);
+                fclose(binariesFileEmpty);
+            }
+            free(pathString);
+            free(pathBinary);
+            free(pathStringEmpty);
+            free(pathBinaryEmpty);
+            
             // Printa a mensagem de sucesso
             printf("Registro criado: ");
             for (int i = 0; i < table.cols; i++) {
@@ -424,7 +479,6 @@ void incluirRegistro(Row *row) {
 // Busca um ou mais registros em uma tabela
 // selection: ponteiro para uma seleção
 void buscarRegistros(Selection *selection) {
-
     // Carrega a btree da tabela utilizada caso ela ainda não tenha sido carregada
     // carregaBTree(selection->tableName);
 
@@ -448,6 +502,10 @@ void buscarRegistros(Selection *selection) {
         char *path = glueString(2, TABLES_DIR, selection->tableName);
         // Abre o arquivo da tabela
         FILE *tableFile = fopenSafe(path, "rb+");
+
+        // Path do arquivo de strings da tabela
+        char *pathString = glueString(2, path, "_strings.bin");
+        FILE *stringsFile = NULL;
 
         // Verifica se tem indexação
         int temIndexTree = tem_index_tree(selection->tableName, selection->field);
@@ -621,6 +679,10 @@ void buscarRegistros(Selection *selection) {
                             addToResultList(&resultList, rowPos);
                         }
                     } else if (fieldType == 's') {
+                        if (!stringsFile) {
+                            stringsFile = fopenSafe(pathString, "rb+");
+                        }
+
                         // Bytes lidos
                         read = sizeof(long int);
                         // Lê a posição da string
@@ -678,9 +740,13 @@ void buscarRegistros(Selection *selection) {
                 printf("Nenhum resultado para %s\n", selection->tableName);
             }
 
-            // Fecha o arquivo
+            // Fecha os arquivos
             fclose(tableFile);
-            
+            // Fecha os arquivos de dados tabela
+            if (stringsFile) {
+                fclose(stringsFile);
+            }
+            free(pathString);
         }
     } else {
         fprintf(stderr, "Tabela não encontrada!\n");
@@ -710,6 +776,11 @@ void apresentarRegistros(Selection *selection) {
         char *path = glueString(2, TABLES_DIR, selection->tableName);
         // Abre o arquivo da tabela
         FILE *tableFile = fopenSafe(path, "rb+");
+
+        // Path do arquivo de strings da tabela
+        char *pathString = glueString(2, path, "_strings.bin");
+        FILE *stringsFile = NULL;
+
         // Lê os metadados
         fread(&table, sizeof(Table), 1, tableFile);
         //checkpoint alcides
@@ -740,6 +811,10 @@ void apresentarRegistros(Selection *selection) {
                     // Printa o número
                     printf("%d\n", numbI);
                 } else if (table.types[i] == 's') {
+                    if (!stringsFile) {
+                        stringsFile = fopenSafe(pathString, "rb+");
+                    }
+
                     // Lê a posição da string
                     fread(&pos, sizeof(long int), 1, tableFile);
                     // Pula para posição da string
@@ -772,8 +847,13 @@ void apresentarRegistros(Selection *selection) {
             list = list->next;
         }
 
-        // Fecha o arquivo
+        // Fecha os arquivos
         fclose(tableFile);
+        // Fecha os arquivos de dados tabela
+        if (stringsFile) {
+            fclose(stringsFile);
+        }
+        free(pathString);
     } else {
         fprintf(stderr, "Tabela não encontrada!\n");
     }
@@ -819,6 +899,23 @@ void removerRegistros(Selection *selection) {
             char *path = glueString(2, TABLES_DIR, selection->tableName);
             // Abre o arquivo da tabela
             FILE *tableFile = fopenSafe(path, "rb+");
+
+            // Path do arquivo de strings da tabela
+            char *pathString = glueString(2, path, "_strings.bin");
+            FILE *stringsFile = NULL;
+
+            // Path do arquivo de binarios da tabela
+            char *pathBinary = glueString(2, path, "_binaries.bin");
+            FILE *binariesFile = NULL;
+
+            // Path do arquivo de strings deletadas da tabela
+            char *pathStringEmpty = glueString(2, path, "_strings.empty");
+            FILE *stringsFileEmpty = NULL;
+
+            // Path do arquivo de binarios deletados da tabela
+            char *pathBinaryEmpty = glueString(2, path, "_binaries.empty");
+            FILE *binariesFileEmpty = NULL;
+
             // Lê os metadados
             fread(&table, sizeof(Table), 1, tableFile);
             // Path do arquivo de blocos deletados da tabela
@@ -841,22 +938,34 @@ void removerRegistros(Selection *selection) {
                 // Invalida o registro
                 fwrite(&invalido, sizeof(int), 1, tableFile);
 
+                printf("MEIO 1.1\n");
+
                 // Posição da string ou binário
                 long int pos;
                 // Remove as strings e binários
                 for (int i = 0; i < table.cols; i++) {
-
                     // Remove dos arquivos exteriores + pula offsets
                     if (table.types[i] == 'i') {
                         fseek(tableFile, sizeof(int), SEEK_CUR);
                     } else if (table.types[i] == 's') {
+                        if (!stringsFile) {
+                            stringsFile = fopenSafe(pathString, "rb+");
+                            stringsFileEmpty = fopenSafe(pathStringEmpty, "rb+");
+                        }
+
                         fread(&pos, sizeof(long int), 1, tableFile);
-                        removeFromExFile(pos, stringsFile, &stringEBlocks);
+                        printf("pos %ld\n", pos);
+                        removeFromExFile(pos, stringsFile, stringsFileEmpty);
                     } else if (table.types[i] == 'f') {
                         fseek(tableFile, sizeof(float), SEEK_CUR);
                     } else if (table.types[i] == 'b') {
+                        if (!binariesFile) {
+                            binariesFile = fopenSafe(pathBinary, "rb+");
+                            binariesFileEmpty = fopenSafe(pathBinaryEmpty, "rb+");
+                        }
+
                         fread(&pos, sizeof(long int), 1, tableFile);
-                        removeFromExFile(pos, binariesFile, &binaryEBlocks);
+                        removeFromExFile(pos, binariesFile, binariesFileEmpty);
                     }
                 }
 
@@ -874,6 +983,19 @@ void removerRegistros(Selection *selection) {
             // Fecha os arquivos
             fclose(tableFile);
             fclose(tableFileEmpty);
+            // Fecha os arquivos de dados tabela
+            if (stringsFile) {
+                fclose(stringsFile);
+                fclose(stringsFileEmpty);
+            }
+            if (binariesFile) {
+                fclose(binariesFile);
+                fclose(binariesFileEmpty);
+            }
+            free(pathString);
+            free(pathBinary);
+            free(pathStringEmpty);
+            free(pathBinaryEmpty);
 
             // Remove o registro nos índices
 
@@ -1164,23 +1286,11 @@ void start() {
     // Cria o diretório dos arquivos das tabelas
     mkdir(TABLES_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
-    // Cria os arquivos de indexação e dados
+    // Cria o arquivo de indexação
     createFile(TABLES_INDEX);
-    createFile(STRINGS_FILE);
-    createFile(STRINGS_EMPTY_LIST);
-    createFile(BINARIES_FILE);
-    createFile(BINARIES_EMPTY_LIST);
 
-    // Abre os arquivos de indexação e dados
+    // Abre o arquivo de indexação
     tablesIndex = fopenSafe(TABLES_INDEX, "rb+");
-    stringsFile = fopenSafe(STRINGS_FILE, "rb+");
-    stringsEmptyList = fopenSafe(STRINGS_EMPTY_LIST, "rb+");
-    binariesFile = fopenSafe(BINARIES_FILE, "rb+");
-    binariesEmptyList = fopenSafe(BINARIES_EMPTY_LIST, "rb+");
-
-    // Cria as listas de blocos vazios
-    loadEmptyList(stringsEmptyList, &stringEBlocks);
-    loadEmptyList(binariesEmptyList, &binaryEBlocks);
 
     // Pula para o começo do arquivo
     fseek(tablesIndex, 0, SEEK_SET);
@@ -1195,16 +1305,8 @@ void end() {
     // Escreve o novo número de tabelas
     fwrite(&qtTables, sizeof(int), 1, tablesIndex);
 
-    // Salva as listas de blocos vazios
-    saveEmptyList(stringsEmptyList, &stringEBlocks);
-    saveEmptyList(binariesEmptyList, &binaryEBlocks);
-
-    // Fecha os arquivos de indexação e dados
+    // Fecha o arquivo de indexação
     fclose(tablesIndex);
-    fclose(stringsFile);
-    fclose(stringsEmptyList);
-    fclose(binariesFile);
-    fclose(binariesEmptyList);
 
     freeResultTree(resultTree);
 }
