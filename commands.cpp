@@ -450,6 +450,8 @@ void buscarRegistros(Selection *selection) {
         // Abre o arquivo da tabela
         FILE *tableFile = fopenSafe(path, "rb+");
 
+        fread(&table, sizeof(Table), 1, tableFile);
+
         // Verifica se tem indexação
         int temIndexTree = tem_index_tree(selection->tableName, selection->field);
         int temIndexHash = tem_index_hash(selection->tableName, selection->field);
@@ -463,10 +465,17 @@ void buscarRegistros(Selection *selection) {
                 return;
             }
 
-            //TODO: Busca pelo indice hash
             char * hashFilename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_hash.index");
-            long int registerPos = buscaEmArquivoHash(hashFilename, value);
-            //TODO: adicionar na busca
+
+            ResultList *resultList = NULL;
+
+            int limit = (table.rows < searchLimit) ? table.rows : searchLimit;
+            buscaEmArquivoHash(hashFilename, value, limit, &resultList);
+
+            if (resultList)
+                addToResultTree(&resultTree, resultList, selection->tableName);
+            else
+                printf("Nenhum resultado para %s\n", selection->tableName);
 
             return;
         } else if (temIndexTree) {
@@ -1154,6 +1163,9 @@ void gerarIndex(Selection *selection) {
     if (tem_index_hash(selection->tableName, selection->field))
     {
         //TODO: gera indice hash
+        removerIndex(selection->tableName, selection->field, 0, 0);
+        selection->parameter = 'H';
+        criarIndex(selection);
     }
 }
 

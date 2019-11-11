@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include "../searchStructs.h"
 
 #define NUM_BALDES 13           // deve ser proximo da quantidade de registros
 #define MAX_REGS_POR_BALDE 64   // deve ser o maximo que cabe em um bloco de FS
@@ -23,6 +24,6 @@ typedef struct Balde {
 
 void inicializaArquivoHash(char * filename);
 void insereArquivoHash(char * filename, int chave, int valor);
-long int buscaEmArquivoHash(char * filename, int chave);
+void buscaEmArquivoHash(char * filename, int chave, int limit, ResultList **resultList);
 
 #endif
