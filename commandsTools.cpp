@@ -2,7 +2,7 @@
 
 // Verifica se existe um índice hash para a tabela
 int tem_index_hash(TableName tableName, Field field) {
-    char * hashFilename = glueString(5, "tables_index/", tableName, "_", field, "_h.i");
+    char * hashFilename = glueString(5, "tables_index/", tableName, "_", field, "_hash.index");
     return fileExist(hashFilename);
 }
 

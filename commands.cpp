@@ -462,9 +462,11 @@ void buscarRegistros(Selection *selection) {
                 fprintf(stderr, "Erro na busca (indexação)!\n");
                 return;
             }
+
             //TODO: Busca pelo indice hash
             char * hashFilename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_hash.index");
-            int registerPos = buscaEmArquivoHash(value, hashFilename);
+            long int registerPos = buscaEmArquivoHash(hashFilename, value);
+            //TODO: adicionar na busca
 
             return;
         } else if (temIndexTree) {
@@ -913,10 +915,9 @@ void criarIndex(Selection *selection) {
                     return;
                 }
 
-                char * hashFilename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_h.i");
-                FILE * arquivoHash  = fopen(hashFilename, "wb"); // cria o arquivo do index
+                char * hashFilename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_hash.index");
 
-                inicializaArquivoHash(arquivoHash);
+                inicializaArquivoHash(hashFilename);
 
                 char *tableFilename = glueString(2, TABLES_DIR, selection->tableName);
                 FILE *arquivoTable  = fopenSafe(tableFilename, "r+b");
@@ -924,15 +925,12 @@ void criarIndex(Selection *selection) {
                 Table table;
                 fread(&table, sizeof(Table), 1, arquivoTable);
 
-                fseek(arquivoHash, 0, SEEK_SET);
-
                 // pra cada registro, insere a pos dele na hashtable usando o valor do field indexado como chave
                 for (int i=0; i<table.rows; i++) {
 
                     int posRegistro = ftell(arquivoTable);
 
                     int valido;
-
                     fread(&valido, sizeof(int), 1, arquivoTable);
 
                     if (!valido) fseek(arquivoTable, table.length, SEEK_CUR);
@@ -946,7 +944,7 @@ void criarIndex(Selection *selection) {
                                 //le o valor 
                                 fread(&valorDoCampo, sizeof(int), 1, arquivoTable);
                                 //insere na hash o par (valorDoCampo, posRegistro)
-                                insereArquivoHash(arquivoHash, valorDoCampo, posRegistro);
+                                insereArquivoHash(hashFilename, valorDoCampo, posRegistro);
 
                             } //se nao eh o campo indexado vai para o proximo campo
                             else if (table.types[i] == 's') fseek(arquivoTable, sizeof(long int), SEEK_CUR);
@@ -958,7 +956,6 @@ void criarIndex(Selection *selection) {
                 }
 
                 fclose(arquivoTable);
-                fclose(arquivoHash);
 
             } else {
                 fprintf(stderr, "O campo %s não existe na tabela %s.\n", selection->field, selection->tableName);
@@ -1061,7 +1058,7 @@ void removerIndex(TableName tableName, Field field, int imprime, int all) { // r
         Table table = readTable(tableName);
         for(int i = 0; i < table.cols; i++) {
             char *filename_tree = glueString(5, "tables_index/", tableName, "_", table.fields[i], "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
-            char * filename_hash = glueString(5, "tables_index/", tableName, "_", table.fields[i], "_h.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
+            char * filename_hash = glueString(5, "tables_index/", tableName, "_", table.fields[i], "_hash.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
 
             if (fileExist(filename_tree)) { // remove o árquivo de índice (árvore), caso ele exista
                 removeFile(filename_tree);
@@ -1073,7 +1070,7 @@ void removerIndex(TableName tableName, Field field, int imprime, int all) { // r
     }
 
     char * filename_tree = glueString(5, "tables_index/", tableName, "_", field, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
-    char * filename_hash = glueString(3, "tables_index/", tableName, "_", field, "_h.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
+    char * filename_hash = glueString(5, "tables_index/", tableName, "_", field, "_hash.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_hash.index
 
 
     if(fileExist(filename_tree)) { // remove o árquivo de índice (árvore), caso ele exista
