@@ -235,14 +235,13 @@ void listarTabela() {
 
         // Se o espaço possuí informações válidas
         if (blocks > 0) {
-            printf("blocos %d\n", blocks);
-
             // Tamanho real do nome
             int size = blocks*BLOCK_SIZE;
             char *buf = (char *)mallocSafe(size);
             // Lê o nome
             fread(buf, size, 1, tablesIndex);
             // Printa o nome
+            printf("%s\n", buf);
             free(buf);
             // Incrementa só se a tabela é válida
             i++;
