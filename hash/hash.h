@@ -7,8 +7,8 @@
 #include <math.h>
 #include "../searchStructs.h"
 
-#define NUM_BALDES 13           // deve ser proximo da quantidade de registros
-#define MAX_REGS_POR_BALDE 64   // deve ser o maximo que cabe em um bloco de FS
+#define NUM_BALDES 13           // deve ser proximo da quantidade de registros (valores atuais estao apenas para teste)
+#define MAX_REGS_POR_BALDE 4    // deve ser o maximo que cabe em um bloco de FS
 #define TAM_LIXO 16             // deve completar o balde para ficar do tamanho do bloco
 
 typedef struct Item {
@@ -20,6 +20,7 @@ typedef struct Balde {
     int qtdRegsNoBalde;
     Item itens[MAX_REGS_POR_BALDE];
     char lixo[TAM_LIXO];
+    long int posContinuacao;
 } Balde;
 
 void inicializaArquivoHash(char * filename);
