@@ -98,4 +98,6 @@ void buscaEmArquivoHash(char * filename, int chave, int limit, ResultList **resu
         else
             fseek(arquivo, balde.posContinuacao, SEEK_SET);
     }
+
+    fclose(arquivo);
 }
