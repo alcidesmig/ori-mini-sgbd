@@ -14,20 +14,12 @@
 #define NUM_COMMANDS 12
 
 typedef struct {
-	long int pos;
 	int size;
+	long int pos;
+	long int next;
 } EmptyBlock;
 
-typedef struct EmptyBlockList {
-	struct EmptyBlockList *next;
-	EmptyBlock *data;
-} EmptyBlockList;
-
 extern const char TABLES_INDEX[];
-extern const char STRINGS_FILE[];
-extern const char STRINGS_EMPTY_LIST[];
-extern const char BINARIES_FILE[];
-extern const char BINARIES_EMPTY_LIST[];
 extern const char TABLES_DIR[];
 
 extern const char CT[];
@@ -56,13 +48,6 @@ extern int CMD_LIMIT;
 extern int PARAMETER_LIMIT;
 
 extern FILE *tablesIndex;
-extern FILE *stringsFile;
-extern FILE *stringsEmptyList;
-extern FILE *binariesFile;
-extern FILE *binariesEmptyList;
-
-extern EmptyBlockList *stringEBlocks;
-extern EmptyBlockList *binaryEBlocks;
 
 extern ResultNode *resultTree;
 
