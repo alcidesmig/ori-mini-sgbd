@@ -1,10 +1,6 @@
 #include "commandsDefines.h"
 
 const char TABLES_INDEX[] = "tablesIndex.bin";
-const char STRINGS_FILE[] = "strings.bin";
-const char STRINGS_EMPTY_LIST[] = "stringsEmptyList.bin";
-const char BINARIES_FILE[] = "binaries.bin";
-const char BINARIES_EMPTY_LIST[] = "binariesEmptyList.bin";
 const char TABLES_DIR[] = "tables/";
 
 const char CT[] = "CT";
@@ -35,12 +31,5 @@ int CMD_LIMIT = 3;
 int PARAMETER_LIMIT = 2;
 
 FILE *tablesIndex = NULL;
-FILE *stringsFile = NULL;
-FILE *stringsEmptyList = NULL;
-FILE *binariesFile = NULL;
-FILE *binariesEmptyList = NULL;
-
-EmptyBlockList *stringEBlocks = NULL;
-EmptyBlockList *binaryEBlocks = NULL;
 
 ResultNode *resultTree = NULL;
