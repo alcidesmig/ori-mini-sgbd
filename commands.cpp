@@ -1108,7 +1108,7 @@ void criarIndex(Selection *selection) {
                 Btree * btree = new Btree(filename);
                 delete btree;
 
-/*              # TODO PX
+/*              # TODO Perguntar p ele se tem q gerar no criarindex
 
                 Btree * btree = new Btree(filename);
 
