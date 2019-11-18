@@ -1099,8 +1099,11 @@ void criarIndex(Selection *selection) {
 
                 char * filename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
 
-                fclose(fopen(filename, "w"));
-/*              # TODO Perguntar se é necessário gerar o index em sua criação
+                Btree * btree = new Btree(filename);
+                delete btree;
+
+/*              # TODO PX
+
                 Btree * btree = new Btree(filename);
 
                 // Lê os valores do arquivo da tabela e insere os pares (key, ftell(key)) no arquivo para serem utilizados pela btree
@@ -1213,7 +1216,7 @@ void removerIndex(TableName tableName, Field field, int imprime, int all) { // r
 void gerarIndex(Selection *selection) {
     if (tem_index_tree(selection->tableName, selection->field))
     {
-        char * filename = glueString(3, "tables_index/", selection->tableName, "_", selection->field, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
+        char * filename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
         Btree * btree = new Btree(filename);
         
         // Lê os valores do arquivo da tabela e insere os pares (key, ftell(key)) no arquivo para serem utilizados pela btree
@@ -1234,7 +1237,7 @@ void gerarIndex(Selection *selection) {
         // Descobre qual a posição (offset) do field a ser indexado
         while (strcmp(table.fields[j], selection->field))
         {
-            switch (table.types[j])
+            switch (table.types[j++])
             {
             case 'i':
                 tam_pular += sizeof(int);
