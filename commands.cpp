@@ -1099,6 +1099,8 @@ void criarIndex(Selection *selection) {
 
                 char * filename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
 
+                fclose(fopen(filename, "w"));
+/*              # TODO Perguntar se é necessário gerar o index em sua criação
                 Btree * btree = new Btree(filename);
 
                 // Lê os valores do arquivo da tabela e insere os pares (key, ftell(key)) no arquivo para serem utilizados pela btree
@@ -1164,7 +1166,7 @@ void criarIndex(Selection *selection) {
 
                 // Libera memória
                 free(pair);
-
+*/
             } else {
                 fprintf(stderr, "O campo %s não existe na tabela %s.\n", selection->field, selection->tableName);
             }
