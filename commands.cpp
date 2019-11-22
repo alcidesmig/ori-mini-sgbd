@@ -1105,8 +1105,13 @@ void criarIndex(Selection *selection) {
 
                 char * filename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
 
+                // Criaçao do arquivo
                 Btree * btree = new Btree(filename);
+                // Delete faz a validação do arquivo
                 delete btree;
+
+                // Gera índices da tabela novamente
+                gerarIndex(selection);
 
 /*              # TODO Perguntar p ele se tem q gerar no criarindex
 
@@ -1285,6 +1290,8 @@ void gerarIndex(Selection *selection) {
 
         // Libera memória
         free(pair);
+        // Deleta a BTree (chama o destrutor)
+        delete btree;
     }
     if (tem_index_hash(selection->tableName, selection->field))
     {
