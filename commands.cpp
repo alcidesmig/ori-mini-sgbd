@@ -528,11 +528,11 @@ void buscarRegistros(Selection *selection) {
 
             int limit = (table.rows < searchLimit) ? table.rows : searchLimit;
             // Faz a busca na hash e atualiza o contador da quantidade de registros encontrados.
-            resultList->contResults = buscaEmArquivoHash(hashFilename, value, limit, &resultList);
-
+            int contResults = buscaEmArquivoHash(hashFilename, value, limit, &resultList);
+            printf("### BR = %d\n", contResults);
+            
             if (resultList) {
                 addToResultTree(&resultTree, resultList, selection->tableName);
-                printf("### BR = %d\n", resultList->contResults);
             } else {
                 printf("Nenhum resultado para %s\n", selection->tableName);
             }
@@ -666,9 +666,10 @@ void buscarRegistros(Selection *selection) {
             // Flag de validade
             int valido = 0;
 
+            // Contador de registros encontrados
+            int contResults = 0;
             // Lista de resultados
             ResultList *resultList = NULL;
-            resultList->contResults = 0;
             // Compara os registros
             i = 0;
             while (i < table.rows && i < searchLimit) {
@@ -693,7 +694,7 @@ void buscarRegistros(Selection *selection) {
                             // Adiciona a posição a lista de resultados
                             addToResultList(&resultList, rowPos);
                             // Incrementa o contador da quantidade de registros encontrados.
-                            resultList->contResults++;
+                            contResults++;
                         }
                     } else if (fieldType == 's') {
                         if (!stringsFile) {
@@ -720,7 +721,7 @@ void buscarRegistros(Selection *selection) {
                             // Adiciona a posição a lista de resultados
                             addToResultList(&resultList, rowPos);
                             // Incrementa o contador da quantidade de registros encontrados.
-                            resultList->contResults++;
+                            contResults++;
                         }
                         
                         free(str);
@@ -735,7 +736,7 @@ void buscarRegistros(Selection *selection) {
                             // Adiciona a posição a lista de resultados
                             addToResultList(&resultList, rowPos);
                             // Incrementa o contador da quantidade de registros encontrados.
-                            resultList->contResults++;
+                            contResults++;
                         }
                     } else if (fieldType == 'b') {
                         fprintf(stderr, "Busca em campos binários não é suportada!\n");
@@ -758,7 +759,7 @@ void buscarRegistros(Selection *selection) {
                 // Adiciona o resultado à arvore de resultados
                 addToResultTree(&resultTree, resultList, selection->tableName);
                 // Printa a quantidade de registros encontrador
-                printf("### BR = %d\n", resultList->contResults);
+                printf("### BR = %d\n", contResults);
             } else {
                 printf("Nenhum resultado para %s\n", selection->tableName);
             }
