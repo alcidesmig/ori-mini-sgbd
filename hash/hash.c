@@ -70,7 +70,7 @@ void insereArquivoHash(char * filename, int chave, int valor) {
     fclose(arquivo);
 }
 
-void buscaEmArquivoHash(char * filename, int chave, int limit, ResultList **resultList) {
+int buscaEmArquivoHash(char * filename, int chave, int limit, ResultList **resultList) {
 
     FILE * arquivo = fopen(filename, "rb");
     int posicao = hashFunc(chave);
@@ -100,4 +100,5 @@ void buscaEmArquivoHash(char * filename, int chave, int limit, ResultList **resu
     }
 
     fclose(arquivo);
+    return achou;
 }

@@ -25,6 +25,6 @@ typedef struct Balde {
 
 void inicializaArquivoHash(char * filename);
 void insereArquivoHash(char * filename, int chave, int valor);
-void buscaEmArquivoHash(char * filename, int chave, int limit, ResultList **resultList);
+int buscaEmArquivoHash(char * filename, int chave, int limit, ResultList **resultList);
 
 #endif

@@ -10,6 +10,7 @@
 typedef struct ResultList {
 	struct ResultList *next;
 	long int pos;
+	int contResults;
 } ResultList;
 
 typedef struct ResultNode {
