@@ -484,6 +484,8 @@ void buscarRegistros(Selection *selection) {
 
     // Limite de busca
     int searchLimit = (selection->parameter == 'U' ? 1 : 2147483647);
+
+    printf("searchLimit %d\n", searchLimit);
     
     // Verifica se existem tabelas
     if (!qtTables) {
@@ -672,7 +674,8 @@ void buscarRegistros(Selection *selection) {
             ResultList *resultList = NULL;
             // Compara os registros
             i = 0;
-            while (i < table.rows && i < searchLimit) {
+            while (i < table.rows && contResults < searchLimit) {
+                printf("i %d\n", i);
                 // Salva a posição do registro
                 rowPos = ftell(tableFile);
                 // Lê a flag de validade
