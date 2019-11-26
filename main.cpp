@@ -34,6 +34,9 @@ int main(int argc, char *argv[]) {
             char * line = NULL;
             size_t len = 0;
             while(getline(&line, &len, fp) != -1){
+                #ifdef DEBUG
+                printf("%s\n", line);
+                #endif
                 ParsedData *pData = parser(line);
 
                 if (pData) {
