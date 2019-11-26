@@ -29,6 +29,23 @@ int main(int argc, char *argv[]) {
         if (!strcmp(*argv, "-h") || !strcmp(*argv, "--help")) {
             menu();
         }
+        else if (!strcmp(*argv, "-f") || !strcmp(*argv, "--file")) {
+            FILE * fp = fopen(*(argv + 1), "r");
+            char * line = NULL;
+            size_t len = 0;
+            while(getline(&line, &len, fp) != -1){
+                ParsedData *pData = parser(line);
+
+                if (pData) {
+                    if (!strncmp(pData->command, EB, CMD_LIMIT)) {
+                        printf("Saindo...\n");
+                        break;
+                    }
+                    execute(pData);
+                }
+            }
+            return 0;
+        }
     }
 
     while (1) {
