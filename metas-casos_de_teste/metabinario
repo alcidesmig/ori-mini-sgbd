@@ -1,0 +1,19 @@
+RT FOTOS
+CT FOTOS INT:RA;INT:FIXO;STR:NOME;BIN:IMAGE;STR:OUTRONOME
+IR FOTOS 9875741;10;Isabella Cavalcante;icon09.png;Nóbrega Camilo
+IR FOTOS 9949339;10;Helena Padilha;icon05.png;Albuquerque Dorneles
+IR FOTOS 9933892;10;Maya Ferrari;icon08.png;Machado Gil
+IR FOTOS 9812772;10;Maitê Dantas Veiga;icon04.png;Veloso
+IR FOTOS 9892444;10;Laís Evangelista Escobar;icon11.png;Marinho Ramires
+IR FOTOS 9931978;10;Eduardo Padilha Tavares;icon07.png;Padilha Vargas
+IR FOTOS 9936110;10;Lívia Nóbrega;icon06.png;Meireles
+IR FOTOS 9866814;10;Enzo Dantas Pilar;icon01.png;Paraíso Dantas
+IR FOTOS 9933147;10;Murilo Escobar Maia;icon12.png;Sanches Moreira
+IR FOTOS 9930172;10;Ana Liz Guedes;icon02.png;Paiva
+IR FOTOS 9856353;10;Lucas Gabriel Galvão Castro;icon03.png;Sanches Domingues
+IR FOTOS 9896932;10;Maya Flores Jesus;icon10.png;Cunha Camilo
+BR U FOTOS RA:9930172
+AR FOTOS
+BR U FOTOS RA:9933892
+AR FOTOS
+BR N FOTOS FIXO:10
