@@ -701,9 +701,7 @@ void buscarRegistros(Selection *selection) {
                         if (numbI == selNumbI) {
                             // Adiciona a posição a lista de resultados
                             // Modificação: guarda a key, caso for inteira, para possível remoção na BTree
-                            int * key_pointer = (int *) malloc(sizeof(int));
-                            *key_pointer = numbI;
-                            addToResultList(&resultList, rowPos, key_pointer);
+                            addToResultList(&resultList, rowPos, numbI);
                             // Incrementa o contador da quantidade de registros encontrados.
                             contResults++;
                         }
@@ -731,7 +729,7 @@ void buscarRegistros(Selection *selection) {
                         if (!strcmp(str, (char *)selection->value)) {
                             // Adiciona a posição a lista de resultados
                             // É possível substituir NULL por um ponteiro da key, mas não há necessidade para essa aplicação
-                            addToResultList(&resultList, rowPos, NULL);
+                            addToResultList(&resultList, rowPos, -1);
                             // Incrementa o contador da quantidade de registros encontrados.
                             contResults++;
                         }
@@ -747,7 +745,7 @@ void buscarRegistros(Selection *selection) {
                         if (numbF == selNumbF) {
                             // Adiciona a posição a lista de resultados
                             // É possível substituir NULL por um ponteiro da key, mas não há necessidade para essa aplicação
-                            addToResultList(&resultList, rowPos, NULL);
+                            addToResultList(&resultList, rowPos, -1);
                             // Incrementa o contador da quantidade de registros encontrados.
                             contResults++;
                         }

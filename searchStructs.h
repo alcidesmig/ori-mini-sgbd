@@ -10,7 +10,7 @@
 typedef struct ResultList {
 	struct ResultList *next;
 	long int pos;
-	int key;
+	int key; // #todo trocar para (* void) para suportar todos os tipos de dados
 } ResultList;
 
 typedef struct ResultNode {
