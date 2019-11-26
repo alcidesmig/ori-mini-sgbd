@@ -78,7 +78,7 @@ int buscaEmArquivoHash(char * filename, int chave, int limit, ResultList **resul
     fseek(arquivo, posicao*sizeof(Balde), SEEK_SET);
 
     int achou = 0;
-    bool terminou = false;
+    int terminou = 0;
     while (!terminou)
     {
         Balde balde;
@@ -94,7 +94,7 @@ int buscaEmArquivoHash(char * filename, int chave, int limit, ResultList **resul
         }
 
         if (balde.posContinuacao == -1 || achou >= limit)
-            terminou = true;
+            terminou = 1;
         else
             fseek(arquivo, balde.posContinuacao, SEEK_SET);
     }
