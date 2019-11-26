@@ -1051,7 +1051,7 @@ void removerRegistros(Selection *selection) {
                 // Faz a remoção na BTree (de 1 resultado, pois não existem valores com a key duplicada na BTree)
                 Btree * tree = new Btree(glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_tree.index")); 
                 pair_btree aux;
-                aux.key = *((int *) (aux_btree->key));
+                aux.key = aux_btree->key;
                 tree->DelNode(aux);
                 delete tree;
             }
