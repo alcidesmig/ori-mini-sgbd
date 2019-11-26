@@ -450,12 +450,14 @@ void incluirRegistro(Row *row) {
             free(pathStringEmpty);
             free(pathBinaryEmpty);
             
+            #ifdef DEBUG
             // Printa a mensagem de sucesso
             printf("Registro criado: ");
             for (int i = 0; i < table.cols; i++) {
                 printf("%s ", (char *)row->values[i]);
             }
             printf("\n");
+            #endif
         } else {
             fprintf(stderr, "O número de valores não corresponde ao número de colunas da tabela!\n");
             // Fecha os arquivos
@@ -764,7 +766,10 @@ void buscarRegistros(Selection *selection) {
                 // Printa a quantidade de registros encontrador
                 printf("### BR = %d\n", contResults);
             } else {
+                printf("### BR = %d\n", 0);
+                #ifdef DEBUG
                 printf("Nenhum resultado para %s\n", selection->tableName);
+                #endif
             }
 
             // Fecha os arquivos
@@ -818,12 +823,13 @@ void apresentarRegistros(Selection *selection) {
         int strSize;
         char *str;
 
+        #ifdef DEBUG
         if (list) {
             printf("Mostrando resultado para %s\n", selection->tableName);
         } else {
             printf("Nenhum resultado para %s\n", selection->tableName);
         }
-        
+        #endif
         // Printa os registros
         while (list) {
             // Pula para posição, mais a flag de validade
@@ -965,7 +971,6 @@ void removerRegistros(Selection *selection) {
                 // Invalida o registro
                 fwrite(&invalido, sizeof(int), 1, tableFile);
 
-                printf("MEIO 1.1\n");
 
                 // Posição da string ou binário
                 long int pos;
@@ -981,7 +986,9 @@ void removerRegistros(Selection *selection) {
                         }
 
                         fread(&pos, sizeof(long int), 1, tableFile);
+                        #ifdef DEBUG
                         printf("pos %ld\n", pos);
+                        #endif
                         removeFromExFile(pos, stringsFile, stringsFileEmpty);
                     } else if (table.types[i] == 'f') {
                         fseek(tableFile, sizeof(float), SEEK_CUR);
@@ -1030,7 +1037,7 @@ void removerRegistros(Selection *selection) {
             // se existir: remove o valor do índice
             if(tem_index_hash(selection->tableName, selection->field)) {    
                 //TODO: remoção na hash
-            }
+            } //alcides
             if(tem_index_tree(selection->tableName, selection->field)) {    
                 // Remoção na árvore
                 // BTree * tree = encontraBTree(selection->tableName);
@@ -1297,7 +1304,9 @@ void gerarIndex(Selection *selection) {
                 fseek(tableFile, tam_pular, SEEK_CUR); // to do: otimizar
                 fread(&(pair->key), sizeof(int), 1, tableFile);
                 fseek(tableFile, -(tam_pular + sizeof(int)), SEEK_CUR);
+                #ifdef DEBUG
                 printf("Adicionando pair na BTree: (%d %d)\n", pair->key, pair->addr);
+                #endif
                 btree->insert(*pair);
             }
             // Pula para o próximo registro
