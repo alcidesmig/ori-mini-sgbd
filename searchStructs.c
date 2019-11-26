@@ -13,7 +13,7 @@ void freeResultList(ResultList *list) {
 		freeResultList(list->next);
 		ResultList * aux = list;
 		while(aux != NULL) {
-			int aux_ = *((int *) aux->key);
+			//int aux_ = *((int *) aux->key);
 			free(aux->key);
 			aux = aux->next;
 		}
