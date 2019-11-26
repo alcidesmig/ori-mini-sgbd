@@ -555,8 +555,6 @@ void buscarRegistros(Selection *selection) {
             // Busca o par (key, addr) na BTree
             pair_btree pair;
             pair.key = value;
-            int * key_for_result_list = (int *) malloc(sizeof(int));
-            *key_for_result_list = value;
             int search = tree->search(&pair);
             // Delete na tree (necessário para chamar o construtor e manter a assinatura válida
             delete tree;
@@ -574,7 +572,7 @@ void buscarRegistros(Selection *selection) {
             // Lista de resultados
             ResultList *resultList = NULL;
             if(addr != NULL) {
-                addToResultList(&resultList, *addr, key_for_result_list);
+                addToResultList(&resultList, *addr, value);
             }
             if (resultList) {
                 // Adiciona o resultado à arvore de resultados

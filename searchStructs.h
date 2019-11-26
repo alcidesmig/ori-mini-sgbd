@@ -10,7 +10,7 @@
 typedef struct ResultList {
 	struct ResultList *next;
 	long int pos;
-	void * key;
+	int key;
 } ResultList;
 
 typedef struct ResultNode {
@@ -20,7 +20,7 @@ typedef struct ResultNode {
 	TableName tableName;
 } ResultNode;
 
-void addToResultList(ResultList **list, long int pos, void * key);
+void addToResultList(ResultList **list, long int pos, int key);
 void freeResultList(ResultList *list);
 void freeResultTree(ResultNode *root);
 void addToResultTree (ResultNode **root, ResultList *list, TableName tableName);
