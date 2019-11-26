@@ -542,8 +542,9 @@ void buscarRegistros(Selection *selection) {
             }
             return;
         } else if (temIndexTree) {
+            #ifdef DEBUG
             printf("Buscando por indexação. Field indexado: %s\n", selection->field);
-
+            #endif
             Btree * tree = new Btree(glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_tree.index"));
 
             int value;
@@ -679,7 +680,9 @@ void buscarRegistros(Selection *selection) {
             // Compara os registros
             i = 0;
             while (i < table.rows && contResults < searchLimit) {
+                #ifdef DEBUG
                 printf("i %d\n", i);
+                #endif
                 // Salva a posição do registro
                 rowPos = ftell(tableFile);
                 // Lê a flag de validade
