@@ -291,7 +291,7 @@ void Btree::DelNode(pair_btree x)
     switch (del(root, x))
     {
     case NotFound:
-        // cout << x.key << " not found.\n";
+         cout << x.key << " not found.\n";
         break;
     case Underflow:
         root0 = root;

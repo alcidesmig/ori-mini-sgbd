@@ -1,15 +1,22 @@
 #include "searchStructs.h"
 
-void addToResultList(ResultList **list, long int pos) {
+void addToResultList(ResultList **list, long int pos, void * key) {
 	ResultList *elem = (ResultList *)mallocSafe(sizeof(ResultList));
 	elem->next = *list;
 	elem->pos = pos;
+	elem->key = key;
 	*list = elem;
 }
 
 void freeResultList(ResultList *list) {
 	if (list) {
 		freeResultList(list->next);
+		ResultList * aux = list;
+		while(aux != NULL) {
+			int aux_ = *((int *) aux->key);
+			free(aux->key);
+			aux = aux->next;
+		}
 		free(list);
 	}	
 }

@@ -89,7 +89,7 @@ int buscaEmArquivoHash(char * filename, int chave, int limit, ResultList **resul
             if (chave == balde.itens[i].chave)
             {
                 achou++;
-                addToResultList(resultList, balde.itens[i].valor);
+                addToResultList(resultList, balde.itens[i].valor, NULL);
             }
         }
 

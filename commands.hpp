@@ -25,7 +25,7 @@ void apresentarRegistros(Selection *selection);
 void removerRegistros(Selection *selection);
 void criarIndex(Selection *selection);
 void removerIndex(TableName tableName, Field field, int imprime, int all);
-void gerarIndex(Selection *selection);
+void gerarIndex(Selection *selection, char op);
 void start();
 void end();
 

@@ -486,9 +486,9 @@ void buscarRegistros(Selection *selection) {
 
     // Limite de busca
     int searchLimit = (selection->parameter == 'U' ? 1 : 2147483647);
-
+    #ifdef DEBUG
     printf("searchLimit %d\n", searchLimit);
-    
+    #endif
     // Verifica se existem tabelas
     if (!qtTables) {
         printf("Não existem tabelas!\n");
@@ -554,6 +554,8 @@ void buscarRegistros(Selection *selection) {
             // Busca o par (key, addr) na BTree
             pair_btree pair;
             pair.key = value;
+            int * key_for_result_list = (int *) malloc(sizeof(int));
+            *key_for_result_list = value;
             int search = tree->search(&pair);
             // Delete na tree (necessário para chamar o construtor e manter a assinatura válida
             delete tree;
@@ -571,7 +573,7 @@ void buscarRegistros(Selection *selection) {
             // Lista de resultados
             ResultList *resultList = NULL;
             if(addr != NULL) {
-                addToResultList(&resultList, *addr);
+                addToResultList(&resultList, *addr, key_for_result_list);
             }
             if (resultList) {
                 // Adiciona o resultado à arvore de resultados
@@ -697,7 +699,10 @@ void buscarRegistros(Selection *selection) {
                         // Compara com o valor pesquisado
                         if (numbI == selNumbI) {
                             // Adiciona a posição a lista de resultados
-                            addToResultList(&resultList, rowPos);
+                            // Modificação: guarda a key, caso for inteira, para possível remoção na BTree
+                            int * key_pointer = (int *) malloc(sizeof(int));
+                            *key_pointer = numbI;
+                            addToResultList(&resultList, rowPos, key_pointer);
                             // Incrementa o contador da quantidade de registros encontrados.
                             contResults++;
                         }
@@ -724,7 +729,8 @@ void buscarRegistros(Selection *selection) {
                         // Compara com o valor pesquisado
                         if (!strcmp(str, (char *)selection->value)) {
                             // Adiciona a posição a lista de resultados
-                            addToResultList(&resultList, rowPos);
+                            // É possível substituir NULL por um ponteiro da key, mas não há necessidade para essa aplicação
+                            addToResultList(&resultList, rowPos, NULL);
                             // Incrementa o contador da quantidade de registros encontrados.
                             contResults++;
                         }
@@ -739,7 +745,8 @@ void buscarRegistros(Selection *selection) {
                         // Compara com o valor pesquisado
                         if (numbF == selNumbF) {
                             // Adiciona a posição a lista de resultados
-                            addToResultList(&resultList, rowPos);
+                            // É possível substituir NULL por um ponteiro da key, mas não há necessidade para essa aplicação
+                            addToResultList(&resultList, rowPos, NULL);
                             // Incrementa o contador da quantidade de registros encontrados.
                             contResults++;
                         }
@@ -958,11 +965,15 @@ void removerRegistros(Selection *selection) {
 
             free(path);
 
+            int index_tree = tem_index_tree(selection->tableName, selection->field);
+            pair_btree pair;
+            pair.addr = -1;
+            
             // Número de blocos deletados
             int empty = 0;
             // Lê o número de blocos deletados
             fread(&empty, sizeof(int), 1, tableFileEmpty);
-
+            ResultList * aux_btree = list;
             while (list) {
                 // Grava a posição deletada
                 fwrite(&(list->pos), sizeof(long int), 1, tableFileEmpty);
@@ -970,7 +981,6 @@ void removerRegistros(Selection *selection) {
                 fseek(tableFile, list->pos, SEEK_SET);
                 // Invalida o registro
                 fwrite(&invalido, sizeof(int), 1, tableFile);
-
 
                 // Posição da string ou binário
                 long int pos;
@@ -1036,12 +1046,15 @@ void removerRegistros(Selection *selection) {
             // Verifica se já existe um index hash ou tree para a tabela
             // se existir: remove o valor do índice
             if(tem_index_hash(selection->tableName, selection->field)) {    
-                //TODO: remoção na hash
-            } //alcides
-            if(tem_index_tree(selection->tableName, selection->field)) {    
-                // Remoção na árvore
-                // BTree * tree = encontraBTree(selection->tableName);
-                // for(int i = 0; i < cont_values; i++) btree_remove(tree, valor_index[i]);
+                //TODO: remoção na hash ~ não necessária
+            }
+            if(index_tree){
+                // Faz a remoção na BTree (de 1 resultado, pois não existem valores com a key duplicada na BTree)
+                Btree * tree = new Btree(glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_tree.index")); 
+                pair_btree aux;
+                aux.key = *((int *) (aux_btree->key));
+                tree->DelNode(aux);
+                delete tree;
             }
         } else {
             fprintf(stderr, "Não existe pesquisa para essa tabela!\n");
@@ -1107,6 +1120,8 @@ void criarIndex(Selection *selection) {
                         }
                     }
                 }
+                // Gera índices da tabela novamente
+                gerarIndex(selection, 'H');
 
                 fclose(arquivoTable);
 
@@ -1134,7 +1149,7 @@ void criarIndex(Selection *selection) {
                 delete btree;
 
                 // Gera índices da tabela novamente
-                gerarIndex(selection);
+                gerarIndex(selection, 'A');
 
 /*              # TODO Perguntar p ele se tem q gerar no criarindex
 
@@ -1247,8 +1262,8 @@ void removerIndex(TableName tableName, Field field, int imprime, int all) { // r
     return;
 }
 
-void gerarIndex(Selection *selection) {
-    if (tem_index_tree(selection->tableName, selection->field))
+void gerarIndex(Selection *selection, char op) {
+    if (tem_index_tree(selection->tableName, selection->field) && (op == 'A' || op == '*'))
     {
         char * filename = glueString(5, "tables_index/", selection->tableName, "_", selection->field, "_tree.index"); // elabora o nome do arquivo: tables_index/<nome-da-tabela>_tree.index
         Btree * btree = new Btree(filename);
@@ -1318,7 +1333,7 @@ void gerarIndex(Selection *selection) {
         // Deleta a BTree (chama o destrutor)
         delete btree;
     }
-    if (tem_index_hash(selection->tableName, selection->field))
+    if (tem_index_hash(selection->tableName, selection->field) && (op == 'H' || op == '*'))
     {
         //TODO: gera indice hash
         removerIndex(selection->tableName, selection->field, 0, 0);

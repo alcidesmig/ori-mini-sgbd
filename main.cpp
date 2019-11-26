@@ -11,6 +11,8 @@
 #define HISTORY_FILE "./.history"
 #define PROMPT "\x1b[1;32mSGBD\x1b[0m> "
 
+//#define DEBUG
+
 void execute(ParsedData *pData);
 
 int main(int argc, char *argv[]) {
@@ -90,6 +92,6 @@ void execute(ParsedData *pData) {
     } else if (!strncmp(cmd, RI, CMD_LIMIT)) {
         removerIndex(pData->data.selection.tableName, pData->data.selection.field, 1, 0); // paramêtro 1 = printar log pro usuário, 2 = remover todos índices
     } else if (!strncmp(cmd, GI, CMD_LIMIT)) {
-        gerarIndex(&(pData->data.selection));
+        gerarIndex(&(pData->data.selection), '*');
     }
 }
