@@ -1091,36 +1091,55 @@ void criarIndex(Selection *selection) {
                 fread(&table, sizeof(Table), 1, arquivoTable);
 
                 // pra cada registro, insere a pos dele na hashtable usando o valor do field indexado como chave
-                for (int i=0; i<table.rows; i++) {
 
-                    int posRegistro = ftell(arquivoTable);
+                    int bit_validade;
+                    int tam_pular = 0, tam_row = 0;
+                    int j = 0;
 
-                    int valido;
-                    fread(&valido, sizeof(int), 1, arquivoTable);
-
-                    if (!valido) fseek(arquivoTable, table.length, SEEK_CUR);
-                    else {
-                        //passa por cada field do registro
-                        for (int i=0; i<table.cols; i++) {
-                            //se achou o campo indexado
-                            if (strcmp(table.fields[i], selection->field) == 0) {
-
-                                int valorDoCampo;
-                                //le o valor 
-                                fread(&valorDoCampo, sizeof(int), 1, arquivoTable);
-                                //insere na hash o par (valorDoCampo, posRegistro)
-                                insereArquivoHash(hashFilename, valorDoCampo, posRegistro);
-
-                            } //se nao eh o campo indexado vai para o proximo campo
-                            else if (table.types[i] == 's') fseek(arquivoTable, sizeof(long int), SEEK_CUR);
-                            else if (table.types[i] == 'i') fseek(arquivoTable, sizeof(int), SEEK_CUR);
-                            else if (table.types[i] == 'f') fseek(arquivoTable, sizeof(float), SEEK_CUR);
-                            else if (table.types[i] == 'b') fseek(arquivoTable, sizeof(long int), SEEK_CUR);
+                    // Descobre qual a posição (offset) do field a ser indexado
+                    while (strcmp(table.fields[j], selection->field))
+                    {
+                        switch (table.types[j++])
+                        { 
+                        case 'i':
+                            tam_pular += sizeof(int);
+                            break;
+                        case 's':
+                            tam_pular += sizeof(long int);
+                            break;
+                        case 'f':
+                            tam_pular += sizeof(float);
+                            break;
+                        case 'b':
+                            tam_pular += sizeof(long int);
+                            break;
+                        default:
+                            break;
                         }
                     }
-                }
-                // Gera índices da tabela novamente
-                gerarIndex(selection, 'H');
+                    int y = 0;
+                    // Lê os valores do campo a ser indexado e a posição do seu registro no arquivo
+                    int i_valido = 0;
+                    for (int i = 0; i < table.rows; i++)
+                    {
+                        int posRegistro = ftell(arquivoTable);
+                        // Lê o bit de validades
+                        fread(&bit_validade, sizeof(int), 1, arquivoTable);
+                        if (bit_validade)
+                        {
+                            int valorDoCampo;
+                            // Se for valido adiciona na hash
+                            fseek(arquivoTable, tam_pular, SEEK_CUR); // to do: otimizar
+                            fread(&valorDoCampo, sizeof(int), 1, arquivoTable);
+                            fseek(arquivoTable, -(tam_pular + sizeof(int)), SEEK_CUR);
+                            insereArquivoHash(hashFilename, valorDoCampo, posRegistro);
+                            #ifdef DEBUG
+                            printf("%d %d\n", valorDoCampo, y++);
+                            #endif
+                        }
+                        // Pula para o próximo registro
+                        fseek(arquivoTable, table.length, SEEK_CUR);
+                    }
 
                 fclose(arquivoTable);
 
