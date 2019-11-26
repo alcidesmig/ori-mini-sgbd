@@ -11,8 +11,6 @@
 #define HISTORY_FILE "./.history"
 #define PROMPT "\x1b[1;32mSGBD\x1b[0m> "
 
-//#define DEBUG
-
 void execute(ParsedData *pData);
 
 int main(int argc, char *argv[]) {
@@ -33,7 +31,7 @@ int main(int argc, char *argv[]) {
 
     while (1) {
         char* line = linenoise(PROMPT);
-
+        // printf("%s\n", line);
         if (line) {
             if (*line != '\0') {
                 linenoiseHistoryAdd(line);
